@@ -31,19 +31,16 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # This repo owns the custom domain (https://321.market), so the site is
+      # built at the domain root: no NEXT_PUBLIC_BASE_PATH. Every asset path is
+      # a plain `/assets/...` and Next.js rewrites `_next/*` itself.
       - name: Build static export
-        env:
-          # Project site → served from https://<user>.github.io/<repo>/
-          # (and from https://321.market/<repo>/ while the user site owns the domain).
-          # Every /public asset is prefixed with this value via src/lib/asset-path.ts.
-          NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
         run: pnpm build
 
       - name: Prepare Pages artifact
         run: |
           # .nojekyll stops Jekyll from dropping _next/ (leading underscore)
           touch out/.nojekyll
-          echo "Built for base path: /${{ github.event.repository.name }}"
           ls out | head -20
 
       - uses: actions/configure-pages@v5

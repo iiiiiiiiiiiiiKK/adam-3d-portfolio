@@ -1,8 +1,6 @@
-import { asset } from "@/lib/asset-path";
-
 // kenney audio packs (cc0), mp3 for safari; game over keeps a synth melody on top
 
-const BASE = asset("/assets/game/sfx/");
+const BASE = "/assets/game/sfx/";
 const CLIPS = [
   "crunch",
   "punch",

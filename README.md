@@ -9,7 +9,7 @@
 <br />
 
 [![Live](https://img.shields.io/badge/🌐_在线体验-321.market-171717?style=for-the-badge&logo=googlechrome&logoColor=white)](https://321.market)
-[![GitHub Pages](https://img.shields.io/badge/在线-321.market%2Fadam--3d--portfolio-181717?style=for-the-badge&logo=githubpages&logoColor=white)](https://321.market/adam-3d-portfolio/)
+[![GitHub Pages](https://img.shields.io/badge/在线-321.market-181717?style=for-the-badge&logo=githubpages&logoColor=white)](https://321.market/)
 [![Next.js](https://img.shields.io/badge/Next.js-16.2.2-000000?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org)
 [![React](https://img.shields.io/badge/React-19.2.4-61DAFB?style=for-the-badge&logo=react&logoColor=0e0e0c)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
@@ -32,12 +32,12 @@
 
 **首屏 —— 你好，我是 Adam**
 
-[![首屏](./docs/screenshots/01-hero.jpg)](https://321.market/adam-3d-portfolio/)
+[![首屏](./docs/screenshots/01-hero.jpg)](https://321.market/)
 
 <table>
 <tr>
-<td width="50%"><a href="https://321.market/adam-3d-portfolio/"><img src="./docs/screenshots/02-skills.jpg" alt="3D 键盘技能区" /></a><br /><sub><b>3D 键盘</b> · 24 个键帽，按下去弹出说明</sub></td>
-<td width="50%"><a href="https://321.market/adam-3d-portfolio/"><img src="./docs/screenshots/03-projects.jpg" alt="项目卡片" /></a><br /><sub><b>项目卡片</b> · 悬停自动滚动的整页截图</sub></td>
+<td width="50%"><a href="https://321.market/"><img src="./docs/screenshots/02-skills.jpg" alt="3D 键盘技能区" /></a><br /><sub><b>3D 键盘</b> · 24 个键帽，按下去弹出说明</sub></td>
+<td width="50%"><a href="https://321.market/"><img src="./docs/screenshots/03-projects.jpg" alt="项目卡片" /></a><br /><sub><b>项目卡片</b> · 悬停自动滚动的整页截图</sub></td>
 </tr>
 <tr>
 <td width="50%"><a href="https://321.market/blogs/"><img src="./docs/screenshots/04-blog.jpg" alt="随笔列表" /></a><br /><sub><b>随笔</b> · MDX 驱动，构建时渲染</sub></td>
@@ -161,39 +161,56 @@ public/assets/backgrounds/<项目 id>.jpg                    # 卡片壁纸（�
 
 仓库自带 GitHub Actions 工作流，**push 到 `main` 就自动构建并发布**。
 
-### GitHub Pages（当前已上线）
+### GitHub Pages + 自定义域名（当前已上线）
 
-**线上地址：<https://321.market/adam-3d-portfolio/>**
+**线上地址：<https://321.market/>**
+
+本仓库通过 `public/CNAME`（内容为 `321.market`）直接绑定根域名，构建在**域名根路径**，
+因此不需要任何资源前缀 —— 所有路径都是普通的 `/assets/...`。
 
 工作流做的事：
 
-1. `pnpm build`，并通过 `NEXT_PUBLIC_BASE_PATH=/<仓库名>` 把资源前缀设成子路径
+1. `pnpm build`（静态导出到 `out/`）
 2. 写出 `.nojekyll`（否则 `_next/` 会被 Jekyll 丢掉）
 3. 用 `deploy-pages` 发布
 
 自己 fork 之后要做的：
 
 1. 仓库 **Settings → Pages → Source** 选 **GitHub Actions**
-2. push 一次，或者到 **Actions → Deploy to GitHub Pages → Run workflow** 手动触发
+2. 改 `public/CNAME` 成你自己的域名（或直接删掉这个文件）
+3. push 一次，或者到 **Actions → Deploy to GitHub Pages → Run workflow** 手动触发
 
-发布后地址是 `https://<用户名>.github.io/<仓库名>/`。
+发布后地址是 `https://<用户名>.github.io/<仓库名>/`；配了 CNAME 就是你的域名。
 
-> **关于 `NEXT_PUBLIC_BASE_PATH`**：GitHub Pages 的*项目页*挂在 `/<仓库名>/` 子路径下，
-> 所以所有 `/public` 资源都要加前缀。本仓库用 `src/lib/asset-path.ts` 的 `asset()` 包了一层，
-> 在 `src/data/*`、`src/components/**` 里凡是引用 `public/` 文件的字符串都走它。
-> 部署到域名根目录（如 Cloudflare Pages / Vercel）时，把 `NEXT_PUBLIC_BASE_PATH` 留空即可。
+### 绑定自定义域名
 
-### 绑定自定义域名（可选）
+DNS（以根域名为例）：
 
-如果想让 `https://example.com` 直接指向这个站：
+| 类型 | 名称 | 值 |
+|---|---|---|
+| A | `@` | `185.199.108.153` |
+| A | `@` | `185.199.109.153` |
+| A | `@` | `185.199.110.153` |
+| A | `@` | `185.199.111.153` |
+| CNAME | `www` | `<用户名>.github.io` |
 
-- **用用户主页仓库**（`<用户名>.github.io`）：`CNAME` 文件写域名，DNS 配 4 条 A 记录 —— `185.199.108.153` / `185.199.109.153` / `185.199.110.153` / `185.199.111.153`
-- **用项目仓库**：只能绑子域名（如 `site.example.com`），用 CNAME 指向 `<用户名>.github.io`
-- 证书由 GitHub 在 DNS 生效后自动签发（Let's Encrypt），签好后可在 Pages 设置里勾 **Enforce HTTPS**
+然后：
+
+1. `public/CNAME` 写入域名（不要带 `https://`、不要带路径）
+2. **Settings → Pages → Custom domain** 填同一个域名并保存
+3. 等 GitHub 签发 Let's Encrypt 证书（通常 1–2 分钟，偶尔要 20 分钟以上）
+4. 证书到位后勾上 **Enforce HTTPS**
+
+> **排查**：如果浏览器报 `ERR_TLS_CERT_ALTNAME_INVALID`，说明证书还没签到这个域名。
+> 到 Pages 设置里把 custom domain 清空保存、再重新填写一次，通常能立刻触发重新签发。
+
+> **用项目仓库也能绑根域名**：早期 GitHub 只允许用户主页仓库（`<用户名>.github.io`）绑根域名，
+> 现在项目仓库同样可以在 `public/CNAME` 里写根域名，Pages 会以它为准。
+> 两个仓库同时声明同一个域名会冲突 —— 只能有一个仓库持有它。
 
 ### Cloudflare Pages / Vercel
 
-同一份 `out/` 直接能用（记得把 `NEXT_PUBLIC_BASE_PATH` 留空，站点在域名根目录）：
+同一份 `out/` 直接能用：
 
 ```bash
 pnpm build

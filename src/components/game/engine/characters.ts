@@ -2,10 +2,9 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import type { PlayerProfile } from "../player-profile";
 import { makeProgressRing } from "./progress-ring";
-import { asset } from "@/lib/asset-path";
 
 // kenney "blocky characters" (cc0): 6 rigid parts, rotation-only clips, faces +z
-const BASE = asset("/assets/game/characters/");
+const BASE = "/assets/game/characters/";
 const SCALE = 0.85; // native rig is ~2.7 tall
 export const GUN_HEIGHT = 1.8 * SCALE;
 export const MUZZLE = 1.75 * SCALE;

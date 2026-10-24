@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useRef } from "react";
-import { asset } from "@/lib/asset-path";
 
 export function useKeyboardSounds() {
   const audio = useRef<{ context: AudioContext; buffers: Partial<Record<"press" | "release", AudioBuffer>> } | null>(null);
@@ -17,7 +16,7 @@ export function useKeyboardSounds() {
     window.addEventListener("pointerdown", unlock, true);
     window.addEventListener("keydown", unlock, true);
     void Promise.all((["press", "release"] as const).map(async (name) => {
-      const response = await fetch(asset(`/assets/keycap-sounds/${name}.mp3`), { signal: controller.signal });
+      const response = await fetch(`/assets/keycap-sounds/${name}.mp3`, { signal: controller.signal });
       if (!response.ok) throw new Error(`Keyboard sound: HTTP ${response.status}`);
       const buffer = await context.decodeAudioData(await response.arrayBuffer());
       if (!controller.signal.aborted) state.buffers[name] = buffer;

@@ -7,7 +7,6 @@ import {
   animate,
   useAnimationControls,
 } from "motion/react";
-import { asset } from "@/lib/asset-path";
 
 const getRandomHeight = () => {
   return `${Math.random() * 100}vh`;
@@ -93,7 +92,7 @@ const AnimatedDiv = ({
       onClick={handlePause}
     >
       <img
-        src={asset("/assets/nyan-cat.gif")}
+        src="/assets/nyan-cat.gif"
         className={cn("fixed z-10 h-40 w-auto")}
         alt="Nyan Cat"
       />

@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Pause, Play } from "lucide-react";
 import { usePerfProfile } from "@/hooks/use-perf-profile";
-import { asset } from "@/lib/asset-path";
 
 const memes = [
   {
@@ -47,7 +46,7 @@ export default function NotFoundMeme() {
       <div className="relative aspect-[2/1] w-full bg-black" aria-busy={!meme}>
         {meme && (
           <Image
-            src={asset(`/assets/404/${meme.name}${playing ? "" : "-still"}.gif`)}
+            src={`/assets/404/${meme.name}${playing ? "" : "-still"}.gif`}
             alt={meme.alt}
             fill
             unoptimized

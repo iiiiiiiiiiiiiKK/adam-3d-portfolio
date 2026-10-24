@@ -1,10 +1,9 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { ARENA, O_BENCH, O_CAIRN, O_POST, O_ROCK, O_STONE, O_TREE, O_TRUNK, PILLARS } from "../protocol";
-import { asset } from "@/lib/asset-path";
 
 // kenney "graveyard kit" (cc0): one shared colormap, wall pieces sit on their -z edge
-const BASE = asset("/assets/game/env/");
+const BASE = "/assets/game/env/";
 const S = 2; // wall + prop scale
 const WALL_FACE = 0.3 * S; // inner face offset from piece origin
 const APRON = 12; // grass past the walls

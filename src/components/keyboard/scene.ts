@@ -3,7 +3,6 @@ import {
   createDocument, createMaterial, newId,
   type ChibiDocument, type ChibiMaterial, type ChibiNode, type Vec3,
 } from "@chibi3d/runtime/schema";
-import { asset } from "@/lib/asset-path";
 
 export type KeyboardSkill = {
   name: string;
@@ -44,7 +43,7 @@ const KIT = {
   cutX: 3.189, cutZ: 2.053, halfW: 3.67448, halfD: 2.57744,
 };
 
-export const KEYBOARD_MODEL_URL = asset("/assets/keyboard/keycaps.glb");
+export const KEYBOARD_MODEL_URL = "/assets/keyboard/keycaps.glb";
 
 export function createKeyboardScene(skills: readonly KeyboardSkill[], columns = 6): KeyboardScene {
   if (!skills.length || skills.length > 96) throw new RangeError("Choose between 1 and 96 keyboard skills");
@@ -168,7 +167,7 @@ export function createKeyboardScene(skills: readonly KeyboardSkill[], columns = 
   doc.nodes[catId].transform.rotation = [-141.199253, -1.535221, -167.469916].map((angle) => angle * Math.PI / 180) as Vec3;
   doc.nodes[catId].visible = false;
   const catAssetId = newId("as");
-  doc.assets[catAssetId] = { id: catAssetId, kind: "glb", name: asset("/assets/keyboard/bongo-frames.glb"),
+  doc.assets[catAssetId] = { id: catAssetId, kind: "glb", name: "/assets/keyboard/bongo-frames.glb",
     hash: "2a16506ae6e6b571fc02a73e6822345a73e15de05a5a13b86a391fafd94fa908", size: 28292 };
   const frameIds = [0, 1].map((frame) => add({
     id: newId("nd"), name: `Bongo frame ${frame + 1}`, type: "model", assetId: catAssetId, path: String(frame),
