@@ -9,6 +9,7 @@
 <br />
 
 [![Live](https://img.shields.io/badge/🌐_在线体验-321.market-171717?style=for-the-badge&logo=googlechrome&logoColor=white)](https://321.market)
+[![GitHub Pages](https://img.shields.io/badge/在线-321.market%2Fadam--3d--portfolio-181717?style=for-the-badge&logo=githubpages&logoColor=white)](https://321.market/adam-3d-portfolio/)
 [![Next.js](https://img.shields.io/badge/Next.js-16.2.2-000000?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org)
 [![React](https://img.shields.io/badge/React-19.2.4-61DAFB?style=for-the-badge&logo=react&logoColor=0e0e0c)](https://react.dev)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
@@ -31,12 +32,12 @@
 
 **首屏 —— 你好，我是 Adam**
 
-[![首屏](./docs/screenshots/01-hero.jpg)](https://321.market)
+[![首屏](./docs/screenshots/01-hero.jpg)](https://321.market/adam-3d-portfolio/)
 
 <table>
 <tr>
-<td width="50%"><a href="https://321.market"><img src="./docs/screenshots/02-skills.jpg" alt="3D 键盘技能区" /></a><br /><sub><b>3D 键盘</b> · 24 个键帽，按下去弹出说明</sub></td>
-<td width="50%"><a href="https://321.market"><img src="./docs/screenshots/03-projects.jpg" alt="项目卡片" /></a><br /><sub><b>项目卡片</b> · 悬停自动滚动的整页截图</sub></td>
+<td width="50%"><a href="https://321.market/adam-3d-portfolio/"><img src="./docs/screenshots/02-skills.jpg" alt="3D 键盘技能区" /></a><br /><sub><b>3D 键盘</b> · 24 个键帽，按下去弹出说明</sub></td>
+<td width="50%"><a href="https://321.market/adam-3d-portfolio/"><img src="./docs/screenshots/03-projects.jpg" alt="项目卡片" /></a><br /><sub><b>项目卡片</b> · 悬停自动滚动的整页截图</sub></td>
 </tr>
 <tr>
 <td width="50%"><a href="https://321.market/blogs/"><img src="./docs/screenshots/04-blog.jpg" alt="随笔列表" /></a><br /><sub><b>随笔</b> · MDX 驱动，构建时渲染</sub></td>
@@ -160,22 +161,39 @@ public/assets/backgrounds/<项目 id>.jpg                    # 卡片壁纸（�
 
 仓库自带 GitHub Actions 工作流，**push 到 `main` 就自动构建并发布**。
 
-### GitHub Pages
+### GitHub Pages（当前已上线）
 
-1. 推到 GitHub 仓库
-2. 仓库 **Settings → Pages → Source** 选 **GitHub Actions**
-3. 完成后地址是 `https://<用户名>.github.io/<仓库名>/`
+**线上地址：<https://321.market/adam-3d-portfolio/>**
 
-如果绑**自定义域名**（本仓库当前就是 `321.market`）：
+工作流做的事：
 
-- 仓库变量 `CUSTOM_DOMAIN` 填域名，工作流会自动写出 `CNAME`
-- 或在仓库根目录放一个内容为域名的 `CNAME` 文件
-- DNS 需要给 apex 配 4 条 A 记录，指向 GitHub Pages 的 IP：`185.199.108.153` / `185.199.109.153` / `185.199.110.153` / `185.199.111.153`
-- `www` 用 CNAME 指向 `<用户名>.github.io`，证书会在 DNS 生效后由 GitHub 自动签发（Let's Encrypt）
+1. `pnpm build`，并通过 `NEXT_PUBLIC_BASE_PATH=/<仓库名>` 把资源前缀设成子路径
+2. 写出 `.nojekyll`（否则 `_next/` 会被 Jekyll 丢掉）
+3. 用 `deploy-pages` 发布
+
+自己 fork 之后要做的：
+
+1. 仓库 **Settings → Pages → Source** 选 **GitHub Actions**
+2. push 一次，或者到 **Actions → Deploy to GitHub Pages → Run workflow** 手动触发
+
+发布后地址是 `https://<用户名>.github.io/<仓库名>/`。
+
+> **关于 `NEXT_PUBLIC_BASE_PATH`**：GitHub Pages 的*项目页*挂在 `/<仓库名>/` 子路径下，
+> 所以所有 `/public` 资源都要加前缀。本仓库用 `src/lib/asset-path.ts` 的 `asset()` 包了一层，
+> 在 `src/data/*`、`src/components/**` 里凡是引用 `public/` 文件的字符串都走它。
+> 部署到域名根目录（如 Cloudflare Pages / Vercel）时，把 `NEXT_PUBLIC_BASE_PATH` 留空即可。
+
+### 绑定自定义域名（可选）
+
+如果想让 `https://example.com` 直接指向这个站：
+
+- **用用户主页仓库**（`<用户名>.github.io`）：`CNAME` 文件写域名，DNS 配 4 条 A 记录 —— `185.199.108.153` / `185.199.109.153` / `185.199.110.153` / `185.199.111.153`
+- **用项目仓库**：只能绑子域名（如 `site.example.com`），用 CNAME 指向 `<用户名>.github.io`
+- 证书由 GitHub 在 DNS 生效后自动签发（Let's Encrypt），签好后可在 Pages 设置里勾 **Enforce HTTPS**
 
 ### Cloudflare Pages / Vercel
 
-同一份 `out/` 直接能用：
+同一份 `out/` 直接能用（记得把 `NEXT_PUBLIC_BASE_PATH` 留空，站点在域名根目录）：
 
 ```bash
 pnpm build
