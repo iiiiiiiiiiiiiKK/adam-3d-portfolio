@@ -1,13 +1,17 @@
+"use client";
+
 import { getExperience, getSkills, SkillNames } from "@/data/content";
 import { SectionHeader } from "./section-header";
 import { Badge } from "../ui/badge";
 import { cn } from "@/lib/utils";
 import SectionWrapper from "../ui/section-wrapper";
-import { getDictionary } from "@/i18n/dictionaries";
-import type { Locale } from "@/i18n/types";
+import { useI18n } from "@/i18n/context";
 
-const ExperienceSection = ({ locale = "zh" }: { locale?: Locale }) => {
-  const t = getDictionary(locale);
+const ExperienceSection = () => {
+  // Read the locale from context (both route groups wrap children in
+  // I18nProvider). Taking it as a prop would silently fall back to Chinese
+  // whenever a page forgot to pass it — which is exactly what happened.
+  const { locale, t } = useI18n();
   const experience = getExperience(locale);
   const skills = getSkills(locale);
 
