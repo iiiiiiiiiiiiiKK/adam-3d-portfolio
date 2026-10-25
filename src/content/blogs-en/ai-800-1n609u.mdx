@@ -1,0 +1,146 @@
+---
+title: "AI wrote 800 lines overnight and I still didn't dare merge: a veteran coder's way out"
+publishedAt: "2026-10-01"
+summary: "At 2 a.m. you are staring at the 800 lines an AI agent just generated, with one question left in your head: can any of this actually ship? old-coder makes the agent prove it by handing you two documents — a test plan and an evidence report."
+image: "/assets/blog-images/ai-800-1n609u/img01.webp"
+tags: ["AI", "Agent", "Security"]
+author: "Adam"
+---
+![](/assets/blog-images/ai-800-1n609u/img01.webp)
+
+## 1. Intro: why you need this tool
+
+It's 2 a.m., you're staring at the 800 lines an AI agent just generated in your IDE, and your brain is stuck on one question: can any of this actually ship?
+
+Half an hour in Cursor and a new feature appears, smooth as a demo. Then you get ready to merge into main and your palms start sweating. Is branch coverage enough? Did it trip over the edge cases? Did the agent quietly pull in a dependency with a known CVE? The worst part: you want to review it, but the volume has already blown past what you can audit by hand.
+
+Every developer in the Vibe Coding era shares this problem. Agents pushed generation speed to the limit, while verification stayed in 2015. The result: 10x more code, not 1x more confidence.
+
+The 2024 Stack Overflow Developer Survey found that 77% of developers are using or planning to use AI coding assistants, but only 29% say they "highly trust" AI-generated code. The gap sits squarely in verification.
+
+So what if there were a way to make the agent prove its own code is fine, and all you have to do is read two documents? Which would you pick?
+
+![](/assets/blog-images/ai-800-1n609u/img02.webp)
+
+## 2. Project overview: what it is in one sentence
+
+**old-coder** is an "evidence-first development" Skill for AI coding agents, built on one claim: "don't read the code — make the code pass the full gauntlet." It doesn't read your code. Instead it makes the agent submit two documents, a SPEC (test plan) and an EVIDENCE (evidence report), turning verification into something standardized, automated and auditable.
+
+Four keywords capture the core: **Test-First**, **Mutation Testing**, **Change-line Coverage**, **Supply Chain Audit**. It works with Claude Code, Codex CLI, Cursor, Aider and any custom agent loop — plain Markdown, zero runtime dependencies.
+
+As of now the project has **331 stars**. The main repo is written in Python, but the Skill itself can drive a project in any language.
+
+![](/assets/blog-images/ai-800-1n609u/img03.webp)
+
+## 3. Core features in depth
+
+### 1. SPEC first: write the test plan before you write the code
+
+Classic TDD is "write the test, then write the implementation." old-coder lifts that idea to the spec level: before generating any code, the agent must output a SPEC.md that spells out what the code must do, what it must not do, and which tools it depends on. You review that one document and say yes or no.
+
+This step turns requirement boundaries from "a verbal description" into "acceptance clauses," and moves the window for supply chain attacks and hidden dependencies forward into the approval stage.
+
+### 2. The standard RED → GREEN → REFACTOR loop
+
+The Skill bakes in the classic red-green-refactor rhythm, plus one iron rule: **once the tests are written, they may not change while the run is in progress.** That rule kills the agent's favorite cheat outright — editing the tests so the code passes.
+
+### 3. The GAUNTLET: eight automated gates
+
+Once the implementation is done, the agent must run eight checks in order:
+
+- Full test suite — did anything break existing behavior?
+- Type check + lint + cyclomatic complexity — any rookie mistakes or unreadable code?
+- Change-line coverage — is every new line covered by a test?
+- Mutation testing — inject bugs on purpose and see whether the tests catch them?
+- Property-based testing — can the code survive hundreds of randomized inputs?
+- Real execution — outside the test harness, does it actually run in a real environment?
+- Supply chain and secret scanning — did it pull a dangerous package? Did it leak a key?
+- Suite health — are the tests themselves stable? Do they pass in any order?
+
+Based on the task risk model, it also appends specialized layers from `references/gauntlet.md` for concurrency, UI, API compatibility, performance, observability and more.
+
+### 4. The EVIDENCE report: numbers, and one command to rerun it
+
+The agent grades itself, but under strict rules: checks it never ran can only be marked `unverified`, never `pass`; a report without an approved SPEC must say so up front and lower its confidence. The output is evidence.md, filled with numbers that were actually measured — not a line saying "looks fine to me."
+
+The repo ships a demo-rate-limiter walkthrough: 17 tests, 100% branch coverage on new code, 8/8 injected mutant bugs caught. More importantly, the whole flow surfaced a real bug where a `NaN` time window bypassed validation — something the unit tests alone never exposed.
+
+## 4. Technical highlights and performance data
+
+**On architecture**, old-coder uses a two-layer Skill + Reference structure: `SKILL.md` holds the main flow, `references/gauntlet.md` holds the gate checklist. Lightweight, pluggable, portable — the engineering philosophy of "one Skill, one class of problem."
+
+**Three core innovations:**
+
+- **Docs as the interface**: the agent's output converges on two artifacts, SPEC and EVIDENCE, moving human attention away from the code itself and onto acceptance clauses and evidence numbers.
+- **Mutation testing made practical**: most projects only measure coverage. old-coder puts mutation testing in the default gate list, which directly exposes fake tests that look green but assert nothing.
+- **A self-honest evaluation mechanism**: rules constrain the agent so it cannot cheat. This is one of the few open-source projects that designs "AI evaluating AI" as an auditable process.
+
+**Ecosystem compatibility** is the other highlight. Install with one line, `npx skills add https://github.com/amazingang/old-coder`; it supports Claude Code's `/old-coder` slash command and can also plug into Codex CLI, Cursor and Aider through `AGENTS.md`.
+
+## 5. Use cases and who it's for
+
+**Scenario one: refactoring financial or payment systems**
+For core modules handling money, login and concurrent data access, the full old-coder gate list (concurrency layer included) blocks the vast majority of regressions. Traditional code review stopped working at this code volume long ago.
+
+**Scenario two: legacy system migration**
+Rewriting an old Java or PHP service in Go or Rust: agents produce fast, but the risk is high. old-coder's change-line coverage plus real-execution layer keeps the baseline intact throughout the migration.
+
+**Scenario three: maintaining an open-source library**
+An individual developer maintains a library with thousands of stars and has no time to review community PRs line by line. Let contributors submit an EVIDENCE report through the old-coder flow, and you only read two documents.
+
+**Who it's for**: mid-to-senior engineers writing core business code with AI agents; tech leads who want a coding-agent usage standard for the team; full-stack developers anxious about "Vibe Coding safety."
+
+**Who it's not for**: developers doing purely one-off scripts or prototype demos, or freelancers who refuse any process constraint at all.
+
+![](/assets/blog-images/ai-800-1n609u/img04.webp)
+
+## 6. Comparison with alternatives
+
+| Dimension | old-coder | Aider --watch | Cursor built-in tests | Cline + custom hooks |
+|---|---|---|---|---|
+| Process (SPEC→GAUNTLET→EVIDENCE) | ✅ Complete | ❌ None | ❌ None | ⚠️ Configure it yourself |
+| Mutation testing on by default | ✅ | ❌ | ❌ | ❌ |
+| Change-line coverage tracking | ✅ | ❌ | ⚠️ Overall coverage only | ❌ |
+| Supply chain / secret scanning | ✅ | ❌ | ❌ | ⚠️ Needs extra tooling |
+| Cross-agent compatibility | ✅ 6+ agents | ⚠️ Aider only | ❌ Cursor only | ⚠️ Cline only |
+| Learning curve | Low (plain Markdown) | Medium | Low | High |
+
+Put simply: if what you want is "the agent proves itself and you read two documents," old-coder is currently the only project on GitHub that turns this into an end-to-end Skill. Everything else either only generates code or only works inside one particular agent.
+
+## 7. Quick start
+
+**Option one: one-line install**
+
+```sh
+npx skills add https://github.com/amazingang/old-coder
+```
+
+**Option two: manual integration (Claude Code)**
+
+```sh
+cp -r skills/old-coder ~/.claude/skills/
+```
+
+Then invoke `/old-coder`, or ask for something in the spirit of "prove it works" in the conversation and the Skill triggers automatically.
+
+**Option three: wire up other agents**
+
+Copy the contents of `skills/old-coder/SKILL.md` into your `AGENTS.md`, Cursor Rules or system prompt, and put `references/gauntlet.md` in the same directory.
+
+**Minimal working example**: go into `demo-rate-limiter` and run `./tools/gauntlet.sh` — one command reproduces the full evidence.md, so you can see how the eight gates run and how the report gets generated.
+
+**Going further**: plug the SPEC template into your PR template and require an EVIDENCE report on every agent-generated PR. Over time your team gets a comparable, regression-tested quality baseline for agents.
+
+## 8. Summary and next steps
+
+In one sentence, old-coder's value is: **make AI agents deliver code with evidence, not convince you with code.** It redistributes attention between humans and AI along the production chain — humans define boundaries and approve; agents run every check and hand over the numbers.
+
+**Recommendations:**
+
+1. Pilot it on an internal project first, picking one high-risk module to run through the full flow;
+2. Archive evidence.md in your CI artifacts as a basis for later audits;
+3. Build up your team's risk model over time so agents pick gates automatically instead of running the full set every time.
+
+**Project link**: GitHub repo `AmazingAng/old-coder`; MIT licensed, usable commercially and redistributable.
+
+In the agent era, being able to write code is no longer the edge — **being able to accept the code an agent wrote is.** old-coder turns that into an out-of-the-box Skill, and it belongs in the toolkit of anyone who leans heavily on AI for coding.

@@ -4,14 +4,12 @@ import * as React from "react";
 import { Gamepad2, MessageCircle } from "lucide-react";
 import { EmbedModal } from "./embed-modal";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/i18n/context";
 
 /**
  * 页头右上角的两个入口：
  *  - 游戏：整站嵌入 chengzuopeng/game-space 的街机厅（60 款 H5 小游戏）
  *  - 聊天：嵌入 Chitchatter 的公共房间（P2P，无账号、无后端）
- *
- * 两者都只是 iframe 容器 —— 原模板里那套 socket.io 前端（聊天 / 僵尸游戏）
- * 需要一个服务端才活得了，静态托管跑不起来，所以入口改成嵌第三方。
  */
 
 const ARCADE_URL = "https://games.linkdiary.cn/";
@@ -24,14 +22,15 @@ const TRIGGER_BASE =
 export function EmbedTriggers({ className }: { className?: string }) {
   const [arcade, setArcade] = React.useState(false);
   const [chat, setChat] = React.useState(false);
+  const { t } = useI18n();
 
   return (
     <>
       <div className={cn("flex items-center gap-2", className)}>
         <button
           onClick={() => setArcade(true)}
-          aria-label="打开街机厅"
-          title="街机厅 · 60 款小游戏"
+          aria-label={t.misc.arcade}
+          title={t.misc.arcadeTitle}
           data-no-custom-cursor="true"
           className={TRIGGER_BASE}
         >
@@ -40,8 +39,8 @@ export function EmbedTriggers({ className }: { className?: string }) {
 
         <button
           onClick={() => setChat(true)}
-          aria-label="打开聊天室"
-          title="聊天室"
+          aria-label={t.misc.chat}
+          title={t.misc.chatTitle}
           data-no-custom-cursor="true"
           className={TRIGGER_BASE}
         >
@@ -52,8 +51,8 @@ export function EmbedTriggers({ className }: { className?: string }) {
       <EmbedModal
         open={arcade}
         onClose={() => setArcade(false)}
-        title="街机厅"
-        subtitle="60 款开源 H5 小游戏 · 由 chengzuopeng/game-space 提供"
+        title={t.misc.arcadeTitle}
+        subtitle={t.misc.arcadeSubtitle}
         src={ARCADE_URL}
         externalHref={ARCADE_URL}
         allow="fullscreen;autoplay;gamepad"
@@ -63,8 +62,8 @@ export function EmbedTriggers({ className }: { className?: string }) {
       <EmbedModal
         open={chat}
         onClose={() => setChat(false)}
-        title="公共聊天室"
-        subtitle="P2P 加密直连 · 无账号、无服务器"
+        title={t.misc.chatTitle}
+        subtitle={t.misc.chatSubtitle}
         src={CHAT_URL}
         externalHref={`https://chitchatter.im/#/public/${CHAT_ROOM}`}
         allow="camera;microphone;display-capture;fullscreen;clipboard-write"

@@ -1,0 +1,123 @@
+---
+title: "Run strategies while you sleep: this GitHub project hands 1000+ markets to an AI trader"
+publishedAt: "2026-10-21"
+summary: "Prediction markets, perpetuals, DEX and mining never sleep, and neither does the opportunity cost of watching them manually. CloddsBot puts scanning, arbitrage, risk control and execution under Claude so an agent can watch the book and place orders for you."
+image: "/assets/blog-images/github-1000-ai-1lp13e/img01.webp"
+tags: ["AI", "Agent", "Open Source"]
+author: "Adam"
+---
+![](/assets/blog-images/github-1000-ai-1lp13e/img01.webp)
+
+## 1. Why you need this tool
+
+It's 3 a.m. A 5-minute BTC up/down market just opened on Polymarket and you roll over in bed — in or out? Skip this round and the 1000U sitting in your account misses another arbitrage window. You have 7 platforms open, quotes flickering, your hand slips and you pick the wrong side, and half an hour later you have lost a day's wages. Prediction markets + perpetuals + DEX + Bittensor mining: retail traders simply cannot run a whole-market, 7×24 operation like this.
+
+CloddsBot targets exactly that scenario: scanning, arbitrage, risk control and execution all handed to Claude, so an AI agent watches the book and places orders for you. It picked up **10.7K clones** and **628 stars** on GitHub in 14 days and won the Colosseum Hackathon — this is no longer a demo.
+
+## 2. Project overview: what it is in one sentence
+
+Clodds = Claude + Odds, a **self-hosted AI trading terminal** covering six domains: prediction markets, crypto spot, perpetual futures, Solana/EVM DeFi, token launches and Bittensor mining.
+
+The keywords: **autonomous agent**, **multi-market coverage** (1000+ markets), **agent commerce protocol** (x402 + Agent Marketplace) and **21 chat channels**. Under the hood it runs on Claude with 119 skills and 118 strategies, and lets you place orders in natural language over Telegram, Discord, WebChat and any other channel.
+
+Milestones: built from zero in 12 days, a Colosseum Agent Hackathon project, MIT license.
+
+![](/assets/blog-images/github-1000-ai-1lp13e/img02.webp)
+
+## 3. Core features in depth
+
+### 1. Deep prediction-market integration (10 platforms)
+
+Polymarket, Kalshi, Betfair, Smarkets, Opinion.xyz, Predict.fun and others — 10 markets in one place. The work went deepest on Polymarket's crypto short-term markets: **5-minute BTC markets** are supported exclusively, with automatic discovery of 15-minute, 1-hour, 4-hour and daily rounds, plus 4 automated strategies (momentum, mean reversion, Penny Clipper, Expiry Fade).
+
+Example: `/polymarket buy YES 50c BTC-15m-up` places the bet in a single line. Compared with watching the book by hand, latency drops from minutes to seconds and the share of arbitrage windows you catch improves visibly.
+
+### 2. Perpetual futures + native Solana perps
+
+7 exchanges behind one interface: Binance (125x), Bybit (100x), Hyperliquid (50x), MEXC (200x), Drift, Percolator, Lighter. The standout is the **Percolator protocol** — trade perpetuals directly on Solana, no KYC, fully on-chain settlement, with keeper cranking and real-time slab polling.
+
+Ordering is blunt: `/futures long BTCUSDT 0.1 10x`, backed by a `VaR/CVaR` risk engine, circuit breakers, daily loss limits and a one-tap kill switch, so even high leverage has a floor underneath it.
+
+### 3. Agent commerce protocol (x402 + Marketplace)
+
+This is the most imaginative part of Clodds. Agents settle machine-to-machine payments with each other over the **x402 protocol** using USDC micro-payments, on both Base and Solana. Going further, the **Agent Marketplace** lets AI agents buy and sell code, signals, APIs and datasets — sellers list, buyers escrow USDC, delivery is verified on-chain, with 95% to the seller and a 5% platform fee.
+
+Put simply: agents do not just trade, they can **earn on their own**.
+
+### 4. Arbitrage detection + a risk-control brain
+
+Built on the arbitrage model from arXiv:2508.03474, it scans cross-platform, internal and combinatorial arbitrage opportunities in real time, with semantic matching, liquidity scoring and Kelly position sizing in one pass.
+
+For example, Polymarket YES at 45¢ + NO at 52¢ = 97¢ locks in 3¢ risk-free. All arbitrage defaults to dry-run to avoid the traps around settlement-currency differences. Together with whale tracking, copy trading and smart routing, the whole strategy stack is benchmarked against professional quant teams.
+
+![](/assets/blog-images/github-1000-ai-1lp13e/img03.webp)
+
+## 4. Technical highlights and performance data
+
+**Architecture**: four layers — Gateway (21 channels + WebSocket), an AI Agent layer (4 specialized agents), a unified strategy and risk-control layer, and an execution layer (prediction markets / Solana / EVM / perpetuals / on-chain perps). SQLite + LanceDB + PostgreSQL work together underneath, covering local storage, semantic memory and analytical queries respectively.
+
+**Performance and compatibility**:
+- **8 LLM providers**: Claude first, with GPT-4, Gemini, Groq and locally deployed Ollama supported
+- **119 skills** lazy-loaded; a missing dependency does not bring the system down
+- **10-language** i18n (EN/ZH/ES/JA/KO/DE/FR/PT/RU/AR)
+- Security: sandboxed execution, AES-256-GCM encrypted credentials, SHA-256 decision audit trail with optional on-chain anchoring on Solana/Polygon/Base
+
+**Ecosystem compatibility**: Node ≥ 22, TypeScript 5.3, one-command Docker Compose startup, and an MCP Server so Claude Desktop/Code can call every skill directly.
+
+![](/assets/blog-images/github-1000-ai-1lp13e/img04.webp)
+
+## 5. Use cases and audience
+
+**Who it fits**:
+1. **Always-on quant traders** — retail traders or small teams watching prediction markets, perpetuals and DEXs at once with no time to trade 7×24 by hand
+2. **AI agent developers** — experimenters who need MCP compatibility and agent commerce protocols and can plug straight into a Claude Desktop workflow
+3. **Cross-chain DeFi users** — people who use both Solana and 5 EVM chains and want one account and one risk-control setup
+4. **Token launchers** — teams who want one-click launches on Meteora DBC with 90% fee sharing and anti-sniper protection
+
+**Who it does not fit**: fully manual traders, long-term holders who stick to a single exchange, and anyone strongly opposed to AI placing orders automatically.
+
+## 6. Comparison with alternatives
+
+| Project | Coverage | Agent commerce | Self-hosted | Learning curve | Stars |
+|---|---|---|---|---|---|
+| **CloddsBot** | 21 channels + 10 prediction markets + 7 perps + multi-chain | ✅ Marketplace + x402 | ✅ | Medium | 628 |
+| Freqtrade | Crypto spot only | ❌ | ✅ | Medium | 30K+ |
+| Hummingbot | Mostly market making | ❌ | ✅ | High | 8K+ |
+| Jesse | Single crypto exchange | ❌ | ✅ | Medium | 6K+ |
+
+Clodds differentiates on three points: a single entry point across prediction markets + perpetuals + DeFi, a built-in agent commerce protocol, and Solana depth backed by the Colosseum Hackathon.
+
+![](/assets/blog-images/github-1000-ai-1lp13e/img05.webp)
+
+## 7. Getting started fast
+
+**Minimum viable deploy (30 seconds)**:
+```bash
+npm install -g clodds --loglevel=error
+clodds onboard
+```
+The wizard walks you through setting the Anthropic API key, choosing a chat channel (WebChat is the recommended starting point) and starting the gateway. Open `http://localhost:18789/webchat` and you can start talking.
+
+**Build from source**:
+```bash
+git clone https://github.com/alsk1992/CloddsBot.git && cd CloddsBot
+npm install && cp .env.example .env
+# configure ANTHROPIC_API_KEY and your trading API
+npm run build && npm start
+```
+
+**Advanced tips**: run dry-run for a week first and watch the arbitrage signals; after wiring up Telegram, use `/skills` to check the status of all 119 skills; enable the Trade Ledger anchored to Solana for tamper-proof auditing; if you want a slice of agent commerce, register as a seller at `cloddsbot.com/marketplace`.
+
+![](/assets/blog-images/github-1000-ai-1lp13e/img06.webp)
+
+## 8. Summary and next steps
+
+**Core value**: it folds 21 chat channels, 10 prediction markets, 7 perpetual exchanges, multi-chain DeFi, token launches and Bittensor mining into one Claude-driven terminal, then adds a unique agent commerce protocol and x402 micro-payments — the closest thing on GitHub today to an **open-source, fully automated AI agent trading operating system**.
+
+**Recommendations**: developers should start with `npm install -g clodds` and get WebChat running; traders should connect Telegram and then configure Polymarket + Hyperliquid; agent builders can plug in the MCP Server and feed all 119 skills to Claude Code.
+
+- GitHub: https://github.com/alsk1992/CloddsBot
+- Website: https://www.cloddsbot.com
+- Docs: `docs/USER_GUIDE.md` in the repo
+
+One-line pitch: let Claude watch 1000+ markets for you 7×24 and run your strategies while you sleep — Clodds redefines passive income.

@@ -1,0 +1,43 @@
+---
+title: "Rebuilding my personal site as a keyboard you can actually press"
+publishedAt: "2026-10-23"
+summary: "From Next.js static export to Cloudflare Pages: moving the 3D interaction and the personal site onto the edge in one pass."
+author: "Adam"
+tags: ["nextjs", "cloudflare", "3d", "webgl"]
+---
+
+# Rebuilding my personal site as a keyboard you can actually press
+
+The easiest mistake with a personal site is turning it into an online résumé — nothing on it belongs to you except the impression that you look professional.
+
+This time I tried something else: let visitors actually play. On the right of the homepage sits a 3D keyboard. Every keycap is a skill, and its description only surfaces once you press it.
+
+## Why a keyboard
+
+A keyboard is the one piece of hardware a programmer touches every single day. Making it the protagonist of the page says more than a headshot ever could — every key you press answers the question "what do I actually work with?"
+
+Technically it isn't light: a WebGL scene, custom keycap models, key sounds, scroll-driven animation, plus a pile of branches that have to degrade gracefully on low-end devices. But those branches are exactly what makes it trustworthy: with no WebGL, it falls back to a plain grid, and visitors can still read everything.
+
+## Static export + Cloudflare Pages
+
+A site like this has no backend: all content is fixed at build time, and all interaction runs in the browser.
+
+That made the choices obvious:
+
+- `next build` with `output: "export"`, producing plain HTML / CSS / JS;
+- fonts self-hosted under `/public/fonts`, so the build doesn't depend on Google Fonts being reachable;
+- deployment on Cloudflare Pages: global edge cache, push to publish.
+
+The cost is no API routes and no ISR. The contact form now opens the visitor's own mail client — no keys involved, no third party in the middle. For a personal site, that's the better default anyway.
+
+## A few details
+
+**Key sounds**: not every visitor wants to be startled by audio, so it's muted by default and only plays when you turn it on.
+
+**Performance tiers**: particle count, shadows and post-processing are all adjusted at runtime based on device capability, not hardcoded.
+
+**Easter egg**: open devtools and you'll see a hint. No spoilers.
+
+## Finally
+
+Your site is the first UI you build for yourself. It should show what you care about — not just what you can do.

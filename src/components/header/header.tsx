@@ -8,8 +8,10 @@ import Nav from "./nav";
 import { cn } from "@/lib/utils";
 import FunnyThemeToggle from "../theme/funny-theme-toggle";
 import { Button } from "../ui/button";
-import { config } from "@/data/config";
+import { getSiteConfig } from "@/data/config";
 import { EmbedTriggers } from "../embeds/embed-triggers";
+import { LanguageSwitcher } from "./language-switcher";
+import { useI18n } from "@/i18n/context";
 
 interface HeaderProps {
   loader?: boolean;
@@ -19,6 +21,9 @@ interface HeaderProps {
 
 const Header = ({ loader, githubStars }: HeaderProps) => {
   const [isActive, setIsActive] = useState<boolean>(false);
+  const { locale, t, href } = useI18n();
+  const config = getSiteConfig(locale);
+
   return (
     <motion.header
       className={cn(
@@ -27,63 +32,46 @@ const Header = ({ loader, githubStars }: HeaderProps) => {
       )}
       style={{
         background: isActive ? "hsl(var(--background) / .8)" : "transparent",
-        // backgroundImage:
-        //   "linear-gradient(0deg, rgba(0, 0, 0, 0), rgb(0, 0, 0))",
       }}
-      initial={{
-        y: -80,
-      }}
-      animate={{
-        y: 0,
-      }}
-      transition={{
-        delay: loader ? 3.5 : 0, // 3.5 for loading, .5 can be added for delay
-        duration: 0.8,
-      }}
+      initial={{ y: -80 }}
+      animate={{ y: 0 }}
+      transition={{ delay: loader ? 3.5 : 0, duration: 0.8 }}
     >
-      {/* <div
-        className="absolute inset-0 "
-        style={{
-          mask: "linear-gradient(rgb(0, 0, 0) 0%, rgba(0, 0, 0, 0) 12.5%)",
-        }}
-      >
-      </div> */}
       <div className={cn(styles.bar, "flex items-center justify-between")}>
-        <Link href="/" className="flex items-center justify-center">
+        <Link href={href("/")} className="flex items-center justify-center">
           <Button variant={"link"} className="text-md">
             {config.author}
           </Button>
         </Link>
 
-        <FunnyThemeToggle className="w-6 h-6 mr-4 hidden md:flex" />
-        <EmbedTriggers className="mr-3" />
-        {githubStars}
-        <Button
-          variant={"ghost"}
-          onClick={() => setIsActive(!isActive)}
-          aria-label={isActive ? "关闭菜单" : "打开菜单"}
-          aria-expanded={isActive}
-          className={cn(
-            styles.el,
-            "m-0 p-0 h-6 bg-transparent flex items-center justify-center"
-          )}
-        >
-          <div className="relative hidden md:flex items-center">
-            <motion.p
-              variants={opacity}
-              animate={!isActive ? "open" : "closed"}
-            >
-              菜单
-            </motion.p>
-            <motion.p variants={opacity} animate={isActive ? "open" : "closed"}>
-              关闭
-            </motion.p>
-          </div>
-          <div
-            className={`${styles.burger} ${isActive ? styles.burgerActive : ""
-              }`}
-          ></div>
-        </Button>
+        <div className="flex items-center">
+          <FunnyThemeToggle className="w-6 h-6 mr-4 hidden md:flex" />
+          <LanguageSwitcher className="mr-3 hidden sm:flex" />
+          <EmbedTriggers className="mr-3" />
+          {githubStars}
+          <Button
+            variant={"ghost"}
+            onClick={() => setIsActive(!isActive)}
+            aria-label={isActive ? t.nav.closeMenu : t.nav.openMenu}
+            aria-expanded={isActive}
+            className={cn(
+              styles.el,
+              "m-0 p-0 h-6 bg-transparent flex items-center justify-center"
+            )}
+          >
+            <div className="relative hidden md:flex items-center">
+              <motion.p variants={opacity} animate={!isActive ? "open" : "closed"}>
+                {t.nav.menu}
+              </motion.p>
+              <motion.p variants={opacity} animate={isActive ? "open" : "closed"}>
+                {t.nav.close}
+              </motion.p>
+            </div>
+            <div
+              className={`${styles.burger} ${isActive ? styles.burgerActive : ""}`}
+            ></div>
+          </Button>
+        </div>
       </div>
       <motion.div
         variants={background}
@@ -93,7 +81,7 @@ const Header = ({ loader, githubStars }: HeaderProps) => {
         className={styles.background}
       ></motion.div>
       <AnimatePresence mode="wait">
-        {isActive && <Nav setIsActive={setIsActive} />}
+        {isActive && <Nav setIsActive={setIsActive} locale={locale} />}
       </AnimatePresence>
     </motion.header>
   );

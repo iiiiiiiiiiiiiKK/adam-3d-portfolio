@@ -1,0 +1,154 @@
+---
+title: "4 strategies + 4 layers of risk control: this open source bot drops the Polymarket barrier to zero"
+publishedAt: "2026-09-21"
+summary: "Prediction markets are exploding, but the work is beyond human hands: a 15-minute crypto dip needs millisecond responses, smart-money copying needs 24/7 uptime, and arbitrage windows last seconds. This 434-star TypeScript bot bundles four strategies and a four-layer risk system."
+image: "/assets/blog-images/4-4-polymarket-5wb0zf/img01.webp"
+tags: ["Open Source", "Quant", "Dev"]
+author: "Adam"
+---
+![](/assets/blog-images/4-4-polymarket-5wb0zf/img01.webp)
+
+## 1. Opening: why you need this tool
+
+Prediction markets are exploding. Daily volume on Polymarket has broken ten million dollars, and countless traders watch screens until dawn just to catch one arbitrage window. The problem: instant-dip arbitrage in 15-minute crypto markets needs millisecond responses; copying smart money needs 24/7 uptime; and arbitrage opportunities usually last only a few seconds.
+
+Humans simply cannot do this job, but an open source trading bot can. The project in this article, Polymarket-bot, already has 434 stars on GitHub, is written in TypeScript, and leads with "4 strategies in one". The new version adds an industrial-grade risk control system, aimed straight at the two things prediction-market traders worry about most: missing the opportunity, and losing the principal.
+
+![](/assets/blog-images/4-4-polymarket-5wb0zf/img02.webp)
+
+## 2. Project intro: what it is in one sentence
+
+Polymarket-bot is an open source automated trading bot for the Polymarket prediction market. It integrates 4 core strategies (arbitrage / dip arbitrage / smart-money copy trading / direct trading) and ships with a visual dashboard. The latest v3.1 release rewrote the risk module, introducing a 4-layer capital protection mechanism and dynamic position sizing — an upgrade from "it runs" to "it runs for the long haul".
+
+Key milestones:
+
+- GitHub Stars: 434
+- Main language: TypeScript
+- Latest version: v3.1 (January 2026)
+- Author: @Mr_CryptoYT
+
+## 3. Core features in depth
+
+### 1. ⚖️ Arbitrage strategy
+
+The logic is blunt: in the same Polymarket market, if `YES price + NO price < $1.00`, the bot immediately buys both sides and pockets the spread at settlement. v3.1 raised the minimum profit threshold from 0.5% to 1%, specifically to cover Gas fees on Polygon and avoid the embarrassment of "earning the Gas money and paying it right back". Risk on this strategy is very low, making it the stable base of the bot's returns.
+
+### 2. 📉 Dip arbitrage (DipArb)
+
+Built for extreme moves in 15-minute crypto markets (BTC, ETH): when price drops more than 15% within 3 seconds, the bot immediately buys the crashed side (Leg 1), then hedges by buying the other side (Leg 2). Whichever way the market settles, the two-leg combination locks in profit. The new "minimum $1.50 position" constraint in v3.1 ensures every position can be closed normally, eliminating the risk of getting stuck with no exit.
+
+### 3. 🐋 Smart money copy trading
+
+The bot automatically scans Polymarket leaderboards for high-win-rate traders and copies their moves. v3.1 raised the filter bar significantly:
+
+- Win rate ≥ 60% (was 50%)
+- Total profit ≥ $500 (was $100)
+- Profit/loss ratio ≥ 1.5x
+- Consistency score ≥ 70%
+- Single-trade profit share ≤ 30% (filters out whales who got lucky on one all-in bet)
+
+This filter changes the copy targets from "people who have made money" to "people who keep making money".
+
+### 4. ⚡ Direct trading tools
+
+A "superpower toolbox" for manual traders, including FOK (Fill or Kill), Sniper (fast sweeps slightly above market price) and other shortcuts. v3.1 added a 15% stop loss, 25% take profit and a 7-day maximum holding period, closing the most common manual trading gap: forgetting to sell.
+
+![](/assets/blog-images/4-4-polymarket-5wb0zf/img03.webp)
+
+## 4. Technical highlights and performance data
+
+Every core upgrade in v3.1 revolves around "capital safety", across three dimensions:
+
+1. 4-layer risk control
+   - Layer 1: intraday loss of 5% pauses trading for 60 minutes
+   - Layer 2: 15% loss over 30 days pauses until the end of the month
+   - Layer 3: 25% drawdown pauses for 7 days
+   - Layer 4: 40% cumulative loss shuts the bot down permanently
+
+2. Dynamic position sizing
+   - Base position cut from 3% to 2%
+   - Each additional loss multiplies size by 0.8 (after 3 losses a single trade drops to $3.20)
+   - Each win adds 10%, capped at 5% (after 5 wins a single trade is $7)
+
+3. Engineering details
+   - Polygon Gas fees accounted for separately
+   - Browser dashboard shows PnL and risk status in real time
+   - One-click switch between Dry Run / Live mode
+   - Emergency Stop + Panic Sell as a double safety net
+
+On the ecosystem side, the project works with both MetaMask and Polymarket proxy wallets. Deployment only needs Node.js 18+, with full support for Windows / macOS / Linux.
+
+## 5. Use cases and audience
+
+### Recommended for
+
+- Quant enthusiasts: developers who want to run automated strategies in prediction markets
+- Copy traders: retail traders with no time to watch charts who still want to mirror skilled players
+- Arbitrage hunters: low-risk-preference users looking for mathematically certain opportunities
+
+### Typical scenarios
+
+1. Long-running arbitrage: after a Dry Run passes, put the bot on a VPS and run the arbitrage strategy 24/7 for steady spreads.
+2. Crash event response: when BTC / ETH flash-crashes, DipArb hedges automatically, avoiding slow manual reactions.
+3. Mirroring skilled portfolios: configure several Smart Money targets to build a diversified copy-trading portfolio.
+
+### Not suitable for
+
+- Gambling-type users expecting to "get rich with one click"
+- "Lazy" users unwilling to read the README or run a Dry Run test
+- Traders putting in their entire net worth (the project explicitly recommends starting with $50)
+
+## 6. Comparison with alternatives
+
+| Dimension | Polymarket-bot v3.1 | Closed source commercial bots | DIY scripts |
+|------|---------------------|----------------|----------|
+| Open source | ✅ Fully open source | ❌ Black box | ✅ Open source |
+| Number of strategies | 4 integrated | Usually 1-2 | Build your own |
+| Risk system | 4 layers + dynamic sizing | Mostly stop loss only | You write it |
+| Visual dashboard | ✅ Built in | ✅ Usually yes | ❌ Mostly no |
+| Learning curve | Low (Dry Run + complete docs) | Medium | High |
+| Community validation | 434 stars + active updates | Opaque | Personal project |
+
+The core reason to pick it: strategies, risk control and dashboard are packaged as an out-of-the-box trio instead of something you assemble yourself.
+
+![](/assets/blog-images/4-4-polymarket-5wb0zf/img04.webp)
+
+## 7. How to get started fast
+
+### Minimal deployment steps
+
+1. Clone the repository
+
+   `git clone https://github.com/MrFadiAi/Polymarket-bot.git && cd Polymarket-bot`
+
+2. Install dependencies and build the dashboard
+
+   `npm install && cd dashboard && npm install && npm run build && cd ..`
+
+3. Copy `.env.example` to `.env`, fill in the `POLYMARKET_PRIVATE_KEY` exported from MetaMask, and set `CAPITAL_USD=50`, `DRY_RUN=true`
+
+4. Start the bot
+
+   `npx tsx bot-with-dashboard.ts`
+
+5. Open `http://localhost:3001` in a browser and the dashboard is there
+
+### Advanced advice
+
+- Run Dry Run for 24-48 hours first and watch how often the strategies trigger
+- On days 3-9 switch to Live but still validate with a small $50 balance
+- From day 10, scale gradually to $250+ based on the PnL curve
+- Always keep 1-5 dollars of MATIC for Gas fees
+- Never commit your wallet private key to GitHub or share it in screenshots
+
+## 8. Summary and next steps
+
+Polymarket-bot has proven itself with the community recognition of 434 stars. Its real killer move is not some flashy strategy, but packaging 4 complementary strategies and a 4-layer risk system into an out-of-the-box TypeScript project, so you can capture the alpha of prediction markets and still sleep well.
+
+If you are about to step into automated Polymarket trading, this is one of the few open source options on GitHub that is both beginner-friendly and serious about risk control.
+
+Project URL: https://github.com/MrFadiAi/Polymarket-bot
+
+One-line pitch: want to make money on prediction markets 24/7 but afraid of losing your principal? This open source bot with 4 strategies + 4 layers of risk control is worth a 48-hour Dry Run first.
+
+![](/assets/blog-images/4-4-polymarket-5wb0zf/img05.webp)

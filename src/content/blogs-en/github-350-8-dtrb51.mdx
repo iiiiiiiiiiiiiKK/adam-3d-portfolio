@@ -1,0 +1,127 @@
+---
+title: "Stuck on layout? This GitHub catalog of 350 high-res layouts answers by 8 categories"
+publishedAt: "2026-04-15"
+summary: "A GitHub catalog of 350 high-resolution layout references, organized into 8 top-level categories and 33 sub-topics, from composition rules and type grids to web UI and Chinese classical composition."
+image: "/assets/blog-images/github-350-8-dtrb51/img01.webp"
+tags: ["Open Source", "Writing", "Docs"]
+author: "Adam"
+---
+![](/assets/blog-images/github-350-8-dtrb51/img01.webp)
+
+Pick a title (1 of 3)
+
+Stuck on layout? This GitHub catalog of 350 high-res layouts answers by 8 categories
+
+350-layout-compositions turns scattered layout material into a searchable catalog, saving designers 80% of their search time
+
+Never read a composition textbook but want to use the golden spiral and the three-distance method correctly? This free catalog gets you there
+
+# 350 layout references: turning messy design reference into a searchable knowledge base
+
+## 1. Intro: a pain point almost every designer has hit
+
+The most common scene in design work: you sit in front of an empty Figma canvas with no idea whether the hero image goes left or right; for a deck you scroll through Pinterest and Dribbble, save 200 references, and still don't know which layout to use when it's time to actually build; you buy a stack of books on photographic composition, memorize the rule of thirds and the golden spiral, then freeze on a complex scene; you look up Chinese type grids and find only scattered scraps, never a systematic comparison table.
+
+The more practical problem: composition reference material online is either buried in thousands of unsorted images, paywalled, or comes from a single source in a single style. Design students, UI designers, photography enthusiasts and developers making decks keep collecting and keep coming up empty. One senior illustrator admitted spending 40 hours across three foreign-language books and two stock sites just to assemble a single "Chinese-Western mixed typesetting reference table."
+
+So is there a ready-made layout catalog organized by knowledge structure — from composition logic to grid systems, from web UI to traditional Chinese composition — clearly categorized, searchable, downloadable, and usable as a daily lookup? That is exactly what the open-source project `350-layout-compositions` is for.
+
+![](/assets/blog-images/github-350-8-dtrb51/img02.webp)
+
+## 2. Project overview in one sentence
+
+`350-layout-compositions` is a GitHub reference catalog for layout and composition, with 350 layout cases organized into 8 top-level categories and 33 sub-topics, covering composition logic, visual principles, print and advertising, type grids, web UI, film and screen framing, traditional Chinese composition and presentation slides.
+
+Core keywords: systematic (8 categories), high resolution (each image 1086×1448 PNG), searchable (CSV/JSON catalog), continuously expanding (the original 100-image version is kept, the new one grows to 350). The project currently has 828 GitHub stars and serves everyone from designers to developers.
+
+![](/assets/blog-images/github-350-8-dtrb51/img03.webp)
+
+## 3. Core features in depth
+
+### 1. Eight categories that cover almost every layout need
+
+The project splits 350 layouts into 8 top-level categories: composition logic (86), visual principles and reading patterns (45), print publishing and advertising (36), type grids and East Asian text (54), web and UI (79), film and screen composition (14), traditional Chinese composition (20), and presentation slides (16).
+
+This structure solves the core problem of scattered reference material. Looking for "golden triangle composition"? Open `01-composition-logic`. A frontend engineer hunting for "responsive reflow patterns" goes to `05-web-ui`. Making a Chinese-style poster? Open `07-chinese-composition` for "three-distance method" and "white space and seal arrangement." Each category also has sub-topics for finer indexing — composition logic, for example, splits into 7 sub-groups: classic rules and spatial white space, visual weight/lines/axes, letterforms and curves, geometric and radial structures, arrays/layering/grouping, spatial depth and projection, and viewpoint/depth of field/spatial sense.
+
+### 2. Every reference has a high-res version plus a thumbnail, easy to scan
+
+Click any thumbnail and you get the matching 1086×1448 PNG, ready for secondary reference in a design file or screenshot analysis. Thumbnails are laid out in responsive tables and browsable directly in the GitHub repo — no deployment needed.
+
+For instance, the first group under composition logic, "classic rules and spatial white space," collects 15 layouts: rule of thirds, golden ratio, golden spiral, diagonal method, then sight-line space, motion space, headroom, and finally negative space, frame within a frame and leading lines. Each is numbered `001–015`, which makes them easy to cite in team discussions.
+
+### 3. A machine-readable catalog for secondary development
+
+The project provides `v2/catalog.csv` and `v2/catalog.json`, and every image carries an ID, name, top-level/sub category, file path, dimensions and a SHA-256 checksum. That means a programmer can write a script to batch-pull the exact set they want, for example "download every image under 05-web-ui tagged responsive as a training set."
+
+Compared with plain image-hosting stock sites, it adds a programmatically accessible layer, which teams building design tools, automated reference or machine learning datasets can call directly.
+
+### 4. Backward compatible, so old links don't break
+
+The original "100 layouts" project keeps its high-res images, thumbnails and gallery below intact, and old links still work. That is friendly to anyone who already built an internal asset library or wrote tutorials around it — upgrading doesn't leave dead links and avoids the "image 404" problem.
+
+![](/assets/blog-images/github-350-8-dtrb51/img04.webp)
+
+## 4. Technical highlights and performance data
+
+- **Scale**: 350 high-res PNGs, 2.5× the original 100-image release.
+- **Structural clarity**: 8 top-level categories + 33 sub-topics, roughly 10 images per sub-group — dense enough without redundancy.
+- **Image specs**: uniform 1086×1448 PNG, with a readable filename convention such as `001-三分法构图.png`.
+- **Supporting data**: `catalog.csv` / `catalog.json` include SHA-256 checksums, handy for asset version management.
+- **Download options**: the new version offers a full ZIP (the old version keeps its own entry point too), so offline study needs no network.
+- **Ecosystem compatibility**: a pure docs-and-images repo with zero runtime dependencies; browsable in the GitHub web UI on Linux, macOS and Windows.
+- **Sustainability**: a `scripts/` directory holds the import and gallery-generation tooling, making it easy to extend to 500, 1,000 or more images.
+
+![](/assets/blog-images/github-350-8-dtrb51/img05.webp)
+
+## 5. Use cases and who it's for
+
+**Case one: designers looking for layout inspiration.** When a poster, brochure or e-commerce landing page stalls, open the matching category and scan 30 comparisons — far faster than digging through stock sites on the fly.
+
+**Case two: developers learning UI layout.** For dashboards, marketing homepages and campaign pages, the 5 sub-topics under "05 web UI" — CSS flow, positioning and responsiveness; layout primitives; page frames and navigation; content and product patterns; responsive reflow patterns — cover almost every real-world scenario.
+
+**Case three: photography and film production.** The "viewpoint, depth of field and spatial sense" group under "01 composition logic" and the "camera angles and coverage" and "mise-en-scène and depth of field" topics under "06 film composition" give a complete reference path from still photos to moving storyboards.
+
+**Case four: traditional aesthetics and Chinese typesetting.** "07 traditional Chinese composition" collects 20 including the three-distance method, framing and white space, and seal arrangement; "04 type grids" pulls East Asian text and mixed typesetting into its own section, which matters a lot for Chinese publishing and type design.
+
+**Suits**: UI/graphic/brand designers, frontend engineers, photography hobbyists, visual communication students, and developers or PMs who build decks. **Doesn't suit**: anyone needing 3D modeling or motion design (the project focuses on static layout and includes no motion demos).
+
+## 6. Comparison with alternatives
+
+| Dimension | 350-layout-compositions | Generic reference sites (e.g. Pinterest) | Design books |
+| --- | --- | --- | --- |
+| Systematic categories | 8 top-level + 33 sub-groups | Tag-driven, no common standard | Chapter-based, limited to the author's view |
+| Programmatic access | CSV/JSON catalog | Usually unsupported | Unsupported |
+| Full-package download | 350 high-res images as a ZIP | Save one by one | Photocopying restricted |
+| Cross-domain coverage | Composition/type/UI/film/traditional/slides | Mixed and scattered | Mostly a single field |
+| Ongoing maintenance | Open source, extensible | Uneven quality | Fixed at publication |
+| Cost | Completely free | Free with ads / partly paid | Usually tens of dollars and up |
+
+Bottom line: when you need a reference catalog that is cross-domain, organized by knowledge structure, extensible and programmatically usable, this project is one of the more complete options in public repositories today.
+
+## 7. Getting started fast
+
+**Step one: browse the new master index.** Open the project on GitHub, then go to `docs/350/README.md`, which lists all 8 top-level entry points and the image count for each. Click "01 composition logic · 86" to see the 86 sorted high-res images.
+
+**Step two: download the full high-res set.** For offline use, go to Releases and download `350-layout-compositions-images.zip`; if you only need the old 100, there is a dedicated `100-layout-compositions-images.zip`.
+
+**Step three: process with the data catalog.** Download `v2/catalog.csv` and filter it in Excel or a script — say you only want "05 web UI" images tagged "responsive reflow patterns" — filter by the top-level/sub category fields, take the IDs and download the originals.
+
+**Advanced tips**: bookmark your most-used categories in the browser bar (like pinning `docs/350/05-web-ui.md`) and glance at them before each project; over time you build muscle memory for layout patterns. To grow your own team's asset library, fork the project, add categories and images following the rules in `scripts/`, and PR them upstream.
+
+![](/assets/blog-images/github-350-8-dtrb51/img06.webp)
+
+## 8. Summary and next steps
+
+The value of 350-layout-compositions is that it consolidates scattered, fragmentary layout references into a catalog system you can browse by category, filter by data and cite by ID. Its 350 high-res images span the whole chain from basic composition to traditional Chinese aesthetics, and it is free and open source.
+
+If you're stuck on a layout right now, spend 10 minutes scanning 30 references in the matching category. If you work on Chinese typesetting or responsive UI layout, bookmark `04 type grids` and `05 web UI` and revisit them regularly.
+
+**Project links**:
+- GitHub repository: https://github.com/nevertoday/350-layout-compositions
+- New catalog entry: `docs/350/README.md`
+- Data catalog: `v2/catalog.csv`, `v2/catalog.json`
+
+Layout isn't mystical inspiration; it is a design language you can learn, index and reuse. This open-source catalog turns it into public knowledge anyone can access.
+
+#350-layout-compositions #350LayoutCompositions #nevertoday #AIVideoEditing #ScriptedVideo #TalkingHeadVideo #OpenSource #GitHub

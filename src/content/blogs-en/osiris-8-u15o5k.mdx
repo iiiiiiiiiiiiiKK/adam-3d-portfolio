@@ -1,0 +1,130 @@
+---
+title: "OSIRIS: still juggling 8 tabs for intelligence work? This open-source project flattens it into one map"
+publishedAt: "2026-04-18"
+summary: "OSINT analysts spend their day hopping between flight trackers, quake feeds, camera directories and sanctions lists. OSIRIS fuses 16 live layers, a WebGL globe and an AI agent into one self-hostable map that runs without a single API key."
+image: "/assets/blog-images/osiris-8-u15o5k/img01.webp"
+tags: ["AI", "Agent", "Open Source"]
+author: "Adam"
+---
+![](/assets/blog-images/osiris-8-u15o5k/img01.webp)
+
+Title options (pick 1 of 3)
+
+OSIRIS: still juggling 8 tabs for intelligence work? This open-source project flattens it into one map
+
+Five minutes with OSIRIS: 16 live layers plus an AI agent, running with zero API keys
+
+Without writing a line of backend, I built a Palantir-style situational cockpit with OSIRIS
+
+# OSIRIS: an open-source global intelligence cockpit that packs 17,000 monitoring points into one map
+
+## 1. Opening: still losing time to this?
+
+Anyone who does intelligence analysis or situational awareness knows the pain: flight data lives on OpenSky, earthquakes on USGS, CCTV means scraping city RSS feeds one by one, sanctions lists mean downloading CSVs from OFAC, wallet tracing means switching between blockstream and Blockscout, and news feeds mean writing your own parser. A single analysis task bounces between seven or eight websites — planes on the left, quakes on the right, and CCTV links pasted into new browser tabs one at a time.
+
+The killer is that most so-called "situational awareness dashboards" are stacks of DOM nodes. A few thousand entities in and the thing turns into a slideshow, never mind real-time rendering over 3D terrain.
+
+One GitHub project turned this into a one-stop shop: 17,000+ public cameras, global live flights, earthquakes, fire hotspots, satellites, maritime traffic, sanctions lists, public Telegram channels and crypto wallet tracing, all inside a GPU-accelerated WebGL map — and fully open source. It's called OSIRIS.
+
+## 2. Positioning: what problem it solves
+
+OSIRIS (Open Source Intelligence & Reconnaissance Integrated System) has a clear brief: be the open-source global intelligence platform, aimed squarely at closed-source, high-priced situational awareness systems like Palantir.
+
+Core keywords: open source, real time, OSINT, WebGL rendering, all-in-one.
+
+The project is written in TypeScript on Next.js 16 + MapLibre GL JS, renders all map data through WebGL instead of the DOM, and has 10,601 stars on GitHub. The README links straight to the live demo at [osirisai.live](https://osirisai.live).
+
+![](/assets/blog-images/osiris-8-u15o5k/img02.webp)
+
+## 3. Core features in depth
+
+### 1. Sixteen switchable live data layers
+
+OSIRIS splits the intelligence domain into 16 independent layers: commercial/private/military flights, 39 global ports + 10 maritime chokepoints, 17,000+ CCTV feeds, M2.5+ earthquakes, NASA FIRMS fire hotspots, 23 global live news streams, NOAA space weather, satellite orbits, CVE vulnerabilities, 13 conflict zones, crypto wallet tracing, OFAC sanctions lists, geolocated public Telegram channels, and more. Each layer toggles independently and shows a live entity count.
+
+Three things make this work: progressive loading, so closed layers fire no requests; viewport awareness, so only data inside the current view gets pulled; and `layerFetchedRef` to prevent duplicate requests. Together they cut edge request volume by 75% versus the first version.
+
+### 2. RECON Toolkit: analyst tools inside the map
+
+The RECON Toolkit folds Port Scanner (TCP scan + service fingerprinting), DNS Lookup (all record types), WHOIS (auto cross-checked against OFAC SDN), SSL/TLS checks, IP intelligence (ASN plus threat reputation, also cross-checked against sanctions lists), NVD CVE lookup, BTC + ETH wallet tracing (with OFAC flags) and a standalone SANCTIONS search into one right-hand panel.
+
+Take WHOIS: the registrant name is automatically run against the OFAC SDN list, and a hit raises a red inline warning in the panel — sparing analysts the manual trip to sanctionssearch.ofac.treas.gov.
+
+### 3. The OI prediction engine: a map agent with MCP built in
+
+OI is OSIRIS's built-in prediction agent. Press `O` and you can "command" the map in natural language: it flies to the target region, opens the relevant layers, finds currently visible flights/earthquakes/fire hotspots/satellites/cameras, marks the search radius on the globe in cyan, and lists results in a card.
+
+Even sharper is OI Forecast: inspired by MiroFish, it pits the multiple "actors" around an event against each other across several parallel simulated worlds, then a report agent combines prediction markets and statistical baselines into a calibrated forecast — with a clickable source link attached to every claim.
+
+The API design is disciplined too: a REST API at `/api/oi`, an SSE live stream, and an MCP Server at `/api/mcp`, so agents like Hermes, Claude and Cursor can run forecasts, drive layers and read intelligence directly.
+
+### 4. Telegram and CCTV: the overlooked public intelligence sources
+
+The Telegram OSINT layer needs no bot token and skips MTProto entirely — it scrapes the public web previews at `t.me/s/<channel>`. Five channels are curated by default (including EN and RU/UA war reporting), with EN/Cyrillic/Arabic multilingual place-name dictionaries for geolocation. Click a cyan marker and the original post opens back in Telegram.
+
+The CCTV layer is sourced from bekijkhet.nu, a global public camera directory hand-maintained by Bram and Annelies since 2012. OSIRIS pulls the index directly and folds in TfL, WSDOT, Caltrans, ODOT, MDOT, Hong Kong Transport Department, Taiwan's THB, NZTA, Rijkswaterstaat and the newly added TxDOT ITS. The new "lasso an area" feature lets you draw a region on the map, automatically find every camera inside it, and export the result as GeoJSON.
+
+![](/assets/blog-images/osiris-8-u15o5k/img03.webp)
+
+## 4. Technical highlights and performance data
+
+- Rendering pipeline: everything goes through MapLibre GL JS WebGL; the docs explicitly claim "thousands of concurrent entities on-screen" still at 60fps.
+- Data optimization: 75% fewer edge requests than the first version; polling for stable data relaxed to 15-30 minutes; static data such as news streams served from an in-memory cache with zero external calls.
+- Stack: Next.js 16 (App Router + Turbopack) + TypeScript 5 + Framer Motion + Lucide React.
+- Deployment: Vercel Edge Network, plus a multi-stage `node:22-alpine` Docker image (~220 MB, non-root user) bundled with CasaOS metadata for one-click install; prebuilt images on GHCR at `ghcr.io/simplifaisoul/osiris:latest`.
+- Compatibility: core layers work with zero keys. OpenAI / Anthropic / Gemini / OpenRouter / Groq / DeepSeek / xAI / Mistral / Qwen keys stay in the browser, attached per request as headers and never sent to a server.
+
+![](/assets/blog-images/osiris-8-u15o5k/img04.webp)
+
+## 5. Use cases and audience
+
+Who it's for: OSINT analysts, investigative journalists, security researchers, incident response teams, people doing geopolitical or shipping analysis, and any developer who wants to run their own global situational awareness cockpit.
+
+Who it's not for: corporate compliance teams that need closed or paid intelligence feeds (OSIRIS only aggregates public data), and military-grade scenarios that need sub-second freshness (most layers are minute-level).
+
+Three typical scenarios: (1) a security researcher doing incident review opens OSIRIS, lassos the conflict zone, and pulls every CCTV feed inside it in one click; (2) a crypto investigator pastes a BTC address to see whether it carries an OFAC flag; (3) a journalist covering an earthquake overlays live USGS magnitudes and nearby CCTV footage directly on the map.
+
+![](/assets/blog-images/osiris-8-u15o5k/img05.webp)
+
+## 6. Competitor comparison
+
+| Project | OSIRIS | Palantir Gotham | Bellingcat open-source toolkit | Standalone OSINT sites |
+|-----|--------|----------------|----------------------|--------------------|
+| Cost | MIT open source, free | Enterprise license, from six figures USD | Free but self-assembled | Free |
+| Data integration | 16 layers, unified | Multi-source but closed | Fragmented | Single-purpose |
+| Rendering performance | WebGL at 60fps | Enterprise-grade | Depends on your setup | DOM rendering |
+| AI agent | OI + MCP | Foundry/AIP | None | None |
+| Self-hosting | One-click Docker | Not supported | Integrate it yourself | Not applicable |
+
+Against that field, OSIRIS's core differentiator is wiring "multi-source OSINT + GPU rendering + AI agent + self-hosting" together in one pass, while Bellingcat-style tools still leave users writing their own glue code.
+
+## 7. Getting started fast
+
+The shortest path to a local dev instance:
+
+```
+git clone https://github.com/simplifaisoul/osiris.git
+cd osiris
+npm install
+npm run dev
+```
+
+Open `http://localhost:3000`; all core layers work without keys. The RECON Toolkit needs a backend scanner: put `SCANNER_URL` and `SCANNER_KEY` in `.env` (generate the key with `openssl rand -hex 32`).
+
+Docker self-hosting: copy `.env.template` to `.env`, run `docker compose up -d`; the port is controlled by `OSIRIS_PORT`. Or just pull the prebuilt GHCR image with `docker pull ghcr.io/simplifaisoul/osiris:latest`.
+
+Tips for going further: add OpenSky OAuth2 credentials (mandatory since March 2025) to raise your flight query rate limit; give OI your own OpenAI/Anthropic/Gemini key. Note the key only lives in browser `localStorage` and is sent per-request via headers — it never touches the server.
+
+![](/assets/blog-images/osiris-8-u15o5k/img06.webp)
+
+## 8. Takeaways and next steps
+
+OSIRIS knocks down the barrier to Palantir-grade situational awareness with a single open-source project: 16 live layers, 60fps WebGL rendering, the OI prediction agent, an MCP Server, one-click CasaOS install, and a zero-key core experience. Every one of those lands on a real pain point for OSINT practitioners.
+
+If scattered intelligence sources are your headache, get OSIRIS running first: press `F` for flights, `E` for earthquakes, `O` to summon OI, and feel what it's like to command a globe with a sentence.
+
+Project links: GitHub `simplifaisoul/osiris`, live demo [osirisai.live](https://osirisai.live), Discord community.
+
+One-line pitch: treat it as your OSINT Swiss Army knife, then slowly add your own data.
+
+#osiris #Osiris #simplifaisoul #Database #OpenSource #GitHub

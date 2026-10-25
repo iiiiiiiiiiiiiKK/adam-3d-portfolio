@@ -6,11 +6,13 @@ import Body from "./body/body";
 import Image from "./image/image";
 import MotionToggle from "@/components/motion-toggle";
 
-import { links } from "@/components/header/config";
+import { getLinks } from "@/components/header/config";
 import { cn } from "@/lib/utils";
+import type { Locale } from "@/i18n/types";
 
 interface IndexProps {
   setIsActive: (isActive: boolean) => void;
+  locale: Locale;
 }
 
 interface SelectedLinkState {
@@ -18,11 +20,12 @@ interface SelectedLinkState {
   index: number;
 }
 
-const Index: React.FC<IndexProps> = ({ setIsActive }) => {
+const Index: React.FC<IndexProps> = ({ setIsActive, locale }) => {
   const [selectedLink, setSelectedLink] = useState<SelectedLinkState>({
     isActive: false,
     index: 0,
   });
+  const links = getLinks(locale);
 
   return (
     <motion.div
@@ -45,7 +48,7 @@ const Index: React.FC<IndexProps> = ({ setIsActive }) => {
           />
         </div>
         <Image
-          src={links[selectedLink.index].thumbnail}
+          src={links[selectedLink.index]?.thumbnail ?? links[0].thumbnail}
           isActive={selectedLink.isActive}
         />
       </div>

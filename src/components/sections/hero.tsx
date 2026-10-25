@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import React from "react";
 import { Button } from "../ui/button";
-import { Github, Linkedin } from "lucide-react";
+import { Github } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -12,12 +12,15 @@ import { usePreloader } from "../preloader";
 import { BlurIn, BoxReveal } from "../reveal-animations";
 import ScrollDownIcon from "../scroll-down-icon";
 import { SiGithub, SiLinkedin, SiX } from "react-icons/si";
-import { config } from "@/data/config";
+import { useI18n } from "@/i18n/context";
+import { getSiteConfig } from "@/data/config";
 
 import SectionWrapper from "../ui/section-wrapper";
 
 const HeroSection = () => {
   const { isLoading } = usePreloader();
+  const { locale, t, href } = useI18n();
+  const config = getSiteConfig(locale);
 
   return (
     <SectionWrapper id="hero" className={cn("relative w-full h-screen")}>
@@ -40,7 +43,7 @@ const HeroSection = () => {
                       "cursor-default sm:text-xl md:text-xl whitespace-nowrap bg-clip-text "
                     )}
                   >
-                    你好，我是
+                    {t.hero.greeting}
                     <br className="md:hidden" />
                   </p>
                 </BlurIn>
@@ -58,15 +61,11 @@ const HeroSection = () => {
                         {config.author}
                       </h1>
                     </TooltipTrigger>
-                    <TooltipContent
-                      side="top"
-                      className="dark:bg-white dark:text-black"
-                    >
-                      控制台里留了点东西给你
+                    <TooltipContent side="top" className="dark:bg-white dark:text-black">
+                      {t.hero.nameTooltip}
                     </TooltipContent>
                   </Tooltip>
                 </BlurIn>
-                {/* <div className="md:block hidden bg-gradient-to-r from-zinc-300/0 via-zinc-300/50 to-zinc-300/0 w-screen h-px animate-fade-right animate-glow" /> */}
                 <BlurIn delay={1.2}>
                   <p
                     className={cn(
@@ -79,39 +78,29 @@ const HeroSection = () => {
                 </BlurIn>
               </div>
               <div className="mt-8 flex flex-col gap-3 w-fit">
-                <Link
-                  href={config.social.github}
-                  target="_blank"
-                  className="flex-1"
-                >
-                  <BoxReveal delay={2} width="100%" >
+                <Link href={config.social.github} target="_blank" className="flex-1">
+                  <BoxReveal delay={2} width="100%">
                     <Button className="flex items-center gap-2 w-full">
                       <Github size={24} />
-                      <p>GitHub</p>
+                      <p>{t.hero.github}</p>
                     </Button>
                   </BoxReveal>
                 </Link>
                 <div className="md:self-start flex gap-3">
                   <Tooltip delayDuration={300}>
                     <TooltipTrigger asChild>
-                      <Link href={"#contact"}>
-                        <Button
-                          variant={"outline"}
-                          className="block w-full overflow-hidden"
-                        >
-                          联系我
+                      <Link href={href("/#contact")}>
+                        <Button variant={"outline"} className="block w-full overflow-hidden">
+                          {t.hero.contact}
                         </Button>
                       </Link>
                     </TooltipTrigger>
                     <TooltipContent side="bottom">
-                      <p>欢迎来信</p>
+                      <p>{t.hero.contactTooltip}</p>
                     </TooltipContent>
                   </Tooltip>
                   <div className="flex items-center h-full gap-2">
-                    <Link
-                      href={config.social.twitter}
-                      target="_blank"
-                    >
+                    <Link href={config.social.twitter} target="_blank">
                       <Button variant={"outline"}>
                         <SiX size={24} />
                       </Button>

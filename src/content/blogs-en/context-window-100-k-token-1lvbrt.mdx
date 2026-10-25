@@ -1,0 +1,155 @@
+---
+title: "Context window blew up again? This open-source proxy runs billions of tokens through a 100K window"
+publishedAt: "2026-03-24"
+summary: "Context window blew up again? billion-context is a transparent proxy between your agent and the model API that compresses consumed history into reversible, prefix-cache-friendly summaries — 187.6 billion input tokens in one session, zero window violations, 5× fewer tokens."
+image: "/assets/blog-images/context-window-100-k-token-1lvbrt/img01.webp"
+tags: ["AI", "Open Source", "Productivity"]
+author: "Adam"
+---
+![](/assets/blog-images/context-window-100-k-token-1lvbrt/img01.webp)
+
+Pick a title (1 of 3)
+
+Context window blew up again? This open-source proxy runs billions of tokens through a 100K window
+
+5× fewer tokens, zero window violations: billion-context stretches AI coding sessions into months
+
+Same model, same client: how billion-context pushed a Claude Code session to 18.76 billion tokens
+
+# billion-context: billions of tokens per session out of a 100K window
+
+## 1. Opening: why you need this tool
+
+Build anything mildly complex and let Claude Code or Codex run for a few hours, and the context window starts screaming. Token costs climb, session quality falls off a cliff, and a few more rounds later you get `out of context`. This is the trap AI coding users hit every single day.
+
+`billion-context` aims straight at it: with incremental layered compression, consumed conversation is folded into high-quality summaries and pushed back into history. A single session can run 174327 model calls and 18.76 billion input tokens in total, all without ever hitting the 204800 window limit.
+
+## 2. Project intro: what it actually is
+
+`billion-context` is a transparent proxy layer sitting between agents and model APIs, written in TypeScript. The core repo is [ranxianglei/billion-context](https://github.com/ranxianglei/billion-context), currently at 1858 GitHub stars. It intercepts the Anthropic / OpenAI streaming requests any agent sends (Claude Code, Codex, Cursor, Aider, OpenCode, Pi, Kimi and 20+ other clients), runs kernel-level compression once, then forwards to the real model API — completely invisible to the layer above.
+
+Four keywords cover its core capability:
+
+- **Small windows are enough**: 100K context will carry it.
+- **5× fewer tokens**: that's the official figure.
+- **Marathon sessions**: one session spanning months and billions of tokens.
+- **High-fidelity compression**: reversible, decompressible, prefix-cache friendly.
+
+![](/assets/blog-images/context-window-100-k-token-1lvbrt/img02.webp)
+
+## 3. Core features in depth
+
+### 1. Incremental layered compression (incremental, reversible, prefix-cache friendly)
+
+This is where `billion-context` differs most from the summarizers built into each agent. It folds consumed conversation into summary layers by small ranges instead of truncating everything at once. When detail is needed, the model calls `decompress` to restore that range; when it isn't, it calls `compress` to fold it back. Summaries are always written to keep the prefix stable, so prefix cache hit rates hold at 95–97%, and compression itself takes ≤2%.
+
+Compared with hard truncation, this loses no information and breaks no cache — extremely friendly to long-running coding agents.
+
+### 2. The model decides when to compress (four tools, called as needed)
+
+The proxy injects four context-management tools into the model, and the model judges when to call them:
+
+- `compress`: fold a stretch of conversation into a summary.
+- `decompress`: restore a compressed segment when exact detail is needed.
+- `search_context`: keyword search across summaries and visible messages.
+- `acp_status`: an overview of context usage and what's compressible.
+
+Handing the compression decision to the model fits real workflows better than a fixed threshold trigger.
+
+### 3. A universal proxy position (tied to no single agent)
+
+`billion-context` sits between any agent and the model API, recognizes both Anthropic and OpenAI request shapes, and transparently rewrites streaming responses. It works with 20+ mainstream clients: Claude Code, Codex, OpenCode, Pi, omp, dsh, Kimi, Hermes, Z.ai, Codebuddy, Qoder, Trae, Gemini CLI, Qwen Code, GitHub Copilot CLI, Zed, Aider and Antigravity are all in the support matrix.
+
+Which means switching agents doesn't mean switching compression strategies.
+
+### 4. Three ways to start, pick your depth
+
+It offers three integration styles, in increasing order of invasiveness:
+
+- **Native plugin**: `bili plugin install <client>` — the plugin lives inside the client, zero launch commands.
+- **Launcher**: `bili <client>` in one line, no config files touched.
+- **URL rewrite**: swap the baseURL prefix to `http://localhost:8787/bili/`, the most universal fallback.
+
+![](/assets/blog-images/context-window-100-k-token-1lvbrt/img03.webp)
+
+## 4. Technical highlights and performance
+
+The `billion-context` paper (in the repo's `paper/` directory, MIT licensed) reports a production-grade longitudinal study: 4.5 months, 3 hosts, 174327 model calls, 18.76 billion input tokens accumulated (24.7 billion across hosts), zero window violations, and single marathon sessions of 8584–12049 calls.
+
+Architecturally, there are three core innovations:
+
+- **Model-driven compression**: when to compress and what to compress is the model's call, not a hard truncation threshold.
+- **Prefix-cache friendly**: summaries keep the prefix stable, so cache hit rates stay at 95–97% long term.
+- **A reversible compression layer**: folded content is recoverable, no detail lost — call `decompress` later and it comes back.
+
+Its built-in health endpoints, `curl http://localhost:8787/__bili/health` and `__bili/stats`, let you watch upstream routing and compression activity in real time.
+
+![](/assets/blog-images/context-window-100-k-token-1lvbrt/img04.webp)
+
+## 5. Use cases and who it's for
+
+**Use cases:**
+
+- **Development with agents running for hours**: coding sessions that span hours or days need context growth under control.
+- **Teams sensitive to token cost**: 5× fewer tokens cuts the API bill directly.
+- **Users switching between AI clients**: one compression setup covers 20+ tools, no per-tool adaptation.
+
+**Good fit:** full-stack engineers who live in Claude Code / Codex / Cursor every day, platform teams that want agents running inside CI, and researchers who need long memory within a single session.
+
+**Bad fit:** casual users who ask "write me a regex" once in a while, beginners with no agent experience at all, and edge cases that need direct non-OpenAI/Anthropic protocol connections.
+
+![](/assets/blog-images/context-window-100-k-token-1lvbrt/img05.webp)
+
+## 6. How it compares
+
+| Project | Rewrites the request stream | Compression decisions | Prefix-cache friendly | Client coverage |
+|---|---|---|---|---|
+| `billion-context` | Transparent proxy | Model-driven | Yes (95–97%) | 20+ |
+| Built-in summarizers in each agent | No | Fixed threshold | Usually not | That client only |
+| Roll-your-own compression script | You implement it | You implement it | You implement it | Single client |
+
+`billion-context` differs by making compression reversible and layered, leaving the decision to the model, staying independent of any single client, and keeping cache hit rates high.
+
+## 7. Getting started fast
+
+One-line install (no sudo needed):
+
+```bash
+npm install -g billion-context --prefix=~/.local
+```
+
+Add `~/.local/bin` to PATH (most distros have it by default), then pick a style:
+
+**Simplest — native plugin:**
+
+```bash
+bili plugin install pi          # pi
+bili plugin install claude      # Claude Code
+bili plugin install opencode    # OpenCode
+```
+
+**Most universal — URL rewrite:**
+
+```bash
+bili    # start the proxy
+# point the client baseURL at http://localhost:8787/bili/<original URL>
+```
+
+Verify the proxy is up:
+
+```bash
+curl -s http://localhost:8787/__bili/health
+# → {"ok":true,"upstream":"https://api.anthropic.com"}
+```
+
+Suggested path: start `bili start`, check `__bili/stats` for compression activity, then roll it out once you see hits.
+
+## 8. Summary and next steps
+
+`billion-context` takes "a small context window can't carry a long session" head-on: incremental, reversible, prefix-cache-friendly compression decided by the model itself, with 4.5 months of real data proving its stability.
+
+If your daily workflow is being squeezed by context windows and token bills at the same time, give it a shot — one-line install, three launch styles, any of 20+ clients.
+
+Project: [github.com/ranxianglei/billion-context](https://github.com/ranxianglei/billion-context). The paper and FAQ live in the repo's `paper/` directory — bring your real workflow and check it yourself.
+
+#billion-context #BillionContext #ranxianglei #OpenSource #GitHub

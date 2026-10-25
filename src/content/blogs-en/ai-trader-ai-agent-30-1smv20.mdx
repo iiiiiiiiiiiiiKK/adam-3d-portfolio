@@ -1,0 +1,131 @@
+---
+title: "AI-Trader: a hands-on guide to getting an AI agent into automated trading in 30 seconds"
+publishedAt: "2026-05-07"
+summary: "Every AI agent can write code and run research until real money is involved, where KYC, cards and proprietary API clients stop it cold. AI-Trader is an agent-native trading platform that turns onboarding into a single message, with copying, signals and Polymarket paper trading built in."
+image: "/assets/blog-images/ai-trader-ai-agent-30-1smv20/img01.webp"
+tags: ["AI", "Agent", "Quant"]
+author: "Adam"
+---
+![](/assets/blog-images/ai-trader-ai-agent-30-1smv20/img01.webp)
+
+Title options (pick 1 of 3)
+
+AI-Trader: a hands-on guide to getting an AI agent into automated trading in 30 seconds
+
+AI-Trader launches Polymarket paper trading: copy-trading for agents goes from research to live in one message
+
+No account, no API keys: how AI-Trader puts any agent straight to work trading
+
+# AI-Trader: the automated trading platform where any agent clocks in within 30 seconds
+
+## 1. Opening: the AI places orders, watches the market and writes strategies — but the trading account is still empty
+
+Over the past year, countless Claude Code, Codex and Cursor users have lived through the same thing: they tune their agent until it's genuinely smart, letting it write code, do research and run scripts — but the moment real money is involved, almost every agent stalls at backtests or paper strategies.
+
+Why? Trading platforms were never designed for agents. Opening an account means KYC, binding a card, installing certificates, writing a proprietary API client — a whole flow that assumes a human operator. AI-Trader breaks that wall directly: any AI agent can join a complete automated trading ecosystem in 30 seconds, as easily as signing up for a SaaS account.
+
+![](/assets/blog-images/ai-trader-ai-agent-30-1smv20/img02.webp)
+
+## 2. Project overview: one sentence
+
+AI-Trader is an **agent-native automated trading platform** open-sourced by the HKU Data Intelligence Lab (HKUDS). It has passed **22.7K** GitHub stars, is written mainly in Python, and supports every mainstream agent framework including OpenClaw, nanobot, Claude Code, Codex and Cursor. The platform already covers five markets — US equities, crypto, forex, options and futures — and recently added paper trading on the Polymarket prediction market.
+
+The core idea is one sentence: **humans have trading terminals, and agents should have one too.**
+
+## 3. Core features in depth
+
+### 1. One-line onboarding: an agent registers with a single message
+
+In the traditional flow, wiring an AI into a new platform means reading docs, writing adapter code and getting authentication to work. AI-Trader compresses that into one instruction:
+
+> `Read https://ai4trade.ai/SKILL.md and register.`
+
+When the agent receives that message, it reads the `SKILL.md` integration guide, installs what it needs and completes registration on its own. The OpenAPI spec, Skill file and agent docs are all embedded in the repo, so an agent that already understands OpenAPI migrates at essentially zero cost.
+
+### 2. Three signal types: discussion, operation and collaboration kept apart
+
+The platform splits signals into three roles:
+
+- **Strategy signals**: for community discussion, capturing trading ideas;
+- **Operation signals**: directly copyable by followers, with positions synced automatically;
+- **Discussion signals**: dedicated to collaboration and debate between agents.
+
+The benefit of that split is that "executable" and "discussable" content don't contaminate each other, so an agent copying a position never gets interrupted by noisy discussion.
+
+### 3. Collective intelligence trading: agents debate their way to better strategies
+
+AI-Trader has a built-in **Collective Intelligence Trading** mechanism where multiple agents can publish signals on the same instrument and rate each other. Well-performing signals climb the leaderboard, so a newly connected agent sees strategies the community has already filtered rather than an empty feed from a cold start.
+
+### 4. One-click copy trading plus cross-platform signal sync
+
+A follower only has to pick a consistently performing Agent Leader, and the platform mirrors its positions automatically. AI-Trader can also sync signals to external brokers such as Binance, Coinbase and Interactive Brokers, so you can run research through agents while keeping your existing brokerage account.
+
+### 5. Polymarket paper trading with Yahoo Finance as a fallback
+
+For prediction market fans, the platform launched Polymarket paper trading in 2026-03, using real market data with simulated matching and settlement handled automatically by backend jobs. For US equities it adds yfinance as a fallback for Alpha Vantage — switching over automatically when the primary source is rate-limited or missing data, so the agent is unlikely to be left without a price at the critical moment.
+
+![](/assets/blog-images/ai-trader-ai-agent-30-1smv20/img03.webp)
+
+## 4. Technical highlights and performance numbers
+
+- **Layered architecture**: FastAPI serves web requests while a background worker runs market data, settlement, signal sync and other heavy jobs. The stability refactor in 2026-04 split the two layers entirely, so background tasks never block frontend responses.
+- **Production-grade reliability**: the FastAPI/worker split shipped on 2026-04-10 keeps health checks and quote refreshes from interfering with each other.
+- **Observability**: experiment progress tracking, notification exposure tracking and per-variant challenge performance all run through the same mark-to-market scoring logic.
+- **Ecosystem compatibility**: PostgreSQL for production and shared deployments, SQLite for one-command local startup, so developers get running with zero configuration.
+
+## 5. Use cases and audience
+
+**Who it fits**:
+
+- Researchers and quant developers who want AI agents to genuinely take part in financial market decisions;
+- Teams already automating with Claude Code / Cursor / Codex that want to extend agent capabilities into trading;
+- Traders who want the agent community to help filter strategies and to replicate top performance through copy trading.
+
+**Not a great fit**:
+
+- Complete beginners who neither code nor configure agents (you need at least a basic grasp of how agents are invoked);
+- Institutions with extreme low-latency, high-frequency requirements (the platform is built around agent collaboration and copy trading, not microsecond matching).
+
+![](/assets/blog-images/ai-trader-ai-agent-30-1smv20/img04.webp)
+
+## 6. Comparison with alternatives
+
+| Dimension | AI-Trader | Traditional quant frameworks (e.g. Zipline / Backtrader) | Plain broker APIs (IBKR / Coinbase) |
+|------|-----------|---------------------------------------|--------------------------------|
+| Agent friendliness | ⭐⭐⭐⭐⭐ register in one sentence | ⭐⭐ you wrap your own agent adapter | ⭐ almost no agent interface |
+| Community signals and copy trading | Built-in leaderboard + one-click copy | None | None |
+| Cross-market coverage | US equities / crypto / forex / options / futures + Polymarket | Depends on the backtest library | Depends on the broker |
+| Deployment difficulty | SQLite one-command local / PostgreSQL production-grade | Medium | High |
+| Time to first use | 30 seconds | Hours to days | Hours |
+
+## 7. Getting started quickly
+
+**Agent onboarding**: send your agent a single message —
+
+> `Read https://ai4trade.ai/skill/ai4trade and register on the platform.`
+
+The agent reads the integration docs, installs dependencies and completes registration on its own.
+
+**Human users**: go to https://ai4trade.ai → sign up with email → start browsing signals or copy trading.
+
+**Self-hosting**:
+
+1. Clone the repo and copy `.env.example` to `.env`;
+2. In production set `DATABASE_URL=postgresql://...`; for local debugging leave `DATABASE_URL` empty and SQLite is used;
+3. Start the FastAPI service and the background worker, which handle web requests and market data/settlement tasks respectively.
+
+**Going further**: `skills/ai4trade/SKILL.md` documents complete API examples for publishing signals, copy trading and cross-broker sync.
+
+![](/assets/blog-images/ai-trader-ai-agent-30-1smv20/img05.webp)
+
+## 8. Takeaways and next steps
+
+AI-Trader solves a problem everyone overlooked: **financial markets still have no infrastructure with native AI agent support**. It packages account opening, KYC, API adaptation, signal distribution and copy-trading settlement into one agent-friendly protocol, so tools like Claude Code or Codex can enter trading the same way they connect to an MCP service.
+
+If you already use agents for research, AI-Trader is worth connecting now — within 30 seconds you'll see your AI clock in for its first shift.
+
+- GitHub: https://github.com/HKUDS/AI-Trader
+- Website: https://ai4trade.ai
+- Agent integration guide: `skills/ai4trade/SKILL.md`
+
+#ai-trader #AiTrader #hkuds #AIAgents #AIWorkflow #Automation #OpenSource #GitHub

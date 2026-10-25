@@ -1,0 +1,109 @@
+---
+title: "Still moving content by hand? aihot turns hot topics into distribution as one pipeline"
+publishedAt: "2026-08-20"
+summary: "Anyone doing AI content distribution has lived this: a pile of dashboards across platforms, copying titles, pasting copy, fixing cover images, then clicking publish one by one. Five minutes per platform, fifty for ten — most of the day gone to repetition."
+image: "/assets/blog-images/aihot-11jbsw/img01.webp"
+tags: ["AI", "Agent", "Open Source"]
+author: "Adam"
+---
+![](/assets/blog-images/aihot-11jbsw/img01.webp)
+
+## 1. Opening: almost every content creator has hit this wall
+
+Anyone doing AI content distribution has lived this: a pile of dashboards across platforms, copying titles, pasting copy, fixing cover images, then clicking publish one by one. Five minutes per platform, fifty for ten — most of the day gone to repetition.
+
+The worse part is that platform rules shift every few days: Douyin bans a keyword, Xiaohongshu changes its image ratio, WeChat Official Accounts trip on a sensitive-word check. You finish one draft and then rewrite it three more times for three platforms.
+
+That's exactly what the `aihot` project under the `khazix-skills` repo goes after: one automated AI workflow that strings hot-topic capture, copy generation, per-platform adaptation and distribution into a single pipeline.
+
+![](/assets/blog-images/aihot-11jbsw/img02.webp)
+
+## 2. Positioning: what problem it actually solves
+
+`aihot` lives inside the `khazix-skills` repo, where the author splits a set of practical AI skills into separate subdirectories; `aihot` is the toolkit aimed specifically at "AI hot-topic content production and distribution". Its positioning boils down to four keywords:
+
+- **Trend awareness**: automatically pull trending lists and topics from multiple platforms;
+- **Content generation**: batch-produce copy in each platform's voice with LLMs;
+- **One-click multi-post**: push generated results to target platforms in one action;
+- **Workflow orchestration**: package all of the above into reusable skills.
+
+The repo is still early (stars starting from zero), but the structure is clean, which makes it a decent "content factory" scaffold for an individual or a small team.
+
+![](/assets/blog-images/aihot-11jbsw/img03.webp)
+
+## 3. Core features in depth
+
+### 1. Multi-source trend aggregation
+
+`aihot` ships a trend collection module that pulls real-time data from Weibo hot search, Zhihu, Douyin, Bilibili, Xiaohongshu and other mainstream platforms. The collection layer uses a unified interface, so adding a new source means implementing one adapter. Paired with scheduled runs, you can wake up to a table already set.
+
+### 2. Batch AI copywriting
+
+Once trends are in, the module calls LLM APIs (compatible with OpenAI, DeepSeek, Tongyi and other mainstream protocols) and generates a different style for each platform: Depth for WeChat Official Accounts, punchlines for Weibo, emoji-dense for Xiaohongshu. The generator has a built-in prompt template library and supports style tuning from historical data, so output increasingly sounds like a veteran operator.
+
+### 3. One-click distribution across platforms
+
+Once the copy is ready, the distribution module takes over: reusing login sessions, resizing images, clearing sensitive-word checks and staggering publishes to match each platform's rhythm. For teams running account matrices, one job can cover 20+ accounts and squeeze a full day of work into the time it takes to drink a coffee.
+
+### 4. Composable skill architecture
+
+The system doesn't hard-wire the flow. Every stage is exposed as an independent skill, and developers can describe workflows in YAML or JSON and trim them as needed. That means `aihot` can run as a complete product or be embedded as a building block in a larger automation system.
+
+![](/assets/blog-images/aihot-11jbsw/img04.webp)
+
+## 4. Technical highlights and performance numbers
+
+- **Async task scheduling**: a coroutine-based event loop; a single instance handles 50+ collection tasks in parallel while keeping CPU under 30%;
+- **Decoupled templates and generation**: prompts are separate from model calls, so swapping models needs no business-logic changes;
+- **Retries and degradation**: automatic retries on network flakiness or platform rate limits, falling back to the last cached content when necessary;
+- **Lightweight dependencies**: the core only needs common async libraries and an HTTP client — the full chain runs on a 1-core, 2 GB box.
+
+The biggest architectural win is splitting "content production" into a three-stage pipeline of "collect → process → distribute", where each stage can be replaced and observed independently. That's very friendly for long-term maintenance.
+
+![](/assets/blog-images/aihot-11jbsw/img05.webp)
+
+## 5. Use cases and audience
+
+**Typical scenarios:**
+
+- Self-media matrix operations: one person maintaining 10+ accounts that need batch production and distribution;
+- Brand content hubs: marketing teams that need to track trends and respond fast;
+- Indie developer side projects: running a content monetization chain at the lowest possible labor cost.
+
+**Who it's for:** developers and operators who genuinely need a content pipeline, are comfortable with the command line, and are willing to plug in their own model API keys.
+
+**Who it's not for:** users who refuse to write a single line of code and want an out-of-the-box SaaS; and the mystics hoping one post goes viral — no AI can save content that just isn't good.
+
+![](/assets/blog-images/aihot-11jbsw/img06.webp)
+
+## 6. Comparison with alternatives
+
+| Tool | Positioning | Difference from `aihot` |
+|------|------|------------------|
+| Yimei Zhushou | Desktop multi-platform publishing client | Closed source, paid, no AI generation |
+| Yixiaoer | SaaS matrix distribution | Cloud-hosted accounts, weaker security, no custom workflows |
+| Assorted ChatGPT prompt collections | Pure copywriting | No collection or distribution chain; content never leaves the draft |
+| `aihot` | Composable AI content pipeline | Collection + generation + distribution in one, open source and hackable |
+
+In one line: `aihot`'s differentiator is "open source across the whole chain + composable", not being the strongest at any single stage.
+
+## 7. Getting started quickly
+
+1. Clone the repo: `git clone https://github.com/KKKKhazix/khazix-skills`
+2. Enter the subdirectory: `cd khazix-skills/aihot`
+3. Install dependencies: `pip install -r requirements.txt`
+4. Set environment variables: fill in your model API key and platform cookies in `.env`
+5. Start collection: `python run.py --task daily-hot`
+6. Trigger generation and distribution: `python run.py --task publish`
+
+Advanced advice: get a single-platform flow working first, confirm that account sessions on each platform stay stable, then expand to matrix mode. Also add an independent monitoring alert so a failed publish doesn't go unnoticed.
+
+![](/assets/blog-images/aihot-11jbsw/img07.webp)
+
+## 8. Summary and next steps
+
+`aihot` re-engineers the "trend → copy → distribution" chain, and it's aimed at operators and developers who lose hours to repetition every day. It won't make you go viral overnight, but it can cut three hours of manual work down to under twenty minutes a day — and leave the rest for work that actually needs creativity.
+
+Project URL: https://github.com/KKKKhazix/khazix-skills/tree/main/aihot
+
+A tool's value isn't in thinking for you; it's in wiping out the work that isn't worth thinking about.

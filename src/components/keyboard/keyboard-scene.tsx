@@ -2,7 +2,8 @@
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { ChibiScene, type ChibiSceneApi, type ScenePointerEvent, type RuntimeEvent } from "@chibi3d/runtime";
-import { SKILLS } from "@/data/constants";
+import { getSkills } from "@/data/content";
+import { useI18n } from "@/i18n/context";
 import { setSceneStatus } from "@/lib/scene-health";
 import { usePreloader } from "../preloader";
 import { createKeyboardScene, resolveKeyboardAsset, type KeyboardSkill } from "./scene";
@@ -20,6 +21,7 @@ const SCENE_STYLE: CSSProperties = {
 };
 
 export default function KeyboardScene({ maxDpr }: { maxDpr: number }) {
+  const { locale, t } = useI18n();
   const { isLoading, bypassLoading } = usePreloader();
   const api = useRef<ChibiSceneApi>(null);
   const failed = useRef(false);
@@ -29,7 +31,8 @@ export default function KeyboardScene({ maxDpr }: { maxDpr: number }) {
   const [section, setSection] = useState<KeyboardSection>("hero");
   const [selected, setSelected] = useState<KeyboardSkill | null>(null);
   const playSound = useKeyboardSounds();
-  const scene = useMemo(() => createKeyboardScene(Object.values(SKILLS).map((skill) => ({
+  const skills = getSkills(locale);
+  const scene = useMemo(() => createKeyboardScene(Object.values(skills).map((skill) => ({
     ...skill, icon: skill.keyboardIcon ?? skill.icon,
   }))), []);
   const { settings: graphics, markActive } = useAdaptiveGraphics(ready && !isLoading);
@@ -157,9 +160,9 @@ export default function KeyboardScene({ maxDpr }: { maxDpr: number }) {
       {section === "skills" && ready && (
         <div className="pointer-events-none fixed inset-x-4 bottom-8 text-center text-foreground">
           <div aria-live="polite" className="sr-only">
-            <p className="text-xl font-semibold">{selected?.label ?? "按一下键帽"}</p>
+            <p className="text-xl font-semibold">{selected?.label ?? t.misc.keyboardHintIdle}</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              {selected?.shortDescription ?? "悬停、点击，或者直接按字母键"}
+              {selected?.shortDescription ?? t.misc.keyboardHintIdleSub}
             </p>
           </div>
           <a

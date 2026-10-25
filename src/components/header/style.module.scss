@@ -29,7 +29,11 @@
       margin: 0px;
     }
 
-    a {
+    // Only the brand link pinned to the far left. Must be `> a`, not `a`:
+    // a bare descendant selector also matches every anchor inside the right-
+    // hand control cluster (language switcher, embed triggers), stacking them
+    // all at left:0 so only the last one stays clickable.
+    > a {
       text-decoration: none;
       color: hsl(var(--foreground));
       position: absolute;

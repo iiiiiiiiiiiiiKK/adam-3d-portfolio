@@ -1,0 +1,128 @@
+---
+title: "2K stars, open source: the email platform quietly taking Mailchimp's place"
+publishedAt: "2026-08-28"
+summary: "Mailchimp raises prices again, billing per contact — an 80,000-subscriber list costs $20,000 more a year. Notifuse is the 2K-star self-hosted alternative: visual MJML editor, six delivery channels, built-in A/B testing, and your data stays on your own servers."
+image: "/assets/blog-images/2-k-stars-mailchimp-1md9um/img01.webp"
+tags: ["Open Source", "Productivity"]
+author: "Adam"
+---
+![](/assets/blog-images/2-k-stars-mailchimp-1md9um/img01.webp)
+
+## 1. Opening: almost every developer has hit this pain
+
+Two in the morning, and your marketing colleague messages you: "Mailchimp raised prices again this month. It bills per contact, so our 80,000 subscribers will cost us an extra $20,000 a year." Meanwhile the CTO is complaining in the group chat: "All our user email data sits on a third-party platform. Every compliance audit means another round of back-and-forth. It's too slow."
+
+This isn't a skit. According to the Sender Score 2025 report, SaaS email marketing platforms have raised prices an average of 47% over the past three years, and developer demand for in-house email systems has never let up — from Hacker News to Reddit.
+
+The more practical problem: building your own email platform sounds simple until you start. SMTP configuration, template engines, bounce handling, tracking pixels, webhook callbacks — a complete email marketing system is enough work to sink a five-person team.
+
+So is there something self-hostable, ready out of the box, that doesn't make you build the wheels from scratch? A project with 2K+ stars on GitHub has an answer.
+
+## 2. In one sentence: what this project is
+
+Notifuse is an open-source, self-hosted modern email marketing platform positioned as an open-source replacement for Mailchimp, Brevo and Klaviyo. The backend is written in Go, the admin console in React + TypeScript, the main repository is `Notifuse/notifuse`, it has 2,043 stars so far, and it ships under AGPL v3.
+
+Four keywords cover the core features: **visual editing, multi-channel delivery, deep analytics, developer-friendly**. Whether you're sending marketing mail like a newsletter or transactional mail like an order confirmation, Notifuse gives you the whole chain from template to tracking.
+
+There's also a hosted version, Notifuse Cloud, starting at $16/month, so teams that don't want to run infrastructure can use it directly.
+
+![](/assets/blog-images/2-k-stars-mailchimp-1md9um/img02.webp)
+
+## 3. Core features in depth
+
+### 1. Visual email editor + MJML components
+
+Notifuse ships a drag-and-drop email editor built on the MJML rendering engine. Developers no longer have to fight HTML email compatibility across Outlook, Gmail and Apple Mail; MJML generates the responsive code for you. The editor supports live preview — what you see is what you get.
+
+Combined with Liquid template syntax (such as `{{ contact.first_name }}`), a single email can produce different content per recipient attribute, which saves you from manually segmenting and sending separate batches.
+
+### 2. Multi-channel email delivery
+
+This is one of Notifuse's most practical capabilities. It natively supports six delivery channels: **Amazon SES, Mailgun, Postmark, Mailjet, SparkPost and SMTP**. That means teams can switch based on cost and deliverability — SES for marketing mail to keep costs down, Postmark for transactional mail to keep it fast.
+
+Switching channels requires no changes to your business code, just a configuration change in the console. This "delivery abstraction layer" design is the core reason it can stand in for Mailchimp.
+
+### 3. A/B testing and audience segmentation
+
+Notifuse provides a complete A/B testing framework for controlled experiments across three dimensions: **subject line, body and send time**. The system automatically tracks open and click rates and marks the winning variant.
+
+On the audience side, it supports custom fields, contact profiles and subscription list grouping. Developers can sync user data from order systems and CRMs in real time through the REST API and build fine-grained segments.
+
+### 4. Tracking analytics and webhook integration
+
+Open rate, click rate, unsubscribe rate, deliverability — Notifuse offers a real-time analytics dashboard with every metric visible directly in the console. For event triggers it exposes a webhook interface that pushes delivery success, opens and clicks to your own systems, which makes it easy to wire into BI tools and data warehouses.
+
+![](/assets/blog-images/2-k-stars-mailchimp-1md9um/img03.webp)
+
+## 4. Technical highlights and performance
+
+Architecturally, Notifuse follows Clean Architecture strictly, split into four layers: `domain`, `service`, `repository` and `http`. That separation keeps business logic independent of the framework, which makes unit testing and long-term evolution easier.
+
+The backend runs **Go 1.21+** with PostgreSQL and the Squirrel query builder, and a single instance can handle million-scale email jobs. The official docs state the design target is "tens of millions of sends per day", with queues plus batched delivery to keep downstream SMTP providers from rate-limiting you.
+
+The front-end console uses React 18 + Ant Design + TypeScript — type-safe with a rich component set. Notification Center is a standalone widget that can be embedded in any web app, so users manage notification preferences inside your own product. That "embeddable component" idea is rare among open-source email systems.
+
+On compatibility, Go Report Card gives it an A+ score, Codecov tracks coverage continuously, CI/CD runs automatically through GitHub Actions — the code quality is verifiable, not just claimed.
+
+## 5. Where it fits and who it's for
+
+**Scenario one: a transactional email hub for a SaaS product.** When you need to send signup verification, password resets and order notifications, Notifuse replaces third-party services more cheaply and with more control.
+
+**Scenario two: newsletter operations for a content platform.** Media outlets, blogs and technical communities can use the visual editor to produce a weekly digest quickly and use A/B testing to optimize subject lines.
+
+**Scenario three: multi-channel marketing for cross-border e-commerce.** Pairing SES with Postmark as a two-channel setup markedly improves deliverability in European and North American markets.
+
+**Who it suits**: technical teams of 5–50 people, budget-sensitive startups that need data autonomy, and traditional enterprises that want private deployment.
+
+**Who it doesn't**: teams with zero ops capacity (use Notifuse Cloud instead), and minimal cases where you send single emails and need no tracking.
+
+![](/assets/blog-images/2-k-stars-mailchimp-1md9um/img04.webp)
+
+## 6. How it compares
+
+| Dimension | Notifuse | Mailchimp | Listmonk | Loop.so |
+|------|----------|-----------|----------|--------|
+| Deployment | Self-hosted / cloud | SaaS only | Self-hosted | SaaS only |
+| License | AGPL v3 | Commercial | AGPL v3 | Commercial |
+| Visual editor | ✅ MJML | ✅ | ❌ | ✅ |
+| Delivery channels | 6 | Built-in only | SMTP only | Proprietary |
+| Embedded notification center | ✅ | ❌ | ❌ | ❌ |
+| Starting price | $16/month | $13/month | Free | $49/month |
+
+Compared with Listmonk, Notifuse adds a visual editor and an embeddable Notification Center; compared with Mailchimp, your data stays entirely yours and long-term costs are lower.
+
+## 7. Getting started fast
+
+**Option one: hosted cloud (fastest)**
+Sign up at https://www.notifuse.com, from $16/month, no ops required.
+
+**Option two: Docker self-hosting (recommended)**
+```bash
+git clone https://github.com/Notifuse/notifuse.git
+cd notifuse
+docker compose up -d
+```
+Once it's up, open `http://localhost:8080` and follow the interactive wizard to configure the database and delivery provider.
+
+**Minimal working example: calling the transactional API**
+```bash
+curl -X POST https://your-notifuse-domain/api/transactional \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{"to":"user@example.com","template":"welcome","data":{"name":"Zhang San"}}'
+```
+
+**What to do next**: test the delivery path in the SES sandbox first, then switch to production mode; push events into your own data warehouse via webhooks and run secondary analysis with Metabase.
+
+![](/assets/blog-images/2-k-stars-mailchimp-1md9um/img05.webp)
+
+## 8. Takeaways and next steps
+
+Notifuse's core value boils down to three things: **your data, controllable costs, a modern experience**. It takes most of what Mailchimp built over a decade and moves it onto your own server, open source.
+
+If email marketing costs are a headache, if compliance demands private deployment, or if you want user data in your own hands, go look at the `Notifuse/notifuse` repository, try the demo, and run Docker Compose yourself — ten minutes is enough to tell whether it fits your team.
+
+**Repository**: https://github.com/Notifuse/notifuse
+
+**Docs**: https://docs.notifuse.com
+
+**Live demo**: https://demo.notifuse.com/console/signin?email=demo@notifuse.com

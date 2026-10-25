@@ -1,0 +1,74 @@
+---
+title: "Tired of generic travel shots? Let travel-photo-abstraction do editorial abstraction"
+publishedAt: "2026-07-19"
+summary: "Hundreds of trip photos and none of them feel right to post. What's missing isn't taste — it's a method that translates a photo into visual language: keep the compositional memory, drop the clutter. This Codex skill inventories visual evidence first, then draws the fewest possible marks."
+tags: ["AI", "Open Source", "Productivity"]
+author: "Adam"
+---
+## 1. Why you need this tool
+
+The trip is over and your phone holds hundreds of photos. When you want to post one, every pick feels "almost right" — the originals are too plain, and a filter makes it look like everyone else's. You don't lack taste; you lack a method for "translating" a photo into visual language: keep the compositional memory, drop the messy detail. AI filters can't do this, and a graphic designer quotes from 800 CNY. Then you find Evianis's travel-photo-abstraction.
+
+## 2. Project overview: what it actually is
+
+travel-photo-abstraction is a visual skill open-sourced by Evianis for Codex (526 GitHub stars), positioned as an "editorial visual abstraction tool". It doesn't pile on filter effects. It first inventories the observable visual facts in a photo — shapes, counts, positions, proportions, colours, directions, depth of field, spatial rhythm — then expresses the core structure with the fewest geometric marks. Four keywords define it: **sparse abstraction, faithful structure, verifiable, source-available license**. It ships a library of 19 structural references and is used together with Codex's built-in image generation.
+
+## 3. A deep dive into the core features
+
+### 1. Inventory the evidence before drawing
+The first thing the skill does is a "visual evidence inventory" — recording, item by item, the shapes, counts, spatial relations, asymmetries, occlusions and negative space visible in the frame. Before generating anything, the AI has to write the observable facts down as a checklist. That step is what separates it from an ordinary filter: understand first, then express.
+
+### 2. One minimal mark per fact
+Once the inventory is done, every retained source fact is mapped to a minimal abstract symbol. A landmark gets compressed into "simplest mass block + contour + main axis + colour accent"; a school of fish becomes "directional repeated strokes". During generation the skill picks 2–4 structurally relevant references out of 19 as the basis for relational logic, but it never inherits outdated texture, colour grading, text or proportions.
+
+### 3. Keep the spatial relations, don't force regularity
+Repeated elements aren't lined up by force — the spacing between boats, the firmness or softness of lake reflections, the density of a crowd in a plaza all follow the rhythm of the original image. Negative space gets emphasised instead, and horizon lines, focal coordinates and human scale all have to make it into the final frame.
+
+### 4. Fail closed, then verify pixels
+Once the abstract panel is generated, it goes through a fail-closed finalization process together with the original: deterministic compositing and micro-layout verification with Pillow first, then a hard check that the original photo was not altered. That mechanism stops the AI from quietly editing the original or inventing visual content that isn't there.
+
+## 4. Technical highlights and performance numbers
+
+- **19-reference structural library + relation index**: style borrowing becomes a retrievable structural decision rather than a feeling — relational logic is bound to references, outdated styles are ignored automatically.
+- **Two generation paths**: the abstract panel comes from Codex's built-in image generation; compositing, numbering, dates and pixel verification go through deterministic Pillow scripts so results are reproducible.
+- **Fail-closed policy**: if built-in image generation is unavailable, the skill stops outright instead of degrading into a filter.
+- **Source-available license**: you may install and use unmodified copies, but **modification, derivative works, redistribution, relicensing and resale are prohibited**. Read the LICENSE carefully before commercial use.
+
+## 5. Where it fits, and who it's for
+
+- **Scenario 1**: post-processing a travel photo series. Fifty shots from one city turned into a consistent visual diary.
+- **Scenario 2**: social media content creation. Creators need a stable visual language without colliding with everyone else's filters.
+- **Scenario 3**: editorial design reference. Magazines, photo books and indie publishing need to validate cover compositions quickly.
+- **Good for**: designers, content creators, photography enthusiasts, Codex users.
+- **Not for**: teams that need fast commercial licensing, or that require modifying the source and republishing.
+
+## 6. Comparison with alternatives
+
+| Tool | Output form | Keeps the original | Structural decisions | License |
+|------|---------|------------|----------------|------|
+| Prisma / VSCO | Stylized filters | No | No | Closed-source commercial |
+| Adobe Firefly Image Variations | AI repaint | No | No | Restricted commercial use |
+| Midjourney / SD editing | Prompt-driven repaint | No | Partial | Self-hosted open source |
+| **travel-photo-abstraction** | **Original + abstract panel** | **Yes (enforced check)** | **Yes (19-reference library)** | **Source-available (no modification or redistribution)** |
+
+Its distinctive value: the abstraction is an editorial analysis layer laid over the original, not a replacement for it.
+
+## 7. Getting started fast
+
+1. **Clone the repo**: `git clone https://github.com/Evianis/travel-photo-abstraction.git`
+2. **Copy it into the Codex skills directory**:
+   - macOS/Linux: `cp -R ./travel-photo-abstraction ~/.codex/skills/travel-photo-abstraction`
+   - Windows: `Copy-Item -Recurse .\travel-photo-abstraction $env:USERPROFILE\.codex\skills\travel-photo-abstraction`
+3. **Verify the install**: `python travel-photo-abstraction/scripts/check_installation.py travel-photo-abstraction`
+4. **Produce the final artwork**: `python travel-photo-abstraction/scripts/finalize_artwork.py original.jpg abstract-panel.png final.png --number "NO. 001" --date "03 AUG 2026" --phrase "QUIET STRUCTURE"`
+5. **Start a new Codex task**: prompt it with `use $travel-photo-abstraction to analyze the photo I upload`, and upload a photo you own the rights to.
+
+## 8. Summary and what to do next
+
+The core value of travel-photo-abstraction: turn travel photos into an editable layer of visual language. It isn't a filter, it's a structural decision tool — inventory the evidence first, add the fewest marks, then enforce pixel verification against the original. If you're tired of identical-looking travel edits and don't want to hire a designer, give it a try.
+
+- **GitHub repo**: https://github.com/Evianis/travel-photo-abstraction
+- **Prerequisites**: a Codex environment with built-in image generation; only use photos you own the rights to
+- **License reminder**: no modification, redistribution or resale; read the LICENSE before any commercial use
+
+If you want a restrained visual language for your travel photos too, it's worth a try.

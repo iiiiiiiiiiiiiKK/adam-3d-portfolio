@@ -1,0 +1,137 @@
+---
+title: "Tortured by MySQL primary-replica lag? OceanBase pushes RTO under 8 seconds"
+publishedAt: "2026-08-06"
+summary: "The primary is down, the replica is 30 minutes behind, and recovery takes hours. That is the ceiling of a single-node database, not a MySQL bug. OceanBase rewrites the stack from storage engine to Paxos consensus for RPO=0 and RTO under 8 seconds."
+image: "/assets/blog-images/mysql-oceanbase-rto-8-j2q5eu/img01.webp"
+tags: ["Quant", "Data"]
+author: "Adam"
+---
+![](/assets/blog-images/mysql-oceanbase-rto-8-j2q5eu/img01.webp)
+
+## 1. Opening: one project between pain and pure joy
+
+Old Zhang, who builds payment systems, has been miserable lately. At four in the morning he was woken by an alert again — the MySQL primary was down, the replica was 30 minutes behind, and recovery starts at two hours. The business side fired off three question marks in the group chat, and the CTO dragged everyone into a reconciliation meeting. This isn't MySQL's fault. It's just where the ceiling of a single-node database sits: scaling means sharding, migration is agony, and RPO/RTO is always a gamble.
+
+Meanwhile, a big internet company next door moved its core transaction database onto **OceanBase** long ago. A single cluster runs PB-scale data, TPC-C hits 707 million tpmC, and it stays rock solid after scaling to 1,500 nodes. The gap isn't the team, and it isn't the budget. It's the choice of technology.
+
+## 2. Positioning: what problem it solves
+
+OceanBase is a distributed relational database built entirely in-house by Ant Group. It is based on the Paxos protocol and has no special hardware requirements. It solves the classic "we want it all" problem:
+
+- **Core features**: transparent scaling, extreme performance, minimal cost, HTAP, continuous availability, MySQL compatibility
+- **Milestones**: 10K+ GitHub stars, Apache 2.0 open source, 2,000+ customers across finance, telecom, retail, internet and other industries
+
+Put simply, this is a natively distributed database that can absorb the traffic peak of Singles' Day and still run real-time reporting.
+
+## 3. A deep dive into the core features
+
+### 1. Transparent scaling: one cluster carries PB-scale data
+
+A single OceanBase cluster supports **1,500 nodes, PB-scale data, trillions of rows**, and scales out horizontally without the business noticing. No re-sharding, and almost zero changes to application code. That ability comes from its natively distributed architecture — data rebalances automatically, tenant resources are isolated, and the larger the cluster, the more stable it gets.
+
+### 2. Extreme performance: top of both benchmarks
+
+TPC-C reaches **707 million tpmC**, and TPC-H reaches **15.26 million QphH** at 30TB, setting world records. This is the result of rewriting every line of code in C++ on identical hardware — from the storage engine to the SQL executor, all redesigned to squeeze out every CPU cycle.
+
+### 3. Minimal cost: 70%–90% storage savings
+
+Traditional databases pay a "double storage" tax for high availability. With multiple replicas plus advanced compression, OceanBase cuts storage cost to 10%–30% of the original. The annual savings on PB-scale data is enough to hire a few senior engineers.
+
+### 4. HTAP: one copy of data, two workloads
+
+The same data can serve high-concurrency transactions and complex analytical queries, **with no ETL and no extra cost**. For scenarios like "real-time order statistics" or "real-time risk decisions", HTAP is the feature that actually delivers.
+
+### 5. Continuous availability: RPO=0, RTO&lt;8s
+
+Based on Paxos, majority-quorum writes guarantee zero data loss, and failover completes within 8 seconds. It survives even data-center-level disasters — table stakes for financial-grade workloads.
+
+### 6. MySQL compatibility: painless migration
+
+It is compatible with the MySQL protocol and most SQL syntax, so existing applications migrate with almost no code changes. The `obclient -h127.0.0.1 -P2881 -uroot` command every DBA knows connects straight away.
+
+![](/assets/blog-images/mysql-oceanbase-rto-8-j2q5eu/img02.webp)
+
+## 4. Technical highlights and performance numbers
+
+OceanBase's technical foundation has three highlights:
+
+1. **Paxos consensus protocol**: majority-quorum writes, strong consistency across replicas, RPO is zero by design.
+2. **In-house C++ engine**: from LSM-Tree storage to the vectorized executor, the whole stack is under its own control, with performance that rivals dedicated hardware.
+3. **Multi-tenant architecture**: one cluster hosts multiple businesses with isolated resources that don't interfere, and operational complexity drops off a cliff.
+
+On ecosystem compatibility, OceanBase speaks the MySQL protocol, ships ob-operator for Kubernetes orchestration, and publishes Docker images on dockerhub, quay.io and ghcr.io — zero friction to get started locally.
+
+![](/assets/blog-images/mysql-oceanbase-rto-8-j2q5eu/img03.webp)
+
+## 5. Where it fits, and who it fits
+
+**Good for**:
+
+- Core financial, payment and trading systems with extreme RPO/RTO requirements
+- Internet companies that must absorb burst traffic and still run real-time analytics
+- Traditional enterprises going through "de-IOE" or domestic stack replacement
+- Smaller companies that want a cloud-native database and would rather skip building their own sharding layer
+
+**Not for**:
+
+- Small single-node projects and lightweight workloads that stay below 1,000 QPS
+- Teams with no MySQL operations experience who refuse to learn
+- Projects that need the PostgreSQL ecosystem (OceanBase's mainline is MySQL-compatible)
+
+## 6. Comparison with alternatives
+
+| Dimension | OceanBase | Traditional MySQL + middleware | TiDB |
+|---|---|---|---|
+| Scalability | 1,500 nodes per cluster | Sharding has a low ceiling | Hundreds of nodes per cluster |
+| TPC-C | 707 million tpmC | Limited by a single machine | Hundreds of millions |
+| HTAP | Native support | Requires extra ETL | Supported |
+| Compatible protocol | MySQL | MySQL | MySQL |
+| RPO/RTO | 0 / &lt;8s | Minutes | 0 / Seconds |
+| Storage cost | 70%–90% savings | Double replicas | Moderate |
+
+Compared with MySQL sharding, OceanBase eliminates application-layer rewrites and the nightmare of cross-shard transactions. Compared with TiDB, OceanBase has the edge on very large clusters and extreme cost efficiency.
+
+![](/assets/blog-images/mysql-oceanbase-rto-8-j2q5eu/img04.webp)
+
+## 7. How to get started fast
+
+**Three steps to a running instance**:
+
+```shell
+# Option 1: All-in-one deployment (Linux)
+bash -c "$(curl -s https://obbusiness-private.oss-cn-shanghai.aliyuncs.com/download-center/opensource/oceanbase-all-in-one/installer.sh)"
+source ~/.oceanbase-all-in-one/bin/env.sh
+obd demo
+```
+
+```shell
+# Option 2: Start with Docker
+docker run -p 2881:2881 --name oceanbase-ce -e MODE=mini -d oceanbase/oceanbase-ce
+docker exec -it oceanbase-ce obclient -h127.0.0.1 -P2881 -uroot
+```
+
+**Going further**: for production, deploy with ob-operator on Kubernetes. Start with a minimal cluster and run benchmarks, then tune replica counts and tenant resources to match your workload. When migrating from MySQL, use full plus incremental tooling to run dual writes for verification, then shift read traffic, and only then shift write traffic.
+
+![](/assets/blog-images/mysql-oceanbase-rto-8-j2q5eu/img05.webp)
+
+## 8. Takeaways and next steps
+
+OceanBase's core value fits in one sentence: **a single database that solves high-concurrency transactions, real-time analytics, minimal cost and financial-grade availability at the same time**. It isn't another MySQL fork — it's a next-generation database rewritten from the storage engine up through the distributed architecture.
+
+If any of these sound familiar:
+- MySQL can't keep up, so you have to shard
+- Replica lag makes reporting data wrong
+- Storage costs climb every year
+- A data-center failure means 30+ minutes of RTO
+
+Then give OceanBase a try.
+
+- **GitHub**: https://github.com/oceanbase/oceanbase
+- **Website**: https://en.oceanbase.com
+- **Docs**: https://en.oceanbase.com/docs/oceanbase-database
+- **Community**: https://ask.oceanbase.com
+- **Docker images**: available on dockerhub / quay.io / ghcr.io
+
+It's Apache 2.0 licensed and already validated in production by 2,000+ customers. Worth a weekend to get it running.
+
+![](/assets/blog-images/mysql-oceanbase-rto-8-j2q5eu/img06.webp)

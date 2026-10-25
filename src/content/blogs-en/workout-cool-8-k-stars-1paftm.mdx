@@ -1,0 +1,128 @@
+---
+title: "Workout.cool: an 8K-star fitness platform its original author rewrote from scratch"
+publishedAt: "2026-07-14"
+summary: "One fitness fan went through five apps and lost his training logs three times. When the platform he finally settled on got sold and then abandoned, he rewrote it himself — workout.cool now has 8K+ stars and a self-hostable stack."
+image: "/assets/blog-images/workout-cool-8-k-stars-1paftm/img01.webp"
+tags: ["Open Source", "Video", "Docs"]
+author: "Adam"
+---
+![](/assets/blog-images/workout-cool-8-k-stars-1paftm/img01.webp)
+
+## 1. Intro: stop wrestling with it by hand
+
+Three years of training, five apps, three lost training logs. A pile of scattered notes and screenshots sits on my phone, and every time I switch equipment I have to look up the movement cues again. The real breaking point: I finally found a platform that fit, the author sold it, and a few months after the new owner took over, the whole project stopped being maintained.
+
+That's not a joke — it happened in the open-source fitness community. A project called workout.lol got dropped by its new owner because the training video licensing costs were too high. The original creator tried to reach them for nine months and sent fifteen emails. Nothing came back. So he decided to rewrite the whole thing himself.
+
+That rewrite is **workout.cool** — a modern fitness coaching platform with 8K+ stars and exactly one goal: give fitness enthusiasts back the tool they lost, and make it better.
+
+## 2. Project overview: what it is in one sentence
+
+**Workout.cool** is an open-source training management platform for fitness enthusiasts, built around three things: planning workouts, tracking progress, and looking up exercises.
+
+Four keywords: **Next.js full stack**, **TypeScript type safety**, **Feature-Sliced Design architecture**, **Prisma + PostgreSQL**.
+
+It has picked up 8.3K stars since launch, is backed by Vercel's OSS program, and has an active Discord where fitness enthusiasts and developers build on it together.
+
+![](/assets/blog-images/workout-cool-8-k-stars-1paftm/img02.webp)
+
+## 3. Core features in depth
+
+### 1. Workout plan builder
+
+Workout.cool ships a visual workout plan editor that supports exercise combinations, set and rep schemes, and rest time configuration. Every exercise links to a standard entry in the database, so you never end up with vague notes like "do some squats".
+
+Compared to hand-copying a plan into an Excel sheet, this has two clear advantages: plans are reusable and shareable, and every plan connects directly to progress tracking.
+
+### 2. Progress tracking
+
+After a session, users record actual sets, weight and reps. The system aggregates training volume and frequency on a timeline, so you can look back and answer "how much did I actually bench last week".
+
+This lightweight logging suits people who don't want heavy analytics — no chart-drawing in a spreadsheet, the app organizes the data for you.
+
+### 3. Exercise database
+
+The project includes a complete exercise library, and each entry has bilingual descriptions, a demo video link and attributes such as target muscle groups and movement type. Importing is flexible: CSV bulk import, plus a ChatGPT prompt script that lets AI expand the library for you.
+
+For developers who care about database size, that's a thoughtful design — you don't hand-enter thousands of exercises, you let a model generate the structured data.
+
+### 4. Authentication and session management
+
+Login and signup run on Better Auth, with email/password and social login. All user data lives in your own PostgreSQL, so self-hosters keep full control.
+
+![](/assets/blog-images/workout-cool-8-k-stars-1paftm/img03.webp)
+
+## 4. Technical highlights and performance data
+
+- **Architecture**: Next.js App Router plus Feature-Sliced Design (FSD), with a clean directory split across seven layers — `app / processes / widgets / features / entities / shared / styles`. Each layer has a clear responsibility, so a newcomer can find the right code fast.
+- **Type safety**: full-stack TypeScript, with types generated straight from the Prisma schema, so the frontend-backend data contract never drifts.
+- **Deployment friendly**: official Docker images and docker-compose config; one command, `docker compose up -d`, and it runs. Without Docker, use a local PostgreSQL plus `pnpm dev`.
+- **Ecosystem fit**: listed in Vercel's OSS program, so deploying to Vercel is nearly zero-config, while self-hosting stays available and sensitive data never leaves your machine.
+
+![](/assets/blog-images/workout-cool-8-k-stars-1paftm/img04.webp)
+
+## 5. Use cases and who it's for
+
+**Who it suits**:
+
+1. **Fitness enthusiasts**: anyone who wants an open-source, self-hostable training log that can't get rug-pulled.
+2. **Personal trainers / coaches**: people who hand out plans to clients and want to own the data outright.
+3. **Full-stack developers**: anyone learning FSD architecture, Next.js App Router or Prisma in practice — this project is a solid reference.
+
+**Who it doesn't suit**:
+
+1. Casual users who just want ready-made courses and don't care about data ownership — Keep or Strava is less effort.
+2. Non-technical users who aren't comfortable with Node.js or Docker and don't want to deal with deployment.
+
+## 6. Competitor comparison
+
+| Project | Type | Data ownership | Video licensing cost | Self-hosting difficulty |
+|---|---|---|---|---|
+| **Workout.cool** | Open-source fitness platform | 100% yours | Community-built / user-supplied | Low (one Docker command) |
+| workout.lol (abandoned) | Open source | Legacy | High (the reason the project died) | Medium |
+| Hevy / Strong and other commercial apps | Closed source | Vendor servers | Covered by the vendor | Not supported |
+
+**Why pick it**: open source, commercially usable (MIT license), a database you control, an exercise library you can extend — and no more worrying that "the platform might just disappear".
+
+![](/assets/blog-images/workout-cool-8-k-stars-1paftm/img05.webp)
+
+## 7. Getting started fast
+
+**Prerequisites**: Node.js 18+, pnpm 8+, Docker (optional).
+
+**One-command Docker start**:
+
+```bash
+git clone https://github.com/Snouzy/workout-cool.git
+cd workout-cool
+cp .env.example .env
+make dev
+```
+
+When that finishes, open [http://localhost:3000](http://localhost:3000). To try the full exercise library, set `SEED_SAMPLE_DATA` to `true` in `.env`.
+
+**Manual install (no Docker)**:
+
+```bash
+pnpm install
+cp .env.example .env
+createdb -h localhost -p 5432 -U postgres workout_cool
+npx prisma migrate dev
+pnpm dev
+```
+
+**Production deployment**: with Docker Compose, remember to change the `host` in `DATABASE_URL` to the `postgres` service name; leave the rest at their defaults.
+
+![](/assets/blog-images/workout-cool-8-k-stars-1paftm/img06.webp)
+
+## 8. Summary and next steps
+
+Workout.cool isn't another "fitness + AI" concept project. It solves something that actually happened: how an abandoned open-source tool got rebuilt by its original team and came back in a more modern form.
+
+If you're tired of privacy worries and shutdown risk in commercial apps, this project is worth an evening to get running. If you write TypeScript, even better — go open a PR on GitHub.
+
+- Repository: https://github.com/Snouzy/workout-cool
+- Live demo: https://workout.cool
+- Community Discord: https://discord.gg/NtrsUBuHUB
+
+Whether open-source fitness tools survive doesn't depend on one author going it alone. It depends on every person who finds it useful tapping that star.

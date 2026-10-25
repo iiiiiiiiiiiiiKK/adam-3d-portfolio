@@ -1,0 +1,144 @@
+---
+title: "How much money do I lose every year by forgetting to renew things?"
+publishedAt: "2026-08-31"
+summary: "At 11 p.m. on December 31 last year I was counting down to the new year. The next morning I opened my inbox and found that three things had happened at once:"
+image: "/assets/blog-images/post-x9453y/img01.webp"
+tags: ["Open Source", "Writing", "Productivity"]
+author: "Adam"
+---
+![](/assets/blog-images/post-x9453y/img01.webp)
+
+## 1. Opening: how much do I lose every year by forgetting to renew things?
+
+At 11 p.m. on December 31 last year I was counting down to the new year. The next morning I opened my inbox and found that three things had happened at once:
+
+- A domain I'd used for 5 years expired, got released by the registry, and reclaiming it cost me 8,000 yuan.
+- A Hong Kong VPS hit its expiry date and went dark, taking the blog and the small tools running on it offline with it.
+- A monthly data SIM lapsed without renewal and the carrier cancelled it outright.
+
+This isn't a joke — it's my actual bill from that year. What stings more is that the project's author, "LOSTFREE," fell into the same trap, which is how the tool in this article came to exist: **RenewHelper**. It has picked up **381 stars** on GitHub, runs on Cloudflare Workers, and is built around "zero servers, zero hosting cost." It supports solar and lunar calendar cycles, multi-channel push, ICS calendar subscriptions and billing statistics, and it deploys privately via Docker in one command.
+
+If your phone calendar is stuffed with "remember to renew, remember to renew, remember to renew," this one is worth reading to the end.
+
+![](/assets/blog-images/post-x9453y/img02.webp)
+
+## 2. Project overview: cramming renewal anxiety into a single Worker
+
+**RenewHelper** is a service lifecycle reminder and management tool with a very clear brief: keep track of everything you own that expires. It runs on Cloudflare Workers with Workers KV for storage; the frontend and backend are built on Vue 3 + Element Plus and ship with a mecha-style dark/light dual theme.
+
+A few keywords up front: **serverless at zero cost, dual lunar and solar calendar calculation, 12 notification channels, standard ICS calendar subscription, multi-currency billing dashboard**. Since v3.x the frontend and backend are fully decoupled, it no longer depends on any external CDN, and it works out of the box.
+
+![](/assets/blog-images/post-x9453y/img03.webp)
+
+## 3. Core features in depth
+
+### 1. Three cycle modes: more than "remind me before it expires"
+
+RenewHelper isn't just "send a message N days before expiry." It splits cycle management into three modes:
+
+- **Cycle**: automatically rolls forward at a fixed interval — a monthly Netflix plan, an annual VPS. Combined with the "auto renew" switch, the next reminder time rolls forward by itself after expiry.
+- **Reset**: requires a manual action after expiry; the due date only extends once you do it. Typical cases are topping up an eSIM data plan or checking in to add days — services that reset to zero if you don't act.
+- **Repeat**: built on a standard RRULE rule engine, so it can express rules like "the second Friday of every month" or "Wednesday and Sunday of every other week."
+
+What's more impressive is **lunar calendar support**. It ships a high-precision lunar algorithm covering 1900–2100, so lunar birthdays and traditional festivals can be calculated exactly — rare among tools in this category.
+
+### 2. 12 notification channels plus batch assignment
+
+It supports 12 channels: Telegram, Bark, PushPlus, ServerChan 3, DingTalk, Feishu, WeCom, NotifyX, Resend (email), Gotify, Ntfy and Webhook. Each item can be bound to different channels independently, and the list page supports **multi-select plus batch assignment of push channels**, so managing 50+ subscriptions doesn't leave your wrist sore. Every channel has a "send test" button on its config page to verify connectivity.
+
+One thing that's especially friendly to users in mainland China: the project bundles a **lightweight Telegram reverse-proxy script** (deployable as a Worker, Pages, or Snippet), which solves the problem of servers inside China being unable to reach the Telegram API directly.
+
+### 3. Standard ICS subscription: hand the calendar over to your calendar app
+
+The system generates a standard `.ics` subscription link that plugs straight into iOS Calendar, Google Calendar, Outlook, or even the calendar app built into your phone. Subscriptions are computed by time zone — set `Asia/Shanghai` and push times land precisely on local time.
+
+![](/assets/blog-images/post-x9453y/img04.webp)
+
+## 4. Technical highlights and performance data
+
+**On the architecture side**, a few design decisions are worth noting:
+
+- **Cloudflare Workers + KV**: fully serverless. The free tier gives 100,000 requests per day plus 1,000 KV writes — personal use will basically never hit the ceiling. Docker mode uses local Miniflare emulation plus node-cron, so free-tier quotas don't apply at all.
+- **JWT authentication + memory/KV hybrid rate limiting**: logins and API calls are all rate limited; 5 failed attempts within 5 minutes bans the IP for 15 minutes.
+- **In-house lunar algorithm**: covers the full 200-year span from 1900 to 2100 without pulling in a third-party lunar library — smaller binary, better privacy.
+- **Full frontend/backend separation (v3.x)**: a single Worker carries the frontend, pulls nothing from any CDN, and keeps running even without network access to the outside world.
+- **Data visualization**: the billing dashboard uses ECharts to show a 12-month trend and a 3-year summary, with automatic multi-currency conversion at exchange rates, separating "billed amount (budget)" from "amount actually paid."
+
+![](/assets/blog-images/post-x9453y/img05.webp)
+
+## 5. Use cases and audience
+
+**Strongly recommended for these people:**
+
+- **Indie developers / site owners**: juggling a pile of VPS instances, domains, object storage and CDN plans, and never forgetting a renewal again.
+- **Deal hunters**: monthly data SIMs, trial subscriptions, virtual numbers… RenewHelper's batch channel assignment might as well have been designed for you.
+- **Lunar birthday and festival people**: never again forgetting a parent's lunar birthday, or Mid-Autumn and Dragon Boat Festival.
+- **Serverless enthusiasts**: people who want to live off Cloudflare's free tier without babysitting a server.
+- **Privacy-minded users**: Docker private deployment keeps the data entirely in your hands.
+
+**Not a great fit:** team-level asset and subscription management — this is a personal tool with no multi-user or permission system.
+
+## 6. Competitor comparison
+
+| Project | RenewHelper | Plain Excel/Notion | Commercial subscription SaaS |
+| :--- | :--- | :--- | :--- |
+| Deployment cost | 0 yuan (Cloudflare free tier) | 0 | Tens to hundreds per month |
+| Lunar calendar support | ✅ Built in, 1900–2100 | ❌ Manual | ❌ Usually none |
+| Notification channels | ✅ 12 | ❌ None | ⚠️ Usually email only |
+| ICS calendar sync | ✅ | ❌ | ⚠️ A few support it |
+| Data ownership | ✅ Your own KV/Docker | ✅ Local | ❌ Vendor servers |
+| Billing statistics | ✅ Multi-currency dashboard | ⚠️ Manual | ✅ But paid |
+
+The conclusion is clear: **RenewHelper scores full marks on all three corners of the "free + feature-complete + self-hosted data" triangle**. Commercial SaaS wins on collaboration and report depth, but for personal use there's simply no need.
+
+![](/assets/blog-images/post-x9453y/img06.webp)
+
+## 7. How to get started fast
+
+The path of least resistance is **one-click deploy**:
+
+1. Click the "Deploy to Cloudflare Workers" button in the README.
+2. Authorize Cloudflare to access GitHub; it forks the repo automatically and creates the Worker plus KV namespace.
+3. When deployment finishes, go to **Settings → Variables** and add the environment variable `AUTH_PASSWORD` (your login password).
+4. Go to **Triggers → Cron Triggers** and add `0,30 * * * *` (check twice an hour, on the hour and the half hour).
+5. Visit your `https://renewhelper.xxx.workers.dev` and log in with the password.
+
+Docker fans have it easy too — create a folder and a `docker-compose.yml`:
+
+```yaml
+services:
+  renew-helper:
+    image: ieax/renewhelper:latest
+    restart: unless-stopped
+    ports:
+      - "9787:9787"
+    volumes:
+      - ./data:/data
+    environment:
+      - AUTH_PASSWORD=your-password
+      - CRON_SCHEDULE=0,30 * * * *
+      - TZ=Asia/Shanghai
+```
+
+Then run `docker compose up -d`. **Note**: the Web Crypto API requires HTTPS (localhost excepted), so put a Caddy reverse proxy in front of it with a certificate.
+
+![](/assets/blog-images/post-x9453y/img07.webp)
+
+## 8. Summary and next steps
+
+Back to the opening question: **how much money do I lose every year by forgetting to renew things?**
+
+The answer differs for everyone, but RenewHelper can at least make sure you get a push notification before "a loss" turns into "an incident." It moves renewal management from memory to system, packs solar and lunar dates, push notifications, calendar subscriptions and billing statistics into one completely free tool, and hands data sovereignty back to you.
+
+**My advice:**
+
+1. Deploy it on Cloudflare first, then enter every subscription you currently hold (tags make this much easier).
+2. Configure at least 2 notification channels (Telegram + Bark is my pick) so a single channel failing doesn't mean a missed alert.
+3. Set the time zone correctly in settings and export your first JSON backup.
+4. Advanced users can wire up GitHub Actions for automatic updates, or deploy privately with Docker.
+
+Project: https://github.com/ieax/renewhelper
+
+Demo: https://lostfree.de5.net
+
+If it saves you even one domain redemption fee, that's a coffee worth buying the author ☕️.

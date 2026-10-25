@@ -1,0 +1,213 @@
+---
+title: "Seven open-source picks that keep me from working late — backend, frontend and ops all covered"
+publishedAt: "2026-06-09"
+summary: "Seven open-source projects I keep for myself, all of them useful for backend, frontend and ops work — the kind you configure once and lean on for years."
+image: "/assets/blog-images/7-ddgc8p/img01.webp"
+tags: ["Open Source", "Video", "Dev"]
+author: "Adam"
+---
+![](/assets/blog-images/7-ddgc8p/img01.webp)
+
+Title options (pick 1 of 3)
+
+Seven open-source picks that keep me from working late — backend, frontend and ops all covered
+
+The 7 open-source projects I use every day, rounded up in one place
+
+Stop reinventing the wheel: these 7 open-source tools deserve a bookmark right now
+
+## 1. Opening: stop wrestling with it by hand
+
+Six p.m. on a Friday. A backend teammate discovers production has no automated backups, so the only option is a manual `mysqldump` followed by scp to another machine. A frontend colleague wants to add a login system and realizes every new project means rewriting signup, password recovery and OAuth callbacks again. The data team wants to scrape a batch of pages for analysis, and after a whole night of fighting anti-bot measures, JS rendering and proxy rotation, exactly 3 URLs came through. None of these jobs is complicated. But every time, you rebuild the same wheel. The seven projects below are the wheels that make these jobs "configure once, benefit for years".
+
+## 2. Projects at a glance
+
+| Repo | Stars | Language | One-line positioning |
+|---|---|---|---|
+| supabase/supabase | 110k+ | TypeScript | A batteries-included full-stack platform on Postgres |
+| goauthentik/authentik | 25k+ | Python | A self-hosted identity and SSO hub |
+| oceanbase/oceanbase | 10k+ | C++ | China's own native distributed relational database |
+| t8y2/dbx | 20k+ | Rust | A 25 MB cross-platform universal database client |
+| gobackup/gobackup | 3k+ | Go | A scheduled backup CLI for databases and files |
+| firecrawl/firecrawl | 180k+ | TypeScript | Turn any web page into clean, LLM-readable data |
+| public-apis/public-apis | 480k+ | Python | A community-maintained directory of free APIs |
+
+![](/assets/blog-images/7-ddgc8p/img02.webp)
+
+## 3. The projects, one by one
+
+### supabase/supabase — one Postgres for the entire backend stack
+
+**Supabase lets you skip the repetitive work of hand-building a backend and land directly on a production-ready Postgres platform.** Hosted Postgres, Auth, auto-generated REST / GraphQL APIs, Realtime subscriptions, file storage, Edge Functions, AI plus vector search — all in the same console. Under the hood it is assembled from open-source pieces such as Postgres, PostgREST, GoTrue, Realtime and Storage-api, so there is no lock-in to worry about.
+
+- **Who it's for**: individuals or small teams building web / mobile / AI apps from zero; projects that want to replace Firebase without getting tied to it
+- **Who it's not for**: traditional enterprises that already have a dedicated DBA team or hard dependencies on Oracle-specific features
+
+**Minimal setup**
+
+After signing up you get a URL and an anon key; install the JS client:
+
+```
+npm install @supabase/supabase-js
+```
+
+One line gets you the current session:
+
+```
+const supabase = createClient('https://xxx.supabase.co', 'anon-key')
+```
+
+*Source:* **https://github.com/supabase/supabase**
+
+![](/assets/blog-images/7-ddgc8p/img03.webp)
+
+### goauthentik/authentik — one IdP for every login you have
+
+**authentik is an open-source identity provider for SSO on modern applications, supporting SAML, OAuth2 / OIDC, LDAP and RADIUS.** It can serve as a company's single sign-in entry point, and it can also reverse-proxy into existing LDAP / Active Directory. Many teams use it to replace Okta, Auth0 or Entra ID; the enterprise edition adds higher-end compliance and operations features.
+
+- **Who it's for**: mid-sized and large teams that need unified employee / customer login; companies that want self-hosting so they keep control of user data
+- **Who it's not for**: projects that are just one small internal tool with fewer than 50 login users
+
+**Minimal setup**
+
+Bring up a minimal instance with Docker Compose:
+
+```
+curl -L https://goauthentik.io/docker-compose.yaml -o docker-compose.yml
+```
+
+Then start it and open `:9000` to initialize:
+
+```
+docker compose up -d
+```
+
+*Source:* **https://github.com/goauthentik/authentik**
+
+### oceanbase/oceanbase — Ant Group's native distributed database
+
+**OceanBase is a distributed relational database rewritten from the ground up, scaling a single cluster to 1,500 nodes, PB-scale data and trillions of rows.** It measured 707 million tpmC on TPC-C and 15.26 million QphH on TPC-H at 30000GB; it is also MySQL-protocol compatible, so migrating off a standalone MySQL costs close to nothing. With RPO = 0 and RTO &lt; 8 seconds for failure recovery, it has been running in financial-grade scenarios for years.
+
+- **Who it's for**: businesses with large, continuously growing data that care about high availability and cost; hard requirements on MySQL compatibility
+- **Who it's not for**: small projects with modest QPS and GB-level data
+
+**Minimal setup**
+
+The easiest way to try it is the official all-in-one:
+
+```
+bash -c "$(curl -s https://obbusiness-private.oss-cn-shanghai.aliyuncs.com/download-center/opensource/oceanbase-all-in-one/installer.sh)"
+```
+
+Deploy a minimal single-node instance:
+
+```
+obd demo
+```
+
+*Source:* **https://github.com/oceanbase/oceanbase**
+
+### t8y2/dbx — a 25 MB cross-platform database Swiss Army knife
+
+**DBX packs 90+ kinds of databases into a 25 MB binary, covering MySQL, PostgreSQL, SQLite, Redis, MongoDB, DuckDB, SQL Server, Dameng and more.** It ships as a desktop app, a Docker image and a CLI, has a built-in AI assistant that explains slow SQL, and bundles an MCP Server so a local agent can connect and operate on your data directly.
+
+- **Who it's for**: DBAs / backend engineers / data analysts who constantly switch between database types; anyone who wants one tool to replace Navicat, DBeaver and TablePlus
+- **Who it's not for**: people who connect to a single database and have no need for a native client
+
+**Minimal setup**
+
+Install the desktop package, or start the CLI in one line:
+
+```
+docker run -d -p 8090:8090 dbxio/dbx
+```
+
+Then open `http://localhost:8090` in your browser and you're in:
+
+```
+open http://localhost:8090
+```
+
+*Source:* **https://github.com/t8y2/dbx**
+
+![](/assets/blog-images/7-ddgc8p/img04.webp)
+
+### gobackup/gobackup — configure once, back up for years
+
+**GoBackup is a backup CLI written in Go that compresses and encrypts databases and files on a schedule, then ships them to cloud storage.** Built-in sources include MySQL, PostgreSQL, Redis, MongoDB, SQLite and MSSQL; destinations cover 20+ stores such as S3, Alibaba Cloud OSS, Tencent Cloud COS, Huawei OBS, Backblaze B2, SCP, FTP and MinIO. It includes a scheduling daemon and email / Feishu / Slack / DingTalk notifications, all in a single dependency-free binary. Ruby China's production server ran it continuously for years, at under 0.3 yuan of storage cost per month.
+
+- **Who it's for**: small and mid-sized application servers, personal VPSes, businesses that need compliant retention
+- **Who it's not for**: large infrastructure that needs PITR, cross-region disaster recovery or TB-level real-time sync
+
+**Minimal setup**
+
+One-line script install:
+
+```
+curl -sSL https://gobackup.github.io/install | sh
+```
+
+Start a background daemon:
+
+```
+gobackup start
+```
+
+*Source:* **https://github.com/gobackup/gobackup**
+
+### firecrawl/firecrawl — turn web pages into Markdown LLMs can eat
+
+**Firecrawl is a web data API built for AI agents: it turns any URL into clean Markdown, structured JSON, a screenshot or a PDF.** It handles rotating proxies, JS rendering and 403 bypasses out of the box, with a P95 latency of 3.4 seconds and coverage of 96% of public web pages. Search, Scrape, Crawl, Batch Scrape and Interact form a complete interface set, and one command hooks it up to any MCP client.
+
+- **Who it's for**: teams working on RAG, agents, data collection, SEO monitoring or AI summarization
+- **Who it's not for**: lightweight needs that only crawl one or two fixed pages
+
+**Minimal setup**
+
+Install the Python SDK:
+
+```
+pip install firecrawl-py
+```
+
+Scrape one URL and convert it to Markdown:
+
+```
+from firecrawl import Firecrawl
+Firecrawl(api_key="fc-xxx").scrape("https://example.com", formats=["markdown"])
+```
+
+*Source:* **https://github.com/firecrawl/firecrawl**
+
+![](/assets/blog-images/7-ddgc8p/img05.webp)
+
+### public-apis/public-apis — the community-maintained dictionary of free APIs
+
+**public-apis is a free API directory with 480,000 stars, organized into dozens of categories like animals, weather, finance, music, news and geolocation.** Every entry notes whether an API key is required and whether it supports HTTPS, CORS and which auth method it uses. Every day a few — sometimes dozens — of PRs add new endpoints, making it the cheat sheet you flip through while building a side project.
+
+- **Who it's for**: developers who need a data source for a demo, a thesis project or a personal project
+- **Who it's not for**: production services that need SLAs and enterprise-grade reliability (use a paid API for those)
+
+**Minimal setup**
+
+Just clone the repo and search locally:
+
+```
+git clone https://github.com/public-apis/public-apis
+```
+
+Or browse the web version by category:
+
+```
+open https://publicapis.dev
+```
+
+*Source:* **https://github.com/public-apis/public-apis**
+
+![](/assets/blog-images/7-ddgc8p/img06.webp)
+
+## 4. Takeaways and what to do next
+
+If you can only install one thing first, start with **Supabase** — it kills 80% of your backend boilerplate outright. If you're already losing sleep over production databases, **GoBackup** is a one-time config that lets you coast for years. And if you work on AI apps or data collection, bookmarking **Firecrawl** and **public-apis** before you log off is enough.
+
+#AI #LLM #RAG #Supabase #Authentik #Oceanbase #Dbx #Gobackup #Firecrawl #PublicApis

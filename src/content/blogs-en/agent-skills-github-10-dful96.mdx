@@ -1,0 +1,139 @@
+---
+title: "Too many Agent Skills to choose from? This GitHub project merges 10+ platform leaderboards into one table"
+publishedAt: "2026-05-22"
+summary: "Every platform only ranks its own ecosystem, so picking a Skill means juggling five tabs and still not knowing whom to trust. This project aggregates install counts, growth and social buzz from 10+ sources into 9 daily leaderboards, with open CSV data you can take away."
+image: "/assets/blog-images/agent-skills-github-10-dful96/img01.webp"
+tags: ["AI", "Agent", "Open Source"]
+author: "Adam"
+---
+![](/assets/blog-images/agent-skills-github-10-dful96/img01.webp)
+
+Title options (pick 1 of 3)
+
+Too many Agent Skills to choose from? This GitHub project merges 10+ platform leaderboards into one table
+
+9 daily leaderboards + 10,000+ Skills tracked: best-skills plugs into Claude Code with one command
+
+No database at all — this 605-star project runs an App Store rating system for the AI Agent era on CSV alone
+
+# Too many Agent Skills to choose from? This GitHub project merges 10+ platform leaderboards into one table
+
+## 1. Opening: why you need this tool
+
+AI coding tools extend their capabilities through Skills. This year Skills repos have sprouted everywhere: skills.sh, ClawHub, Tencent SkillHub, GitHub, the X community. Each platform only measures its own ecosystem. To pick a Skill that's actually good, a developer has to bounce between 5+ sites, compare numbers, and still worry: "the same name shows ten-times different numbers on two platforms — who do I believe?"
+
+The bigger problem is that popular isn't the same as useful. Want "the fastest risers of the last 7 days"? No platform gives you that. Want "the most downloaded among officially verified publishers"? You have to aggregate across platforms yourself. Want to know "is anyone really talking about this Skill, or does the name just collide with something else"? The default leaderboards can't answer that at all.
+
+That's exactly what LinklyAI/best-skills does: it merges install counts, growth rates and social buzz from 10+ communities into 9 comparable daily leaderboards, with open CSV data you can take and use. GitHub 605 stars, CC BY 4.0, free for commercial use.
+
+## 2. What it is: the problem it solves
+
+LinklyAI/best-skills is a **cross-platform leaderboard for Agent Skills**, refreshed daily across 9 leaderboards and tracking 10,000+ Skills, covering install counts, weekly growth, social buzz, maintenance activity, official verification, and rising newcomers.
+
+Core features:
+- **Cross-ecosystem aggregation**: skills.sh (Claude/Vercel CLI installs), ClawHub (OpenClaw downloads), Tencent SkillHub (domestic installs), GitHub repo stars, Twitter/X, Hacker News and Bluesky all counted together.
+- **Raw data preserved**: every CSV ships with per-platform raw numbers, so anyone can re-check and re-rank. No apples-plus-oranges blending.
+- **AI judge validation**: TypeSafe's jev decision model decides whether a social post is really about this Skill and whether a listing is a Skill that's actually maintained. Every judgment's probability is public, and placeholder, deprecated or harmful entries get filtered out.
+- **Native support for AI agents**: an `llms.txt` lets Claude Code, Codex, Cursor and OpenClaw read it in one command; it can also be installed as a persistent skill via `npx skills add`.
+
+The project runs 9 leaderboards tracking 10,000+ Skills, with READMEs in English, Chinese, Japanese, Korean, Spanish, German and Russian.
+
+## 3. Core features in depth
+
+![](/assets/blog-images/agent-skills-github-10-dful96/img02.webp)
+
+### 1. Nine daily leaderboards: every angle of the selection problem
+
+The project offers 9 complementary leaderboards, each answering one question:
+
+- **best-100 (Worth-Installing Score)**: a ranking from "popularity + momentum + social buzz + maintenance + trust", for the "which Skills should I install" starting question. #1 is agent-browser (WIS 80.7), #2 is frontend-design (78.2).
+- **top-installs**: install counts from every ecosystem shown side by side — plainly telling you "find-skills has 3.59M installs on skills.sh", "dev-expert has 1.62M on SkillHub" — without forcing a sum.
+- **trending-7d**: the 7-day growth chart for catching new waves. ai-video-generation is up 12.8% for the week.
+- **social-buzz**: a four-source buzz chart across X, HN, Bluesky and GitHub, automatically excluding Skills whose "names are too generic and ownership unclear".
+- **most-active**: who ships most often among popular Skills; chinese-official-writing with 132 versions takes first.
+- **official-100**: popular Skills from platform-verified publishers, with unofficial entries removed.
+- **official-vendors**: verified vendors ranked by total installs; microsoft has 582 Skills and 7.09M installs.
+- **top-repos**: the underlying GitHub repo star chart; obra/superpowers leads at 292k stars.
+- **rising-stars**: newcomers from the past 30 days, ranked by popularity, to help you spot tomorrow's winners.
+
+### 2. Side-by-side display across platforms instead of blending
+
+The core methodology is **"don't add apples and oranges."** Cross-platform numbers are always shown side by side, and ranking uses a "within-platform percentile composite." Every CSV row gives both the composite WIS and each platform's raw number, and a "Cov" column marks how many platforms back the score (A = all three, C = only one), so you don't put trust in a single source by mistake.
+
+### 3. AI judge jev: keeping the buzz chart free of name-collision noise
+
+The biggest trap in social buzz is misattribution by name. The name agent-browser appears 80+ times on X — but how many are actually about this Skill from vercel-labs? The project hands every candidate post to the jev model to score: is this post about this Skill, is this listing actually maintained, is the category right. Every probability is public, and you can dig through the raw judgments in `data/latest/rankings/judgments.csv`. That separates real discussion from name collisions cleanly.
+
+### 4. Open CSV plus llms.txt: consumable by humans and AI alike
+
+All data lives as CSV under `data/YYYY-MM-DD/`, archived per day, while `data/latest/` is always the newest day. For humans, `linkly.ai/skills` offers interactive visualizations. For AI agents, send `Read https://linkly.ai/skills/llms.txt` and Claude Code, Cursor and the like will follow the llms.txt instructions to pick files, read fields and compare on their own. Want the leaderboard as persistent agent knowledge? One line: `npx skills add https://github.com/LinklyAI/best-skills --skill best-skills`.
+
+## 4. Technical highlights and performance data
+
+![](/assets/blog-images/agent-skills-github-10-dful96/img03.webp)
+
+- **Data scale**: 10,000+ Skills tracked, 9 leaderboards, 9 core metric dimensions.
+- **Data sources**: 4 install sources (skills.sh, ClawHub, Tencent SkillHub, GitHub API) plus 4 social sources (X, HN, Bluesky, GitHub search), collected incrementally every day.
+- **AI judge**: the jev-1.13 decision model scores every candidate probabilistically, filtering placeholder, deprecated and harmful listings.
+- **Open license**: CC BY 4.0, commercial use allowed; the only requirement is keeping the attribution "Data from Best Skills by @BlueeonY — CC BY 4.0".
+- **Architecture**: a two-layer "raw data + derived leaderboards" directory, archived daily under `data/YYYY-MM-DD/` with `data/latest/` symlinked to the newest, so everything is traceable and reproducible. Single CSV format, no database lock-in, git diffs stay readable.
+- **Ecosystem compatibility**: the llms.txt standard lets any AI agent consume it at zero cost, and `npx skills add` installs it as a persistent agent skill in one command.
+
+## 5. Who it's for
+
+![](/assets/blog-images/agent-skills-github-10-dful96/img04.webp)
+
+**Typical scenarios**:
+1. **AI coding tool users picking Skills**: Claude Code or Cursor users open best-100, install a few with WIS 80+, and get there far faster than installing whatever someone recommended.
+2. **Skill developers doing competitive research**: before shipping, check top-repos and official-100 to see what the leaders are building; after shipping, check trending-7d to see whether you made the newcomers chart.
+3. **AI product managers tracking the space**: sweep social-buzz plus rising-stars weekly to see where new capabilities and new buzz intersect across niches.
+4. **Data analysts doing secondary analysis**: the CSV is fully open, so pull it into Pandas/Excel for your own cross-tabs and trend lines — the per-platform raw numbers are all there.
+
+**Good fit**: AI tool users choosing Skills; engineers building Skills; product managers or analysts tracking the AI Agent ecosystem.
+
+**Bad fit**: users who only care about one platform (ClawHub only, say); monitoring that needs minute-level real-time data (this project updates daily).
+
+## 6. Comparison
+
+![](/assets/blog-images/agent-skills-github-10-dful96/img05.webp)
+
+| Dimension | LinklyAI/best-skills | skills.sh single-platform chart | ClawHub single-platform chart | Awesome lists (hand-maintained) |
+|---|---|---|---|---|
+| Platforms covered | 10+ (including social sources) | 1 | 1 | Varies |
+| Update frequency | Daily, automated | Real time | Real time | Weekly/monthly, manual |
+| AI judge | jev probabilistic scoring | No | No | No |
+| Raw data | CSV, publicly downloadable | Not public | Not public | Not public |
+| AI-agent friendly | llms.txt + npx skills add | No | No | No |
+| Data license | CC BY 4.0, free for commercial use | Closed | Closed | Varies |
+| Scoring transparency | Raw and composite numbers side by side | Single number | Single number | Subjective |
+
+The big difference: **this is the only project that does "cross-platform side-by-side + AI judge + native agent consumption" all three at once.** The alternatives either only look at themselves, or keep their data closed, or rely on manual maintenance.
+
+## 7. Getting started
+
+**Up and running in 3 minutes**:
+1. Open the visualization page: `https://linkly.ai/skills` and switch between the 9 tabs.
+2. Download raw data: clone the repo, go to `data/latest/`, and grab the CSV you need (e.g. `best-100.csv`).
+3. Let an AI agent read it: `Read https://linkly.ai/skills/llms.txt`, paste the output into Claude Code / Codex / Cursor, and just ask "which three frontend Skills grew fastest in the last 7 days?"
+
+**Advanced usage**:
+- Install as a persistent agent skill: `npx skills add https://github.com/LinklyAI/best-skills --skill best-skills`, and the agent knows the latest leaderboards every day.
+- Secondary analysis: combine `data/index/first-seen.csv` with the daily leaderboard to compute newcomer retention curves; use the per-platform raw numbers in `data/YYYY-MM-DD/raw/` to compute composite metrics of your own design.
+- Commercial citation: add one line to your product or article — "Data from Best Skills by @BlueeonY — CC BY 4.0" — and you're done. No extra permission needed.
+
+## 8. Takeaways and next steps
+
+LinklyAI/best-skills solves an overlooked problem: **in the AI Agent era, Skills need an "App Store rating system" too**. With 9 daily leaderboards, 10+ data sources, AI judge jev validation, a CC BY 4.0 open license and native llms.txt support for AI agents, it automates the tedious cross-platform comparison that used to be done by hand.
+
+Three suggestions:
+1. **Bookmark it first**: open `https://linkly.ai/skills`, start with best-100, pick 3 Skills with WIS 70+ and try them for a week.
+2. **Then wire in your AI**: run the `npx skills add` command so your Claude Code / Cursor automatically knows what's new every day, instead of you checking manually.
+3. **Give it a star**: the project sits at 605 stars on GitHub, and daily refreshes run on an automated pipeline — a ⭐ is the way to help more AI tool users find it.
+
+Project: `https://github.com/LinklyAI/best-skills`
+Visualization: `https://linkly.ai/skills`
+One-line pitch: bad at picking Skills? Let the most complete daily leaderboard on the internet do the homework for you.
+
+![](/assets/blog-images/agent-skills-github-10-dful96/img06.webp)
+
+#best-skills #BestSkills #linklyai #AIagents #AIworkflows #automation #opensource #GitHub

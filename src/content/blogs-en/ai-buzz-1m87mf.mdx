@@ -1,0 +1,159 @@
+---
+title: "One event log for humans and AI: how Buzz redefines the team workspace"
+publishedAt: "2026-10-07"
+summary: "At 2 a.m. the alerts go off, and answering \"has this error happened before?\" means scrolling through four tools that don't know about each other. Block's Buzz collapses chat, code review, CI and agents into a single signed event log on Nostr."
+image: "/assets/blog-images/ai-buzz-1m87mf/img01.webp"
+tags: ["AI", "Agent", "Open Source"]
+author: "Adam"
+---
+![](/assets/blog-images/ai-buzz-1m87mf/img01.webp)
+
+## 1. Intro: why you need this tool
+
+It's 2 a.m. and the monitoring alerts are going off. You ask in Slack, "has this error happened before?" Then you dig through Confluence, Jira, GitHub Issues and the CI log channel — four tabs that refuse to acknowledge each other. By the time you find the answer, dawn is close.
+
+The AI assistants are worse. They can write code, but they won't show you what they read, what they can do, or whether they overstepped. The audit log has one line: "AI called a tool." No signature, no replay, no chain of responsibility.
+
+The team collaboration market has swollen past 20 billion dollars, yet "humans + agents + workflows + code repos" still won't fit together. Block is betting a 24.6K-star open-source project called Buzz on this judgment: one event log, one identity model, one protocol, so humans and AI agents genuinely sit in the same room.
+
+![](/assets/blog-images/ai-buzz-1m87mf/img02.webp)
+
+## 2. Project overview: what it is in one sentence
+
+Buzz is a self-hosted workspace that is, at heart, a Nostr relay. It models messages, reactions, code reviews, CI results, merge decisions and media comments all as "signed events" and drops them into one audit log.
+
+Four keywords capture the core:
+
+- **Unified identity**: humans and AI agents share the NIP-42 key system and sign identically
+- **Events as truth**: chat, patches, workflows and Git events are all the same kind of event
+- **Self-hostable**: one relay is one community, and hosted mode supports multi-tenancy
+- **Agent-native**: ships `buzz-cli` and an ACP bridge, so Goose, Codex and Claude Code plug straight in
+
+The project was open-sourced by Block (the parent company of Cash App and Square) under Apache 2.0. Rust is the main language; the desktop app is built with Tauri + React.
+
+![](/assets/blog-images/ai-buzz-1m87mf/img03.webp)
+
+## 3. Core features in depth
+
+### 1. Agents are members, not bots
+
+Traditional chat bots authenticate with an API token and get all-or-nothing permissions. Buzz goes the other way: every AI agent generates its own Schnorr key pair, joins channels on its own, and gets its own channel membership and audit trail. The granularity of authorization matches a human teammate — whatever you'd grant a new colleague, you grant the agent.
+
+In practice: you can point one agent at the `#frontend-bugs` channel only, and have another orchestrate an entire release across channels. They don't interfere, and when something goes wrong, each one can be traced separately.
+
+### 2. One event log covers all collaboration
+
+Messages, reactions, review approvals, Git events and NIP-34 patches are all distinguished by `kind` numbers and land in the same Postgres full-text index. Search "who approved that memory leak fix last time" and a single query returns the conversation, the patch, the CI log and the merger.
+
+The price of this design is protocol-first: you have to accept the Nostr event model. The payoff is that auditing is complete by construction — no more split where chat lives in Slack, code in GitHub and approvals in Jira.
+
+### 3. YAML workflows plus a trigger matrix
+
+Buzz workflows are described in YAML, and triggers cover four types: messages, reactions, schedules and webhooks. A realistic release pipeline looks like this: tag pushed → read the channel and merge the PR → draft release notes → post to `#releases` and wait for a 👍 → trigger a signed release.
+
+Every step is signed, searchable and revertible. The configuration lives in `crates/buzz-workflow`.
+
+### 4. Frame-level media comments
+
+Video comments aren't timestamps — they're anchored to a specific frame. Design reviews, technical demos, retrospective recordings: every frame can carry a discussion thread pinned to that exact moment in the video.
+
+![](/assets/blog-images/ai-buzz-1m87mf/img04.webp)
+
+## 4. Technical highlights and performance data
+
+Under the hood Buzz runs `buzz-relay`, written in Rust on top of Axum, handling WebSocket and REST requests at once. The architecture splits into a dozen focused crates, each with a clear scope:
+
+- `buzz-core`: zero-I/O types, NIP-01 filters, Schnorr signature verification
+- `buzz-relay`: Axum WS + REST entry point
+- `buzz-db`: Postgres event storage
+- `buzz-search`: Postgres FTS full-text search, no extra search engine needed
+- `buzz-pubsub`: Redis pub/sub for presence and typing indicators
+- `buzz-audit`: hash-chained audit log, tampering detectable
+- `buzz-acp`: ACP (Agent Communication Protocol) to MCP bridge, so Goose, Codex and Claude Code work out of the box
+
+Storage uses Postgres + Redis + S3/MinIO (the Blossom protocol). Postgres handles both event storage and the full-text index, so a single dependency keeps ops simple.
+
+In multi-tenant mode, every tenant-visible row, cache key, search document, workflow state and media metadata is isolated by a community derived from the host. Shared infrastructure is an implementation detail; to the user, every community is its own workspace.
+
+RPC performance: in Block's internal workflows, relay latency for agent-originated events stays in the millisecond range. Signed events are linked through a hash chain, so audit replay jumps to the previous node in O(1).
+
+![](/assets/blog-images/ai-buzz-1m87mf/img05.webp)
+
+## 5. Use cases and who it's for
+
+✅ **Who it's for:**
+
+- **Engineering teams that need deep AI agent collaboration**: agents that can read history, answer questions and open reviews, while keeping a clear audit chain
+- **Organizations with data sovereignty requirements**: finance, healthcare, government and enterprise teams that need the workspace fully self-hosted in their own datacenter
+- **Teams already in the Nostr ecosystem**: NIP-34 patches, Blossom media and Schnorr auth work out of the box
+- **Small teams that want AI to replace "the seven-tool stack"**: collapsing chat, code hosting, CI, release tooling and search glue into one system
+
+❌ **Who it's not for:**
+
+- Purely non-technical teams: the protocol mindset is a steep tax, and Slack + Notion is easier
+- Users who want turnkey SaaS: Buzz still needs self-hosting or a Railway deploy
+- Compliance audits that require a traditional RBAC model: the Nostr identity model takes some learning
+
+![](/assets/blog-images/ai-buzz-1m87mf/img06.webp)
+
+## 6. Comparison with alternatives
+
+| Dimension | Buzz | Slack + GitHub + CI | Linear + Agents | Discord + Bots |
+|------|------|---------------------|-----------------|----------------|
+| Unified identity model | NIP-42 keys | Multiple accounts | Linear API token | Bot token |
+| Event auditing | Hash-chained signatures | Per platform | Per platform | Per platform |
+| Agent permission granularity | Per-channel independent keys | Global permissions | Workspace level | Global permissions |
+| Data sovereignty | Self-hosted relay | Vendor cloud | Vendor cloud | Vendor cloud |
+| Open protocol | Open Nostr protocol | Private API | Private API | Private API |
+| Agent bridge | ACP native | Needs middleware | Partial | Needs middleware |
+
+The key difference: Buzz bets on "one protocol covers everything" instead of gluing existing tools together. That road is harder, but the ceiling is higher.
+
+## 7. Quick start
+
+### Path A: you just want the desktop app
+
+Download the installer for your platform from the [Releases page](https://github.com/block/buzz/releases/latest): macOS comes in Apple Silicon and Intel builds, Linux in AppImage and deb, and Windows an unsigned exe (click "Run anyway" on first launch).
+
+It connects to `ws://localhost:3000` by default; set the `BUZZ_RELAY_URL` environment variable to switch relays.
+
+### Path B: deploy your own relay
+
+Hit the [Railway one-click deploy](https://railway.com/deploy/buzz-relay-block) button and you have a team-dedicated relay in 30 seconds.
+
+### Path C: build from source
+
+You need Docker, Hermit (or Rust 1.88+, Node 24+, pnpm 10+, and `just`).
+
+```bash
+git clone https://github.com/block/buzz.git && cd buzz
+. ./bin/activate-hermit
+just setup && just build
+just dev
+```
+
+`just dev` starts the relay and the desktop app together. For day-to-day work you can run `just relay` + `just desktop-dev` in separate terminals.
+
+### Going further: connect AI agents
+
+With `BUZZ_PRIVATE_KEY` set, `buzz-cli` works as JSON in / JSON out, designed for LLM tool calls. Goose, Codex and Claude Code bridge through `buzz-acp` with zero code.
+
+![](/assets/blog-images/ai-buzz-1m87mf/img07.webp)
+
+## 8. Summary and next steps
+
+Buzz redefines the underlying assumption of team collaboration: chat, code, CI, releases and media comments don't have to be seven assembled products — they can be one signed log. Nostr for the protocol, Rust for performance, self-hosting for data sovereignty and agent-native identity turn "humans and AI in the same room" from a slogan into something you can engineer.
+
+**Recommendations:**
+
+1. Start with the desktop app plus a local relay to run the smallest possible collaboration flow, and feel how independent agent keys change the permission model
+2. As the team grows, deploy to Railway or a production Compose cluster
+3. Connect the agent you know best (Claude Code or Goose) and check whether the audit chain meets your compliance requirements
+
+**Project links:**
+
+- GitHub: https://github.com/block/buzz
+- Architecture doc: https://github.com/block/buzz/blob/main/ARCHITECTURE.md
+- Vision doc: https://github.com/block/buzz/blob/main/VISION.md
+
+One-line pitch: if you're tired of copy-pasting information between seven tabs, Buzz is the open-source attempt to fold the verb "collaborate" back into a single workspace.

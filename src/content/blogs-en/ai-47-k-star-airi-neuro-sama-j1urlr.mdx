@@ -1,0 +1,116 @@
+---
+title: "A self-hosted AI companion arrives: 47K-star AIRI puts Neuro-sama on your own machine"
+publishedAt: "2026-09-09"
+summary: "Late at night you watch Neuro-sama play Minecraft and banter with chat — fast reactions, good jokes, redstone builds on the side. Then the stream ends and the digital life is gone, because she isn't open source and you can't take her home. Project AIRI is the open answer: a self-hosted companion that runs in a browser or on your desktop."
+image: "/assets/blog-images/ai-47-k-star-airi-neuro-sama-j1urlr/img01.webp"
+tags: ["AI", "Open Source", "Productivity"]
+author: "Adam"
+---
+![](/assets/blog-images/ai-47-k-star-airi-neuro-sama-j1urlr/img01.webp)
+
+## 1. Why you need this
+
+Late at night you open the stream and see Neuro-sama playing Minecraft while bantering with chat: fast reactions, plenty of jokes, and redstone machines being built on the side. But when the stream ends, this "digital life" is gone — she isn't open source, so you can't invite her home.
+
+Worse, the mainstream AI companion tools (Character.ai, JanitorAI, SillyTavern) can only chat — Character.ai has hundreds of millions of monthly users and still can't play games with you. Most open-source AI VTubers get stuck on local deployment, GPU requirements and cross-platform compatibility, so ordinary players never get them running.
+
+As of March 2026, Project AIRI on GitHub — 47,766 stars — has an answer: an AI digital companion that is actually yours, runs in the browser and on desktop, plays games with you, and talks to you in real time by voice.
+
+## 2. In one sentence: what is this project
+
+**Project AIRI** is a self-hosted, user-owned AI companion platform inspired by Neuro-sama, positioned as "a soul container for cyber life." Core features: real-time voice chat, playable Minecraft and Factorio, and cross-platform support for Web/macOS/Windows/Linux/iOS/Android. The latest release v0.10.2 is out, with 23+ LLM providers and 5 TTS engines.
+
+![](/assets/blog-images/ai-47-k-star-airi-neuro-sama-j1urlr/img02.webp)
+
+## 3. A deep dive into the core features
+
+### 1. Real-time voice chat: an end-to-end audio pipeline
+
+AIRI ships a complete "ears + mouth" chain: microphone capture in the browser + on-device speech recognition (VAD for speech detection) + LLM inference + multi-provider TTS synthesis. Its in-house `unspeech` proxy normalizes ElevenLabs, Azure, OpenAI-compatible endpoints, Alibaba Cloud and Local Kokoro into the standard OpenAI format, so swapping TTS needs no changes to business code.
+
+### 2. AI game companion: more than chatting
+
+This is AIRI's killer feature — the AI actually plays the game. Minecraft is driven server-side through the Mineflayer protocol, Factorio is orchestrated through the RCON API via the `autorio` automation library, and Kerbal Space Program is on the roadmap. The Electron desktop build uses NVIDIA CUDA and Apple Metal acceleration by default, while the browser build falls back to WebGPU/WebAssembly.
+
+### 3. A cross-platform Stage: the browser is her body too
+
+AIRI folds Live2D and VRM character models into the Stage: auto blinking, gaze tracking and idle eye drift are all built in, and the same code runs on Web, Electron and Capacitor (PWA/iOS/Android). Developers extend it with Vue 3 + TypeScript — zero platform branching.
+
+### 4. A fully local data layer: DuckDB-WASM + pgvector
+
+The memory system uses `@proj-airi/duckdb-wasm` to run a DuckDB data warehouse inside the browser; the planned Memory Alaya will connect pgvector for long-term memory and RAG. That means even with the network cable unplugged, the AI can recall what you talked about.
+
+## 4. Technical highlights and performance
+
+- **Native to the web stack**: WebGPU, WebAudio, Web Workers, WebAssembly and WebSocket have been wired in since day 1, with CUDA/Metal as the desktop fallback — dodging the "the web is slow" stereotype.
+- **23+ LLM providers**: OpenAI, Claude, Gemini, DeepSeek, Qwen, Ollama and vLLM all work out of the box, behind a unified direct-connect layer `xsai` that is only 6KB.
+- **i18n coverage**: Simplified Chinese, English, Japanese, Russian, Vietnamese, French and Korean — 7 languages, translated collaboratively on Crowdin.
+- **An ecosystem matrix**: 12+ sub-projects have spun up, including `xsai-transformers`, `mcp-launcher` and `@proj-airi/drizzle-duckdb-wasm`.
+
+![](/assets/blog-images/ai-47-k-star-airi-neuro-sama-j1urlr/img03.webp)
+
+## 5. Who it's for
+
+- **Streamers and VTuber fans**: an AI co-pilot that streams with you 24/7 and never signs off.
+- **Indie game players**: let the AI run the map, mine and build production lines for you — essential for Factorio automation research.
+- **Anime-style content creators**: plug in Live2D/VRM characters and build your own Kizuna AI or Neuro-sama.
+- **AI app developers**: engineers who want to study LLM agents, memory systems and cross-platform architecture.
+
+Not for: pure chat users (Character.ai is lighter), or commercial customer-support systems (the project is early-stage and leans entertainment).
+
+## 6. How it compares
+
+| Project | Game companion | Real-time voice | Self-hosted | Cross-platform desktop | Runs in browser |
+|---|---|---|---|---|---|
+| **Project AIRI** | ✅ Minecraft/Factorio | ✅ Multi-provider TTS | ✅ | ✅ Win/macOS/Linux | ✅ |
+| kimjammer/Neuro | ✅ | Partial | ✅ | ❌ | ❌ |
+| z-waif | ✅ | Partial | ✅ | ❌ | ❌ |
+| semperai/amica | ❌ | ✅ | ✅ | ❌ | ✅ |
+| elizaOS/eliza | ❌ | ✅ | ✅ | ✅ | ❌ |
+
+AIRI's edge is getting "games + full web stack + multi-platform packaging" working at the same time — a rare combination among comparable projects.
+
+## 7. How to get started quickly
+
+Fastest desktop path (Windows):
+
+```powershell
+winget install MoeruAI.AIRI
+```
+
+macOS users:
+
+```bash
+brew install --cask airi
+```
+
+Linux/NixOS users:
+
+```bash
+nix run github:moeru-ai/airi
+```
+
+Developers starting from source:
+
+```bash
+pnpm i
+pnpm dev            # browser Stage
+pnpm dev:tamagotchi # desktop Electron
+pnpm dev:pocket:ios # iOS mobile
+```
+
+Configure an LLM key (any one provider) and the character comes alive. The official Discord has 13,000+ members answering questions.
+
+![](/assets/blog-images/ai-47-k-star-airi-neuro-sama-j1urlr/img04.webp)
+
+## 8. Takeaways and next steps
+
+Project AIRI moves the "AI digital companion" from concept into a runnable product stage: the web stack as the body, the LLM as the brain, Electron + Capacitor as the limbs. Since launch it has spun up 12+ sub-projects and collected 47K stars, forming a complete AI VTuber ecosystem.
+
+If you want an AI partner that never goes offline, want to study agent game behavior, or are working on Live2D/VRM content, star the repo and run the desktop build once to see the demo.
+
+- GitHub: `https://github.com/moeru-ai/airi`
+- Website: `https://airi.moeru.ai`
+- Docs: `https://airi.moeru.ai/docs/`
+
+One-line pitch: **when the AI is not just a chat box but a teammate who mines with you, builds production lines and queues up matches with you, AIRI is the open-source answer.**

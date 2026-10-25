@@ -1,0 +1,224 @@
+---
+title: "6 open-source gems I keep to myself: the cure for type drift, service drift and context drift"
+publishedAt: "2026-06-21"
+summary: "Six GitHub projects worth opening every day: a typed runtime for TypeScript, a shared runtime for service composition, reproducible dev environments, and a context-engineering framework that keeps coding agents from going off the rails."
+image: "/assets/blog-images/6-ts-1ijqxb/img01.webp"
+tags: ["AI", "Open Source", "Dev"]
+author: "Adam"
+---
+![](/assets/blog-images/6-ts-1ijqxb/img01.webp)
+
+Title options (pick 1 of 3)
+
+6 open-source gems I keep to myself: the cure for type drift, service drift and context drift
+
+The 6 open-source projects on GitHub worth opening every day — all collected here
+
+From dev environments to AI coding: these 6 open-source projects are genuinely good
+
+## 1. Opening: still losing sleep over any of this?
+
+You're halfway through a TypeScript project when you realize error handling is all `try/catch`, and the more branches you add, the more you miss. You want to set up a dev environment for the backend, but your local Node version, Python version and system package versions are a tangled mess. Code that runs fine in CI blows up the moment it lands on a new colleague's machine. You finally get AI to write something for you, and once the conversation gets long it starts making things up and answering a different question than the one you asked. Sound familiar?
+
+Today I'm putting my six private open-source picks in one place — the cure for exactly these old problems: version drift, error drift and context drift.
+
+## 2. Project overview
+
+| Repository | Stars | Main language | What it does |
+|---|---|---|---|
+| Effect-TS/effect | 16.1k | TypeScript | A type-safe framework for TS applications |
+| iii-hq/iii | 18.8k | Rust | Service composition, extension and live observability |
+| jdx/mise | 34.1k | Rust | One-stop management of dev tools and environment variables |
+| jetify-com/devbox | 12.4k | Go | Instant, predictable dev environments |
+| open-gsd/gsd-core | 9.7k | JavaScript | A context-engineering framework for AI coding assistants |
+| tiimgreen/github-cheat-sheet | 59.2k | — | A collection of hidden Git and GitHub tricks |
+
+![](/assets/blog-images/6-ts-1ijqxb/img02.webp)
+
+## 3. Project breakdown
+
+### Effect-TS/effect — put the type system in charge of every bad smell in your TS app
+
+**It packages the hardest problems in TypeScript — typed errors, dependency injection, structured concurrency, scheduling, observability, schema validation — into one unified runtime framework.** It has a single goal: making the TS apps you write hold up under production complexity.
+
+The core capabilities are solid. Traditional `try/catch` only catches synchronously thrown exceptions; Effect puts errors into the type signature as `Effect<A, E, R>`, so the compiler forces you to handle them. Dependency injection is no longer the Angular decorator style but composition over `Layer`. Concurrent tasks work like `Promise.all`, except they support interruption, timeouts and resource cleanup.
+
+V4 is still in RC, and the `main` branch is already the v4 dev line. For TypeScript tooling it recommends TS 7, which gives the best performance and compatibility.
+
+- Good for: mid-to-large TS backends, anyone tired of the `try/catch` black hole, teams that want strict type contracts
+- Not for: the small project you started a week after learning TS, CLI tools that need minimal dependencies
+
+**Minimal setup**
+
+Install the V4 RC:
+
+```sh
+npm install effect@rc
+```
+
+Write a function with an error type and let TS force you to handle the failure branch:
+
+```ts
+import { Effect } from "effect"
+
+const divide = (a: number, b: number) =>
+  b === 0
+    ? Effect.fail(new Error("division by zero"))
+    : Effect.succeed(a / b)
+```
+
+*Repo:* **https://github.com/Effect-TS/effect**
+
+### iii-hq/iii — assemble services on the spot like Lego
+
+**iii is a shared runtime that folds queues, cron jobs, HTTP, state, observability, agents and sandboxes into one unified "compose it live" surface.** The core idea: three primitives (Workers, Triggers, Functions) cover everything a service can do, so you never again write a pile of glue code for every new tool.
+
+The highlights: every worker registers with the engine the moment it starts, and other workers can discover and call it immediately. When an agent lacks a capability, you can add a new worker at runtime — discovery, invocation and tracing all go through the same interface. The SDKs cover npm, PyPI, Crates and Docker at once, so TS / Python / Rust code plugs in painlessly.
+
+- Good for: multilingual microservice orchestration, agent platforms, teams that need to plug third-party capabilities in and out fast
+- Not for: simple single-process scripts, high-frequency trading pipelines that are extremely latency-sensitive
+
+**Minimal setup**
+
+Get iii running:
+
+```sh
+iii compose --namespace dev --up
+```
+
+Add a worker to the runtime:
+
+```sh
+iii trigger -n dev compose::add worker=queue
+iii trigger -n dev compose::add worker=agent
+```
+
+*Repo:* **https://github.com/iii-hq/iii**
+
+### jdx/mise — one CLI to replace asdf + direnv + make
+
+**mise squeezes "dev tool version management, project environment variables and task execution" into one Rust-written CLI.** The config is a single `mise.toml`; commit it to the repo and your shell, editor and CI all share the same settings.
+
+It supports per-project version switching for hundreds of tools including Node, Python and Go; `mise use node@24` pins a version in one line; tasks are declared under `[tasks.*]` and automatically carry the right tool and env; you can even declare machine bootstrapping (system packages, dotfiles, services). ==Note: after the first install you need to add `mise activate` to your shell config file==.
+
+- Good for: teams juggling many projects and versions, teams that want one config to cover local + CI
+- Not for: people who use one language at one version, or nvm loyalists who refuse to switch
+
+**Minimal setup**
+
+Install with one script:
+
+```sh
+curl https://mise.run | sh
+```
+
+Try a specific Node version:
+
+```sh
+mise exec node@24 -- node --version
+```
+
+*Repo:* **https://github.com/jdx/mise**
+
+![](/assets/blog-images/6-ts-1ijqxb/img03.webp)
+
+### jetify-com/devbox — an isolated dev shell that leaves your machine clean
+
+**Devbox uses the Nix package manager to generate an isolated dev environment locally.** You can declare Python, Go and Node in `devbox.json` just like system packages, then run `devbox shell` and get a clean shell that belongs only to this project.
+
+Key selling points: no virtual machine, so filesystem reads and writes are essentially full speed; add a new tool to the shell whenever you want, throw it away when you're done, and your host environment is untouched; the same `devbox.json` converts directly into a devcontainer, a Dockerfile or a remote cloud dev environment, so you use one toolchain from local to production.
+
+==Note: it depends on Nix under the hood, so the first start has to download the package cache==.
+
+- Good for: teams with severe version conflicts across projects, teams that want "one-click environments" for new hires, developers who hate Docker dragging down IO
+- Not for: native Windows users (WSL is recommended), pure frontend projects that insist on zero external dependencies
+
+**Minimal setup**
+
+One-line install:
+
+```sh
+curl -fsSL https://get.jetify.com/devbox | bash
+```
+
+Initialize the environment and add packages:
+
+```sh
+devbox init
+devbox add python@3.10
+```
+
+Enter the isolated shell:
+
+```sh
+devbox shell
+```
+
+*Repo:* **https://github.com/jetify-com/devbox**
+
+### open-gsd/gsd-core — freeing AI coding assistants from "context rot"
+
+**GSD Core is a "context engineering + spec-driven development" framework for AI coding assistants such as Claude Code, Codex and Cursor.** Its five-stage loop (Discuss / Plan / Execute / Verify / Ship) hands the AI's work off to sub-agents with clean context, leaving the main session to do lightweight coordination only.
+
+The core idea: every milestone runs the same loop; research, planning and execution all happen in a fresh 200k-token sub-agent; structured artifacts (`STATE.md`, `CONTEXT.md`) persist across sessions; the Verify stage walks the implementation and generates a fix plan, and only a clean result moves on to Ship. It supports 10+ AI coding runtimes (Claude Code, OpenCode, Codex, Cursor, Windsurf and more).
+
+- Good for: AI-assisted mid-to-large refactors, developers whose long tasks have blown up on context
+- Not for: people who just want the AI to write a five-line regex
+
+**Minimal setup**
+
+Install with one command:
+
+```sh
+npx @opengsd/gsd-core@latest
+```
+
+Start a new project or take over an existing repo:
+
+```sh
+/gsd-new-project
+/gsd-onboard
+```
+
+*Repo:* **https://github.com/open-gsd/gsd-core**
+
+![](/assets/blog-images/6-ts-1ijqxb/img04.webp)
+
+### tiimgreen/github-cheat-sheet — the 59k-star list of Git & GitHub tricks
+
+**This is a cheat sheet of hidden Git and GitHub features that has been starred 59k times.** From appending `?w=1` to a diff URL to hide whitespace changes, to task lists, keyboard shortcuts, closing issues from commit messages, reverting PRs and relative links, it lists almost every GitHub feature that is "easy to miss but can save your day".
+
+Highlights: fully open source, with chapters organized into a GitHub section and a Git section; entries are short and sharp, with GIF demos; available in five languages — English, Korean, Japanese, Simplified Chinese and Traditional Chinese; 59k stars and actively maintained for the long haul. Newcomers use it to get started with GitHub, and veterans flip through it as a reference to find that one little feature they assumed was impossible.
+
+- Good for: everyone who uses GitHub every day, especially developers who never systematically learned its hidden features
+- Not for: people who don't use Git at all (which basically means no one)
+
+**Minimal setup**
+
+Clone it locally and use it as a handbook:
+
+```sh
+git clone https://github.com/tiimgreen/github-cheat-sheet.git
+```
+
+When you want a diff to show "only the real code changes":
+
+```
+https://github.com/owner/repo/pull/123/files?w=1
+```
+
+*Repo:* **https://github.com/tiimgreen/github-cheat-sheet**
+
+![](/assets/blog-images/6-ts-1ijqxb/img05.webp)
+
+## 4. Wrap-up and what to do next
+
+These six projects cover the TS application skeleton, service orchestration, dev environments, Git tricks and AI coding workflows. Every one of them is a keeper — the kind you arrive at after stepping in the potholes and doing the reading.
+
+Suggested next steps:
+
+- If "version drift + environment drift" is your daily torture, install **mise** and **devbox** first: one manages tools inside a project, the other manages an isolated shell for it
+- If you're working on a mid-to-large TS project, or your AI assistant starts hallucinating halfway through a conversation, **Effect** and **GSD Core** are worth pulling into your engineering practice right now
+- Bookmark **GitHub Cheat Sheet** in your browser — every time you wonder "GitHub can do that?", a quick flip will answer it
+
+#CLITools #DevTools #FrontendDev #Effect #Iii #Mise #Devbox #GsdCore #GithubCheatSheet #gsd-core

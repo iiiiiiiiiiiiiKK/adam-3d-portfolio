@@ -1,0 +1,93 @@
+---
+title: "This open-source app put a Linux sandbox in your phone — and changed how I think about AI agents"
+publishedAt: "2026-10-20"
+summary: "Siri doesn't understand what you actually mean, and third-party AI apps only run in the cloud, so your health data, chats and calendar all end up on someone else's server. OpenMinis runs an on-device agent with a real Linux sandbox, and it's fully open source."
+image: "/assets/blog-images/linux-app-ai-agent-8yqt04/img01.webp"
+tags: ["AI", "Agent", "Open Source"]
+author: "Adam"
+---
+![](/assets/blog-images/linux-app-ai-agent-8yqt04/img01.webp)
+
+## 1. Why you need this
+
+Siri doesn't understand plain language, and third-party AI apps only run in the cloud — your health data, chat history and calendar all get uploaded to someone else's server. Every "Hey Siri" is another round of running naked with your privacy. MacStories editor Federico Viticci put it plainly: "the most stunning indie app I've seen in a very long time." OpenMinis is a native app that pulls the AI agent out of the cloud and back into your pocket.
+
+## 2. What it is, in one sentence
+
+OpenMinis is a **cross-platform, on-device AI agent app**, completely free and open source. It puts mainstream models like Claude, GPT and Gemini inside a native mobile shell, then hands them a genuinely usable Linux sandbox computer. The project has earned 3,327 stars on GitHub; the main repo is a dual Swift + Kotlin implementation supporting iOS and Android at the same time.
+
+## 3. Core features in depth
+
+### 1. An AI agent with its own Linux sandbox
+
+OpenMinis boots a full Alpine Linux environment inside the device (iSH on iOS, PRoot on Android), and the agent can install packages, run scripts and manipulate real files inside it. That means it isn't just a "chatbot" — it's a digital employee that can actually execute commands and produce results.
+
+### 2. Deep integration with device systems
+
+Through tool interfaces, the agent calls straight into Health, Calendar, Reminders, Contacts, HomeKit, Bluetooth, Clipboard, Media, Alarms and other system capabilities. This is exactly why MacStories called it "what Siri AI on iOS should be" — it can orchestrate every capability on your device.
+
+### 3. Browser automation and the Skills system
+
+The agent can browse the web and operate pages for you. A Skill is a folder with a `SKILL.md` inside, loaded on demand, and it stays compatible with existing skills from Claude, Codex, OpenClaw and Hermes Agent. The `MinisSkills` repo already hosts adapted skills for TTS, search, health analysis and media downloads.
+
+### 4. Workspaces and iCloud sync
+
+Via the `minis://workspace/` scheme, every workspace is an isolated context, and iCloud sync keeps you moving seamlessly between iPhone, iPad and Mac. Native code also offloads heavy work to the system (Native Offloads), leaving the sandbox to handle general-purpose logic.
+
+![](/assets/blog-images/linux-app-ai-agent-8yqt04/img02.webp)
+
+## 4. Technical highlights and numbers
+
+OpenMinis is solidly engineered: `src/ios/` hosts the main app and the Share/Widget/File Provider extensions in SwiftUI, `src/android/` uses Kotlin + Compose plus JNI native code, and `src/shared/` holds assets shared by both sides. The sandbox dependencies (iSH, PRoot, FFmpeg, LAME) and the Alpine rootfs are **all built from source** rather than dropped in as binaries — a commitment to the open-source baseline that GPLv3 demands. For media it uses FFmpeg + LAME, for text it uses cppjieba for Chinese tokenization and KaTeX for math rendering, with Markdown handled by swift-cmark. On Android it integrates Shizuku to strengthen the permission model. Within those 3,327 stars sits a complete architecture spanning model calls, sandbox execution and system integration.
+
+## 5. Where it fits, and who it fits
+
+**Use case one: health automation** — snap a photo of your lunch, and the agent identifies the dish, estimates calories and macros, and writes it into Apple Health, with nothing leaving the device.
+
+**Use case two: a morning briefing** — trigger the agent from Shortcuts to pull your X timeline, summarize it and read it aloud with TTS as a wake-up alarm.
+
+**Use case three: organizing an Obsidian vault** — mount the vault as a workspace and let the agent research, clean up and write back Markdown notes. A great tool for researchers.
+
+It suits privacy-first power users, product managers who want daily chores automated, and developers who need a local agent for research. It does not suit people who refuse to touch a command line and expect an out-of-the-box chatbot — OpenMinis requires you to bring your own API key.
+
+![](/assets/blog-images/linux-app-ai-agent-8yqt04/img03.webp)
+
+## 6. How it compares
+
+| Aspect | OpenMinis | Generic AI chat app | Siri/Apple Intelligence |
+|---|---|---|---|
+| Data location | Fully on-device | Mostly cloud | Mostly cloud |
+| Model choice | Bring your key, Claude/GPT/Gemini supported | Usually tied to one vendor | Apple models only |
+| System integration | Health/Calendar/HomeKit and a dozen more | Practically none | Limited |
+| Can execute commands | Full Linux sandbox | No | No |
+| License | GPLv3 | Mostly closed source | Closed source |
+
+A Zhihu column put it this way: "to a large extent it matches, and in places exceeds, Apple Intelligence." The core reason to pick OpenMinis is that **you get control back** — the model is your choice, the data stays local, and the capabilities are yours to orchestrate.
+
+![](/assets/blog-images/linux-app-ai-agent-8yqt04/img04.webp)
+
+## 7. Getting started quickly
+
+**How to install**: on iOS, search for it on the App Store, or join the [TestFlight beta](https://testflight.apple.com/join/3BdkA5c3) for early access. On Android, grab the latest APK from [GitHub Releases](https://github.com/OpenMinis/OpenMinis/releases).
+
+**Minimal working example**:
+1. After installing, enter a Claude or GPT API key;
+2. Create a workspace;
+3. Give it your first instruction in natural language, e.g. "collect the bugs from this Telegram group chat into Apple Reminders";
+4. The advanced move is mounting an Obsidian vault or a local directory as a workspace so the agent can keep collaborating inside it.
+
+**Building from source**: after `git clone --recurse-submodules`, run `./deps/build_lame.sh` and `./deps/build_ffmpeg.sh` first, then build iSH and the Alpine rootfs in order. On Android you need NDK r28+ and can run `./gradlew :app:assembleDebug`. See `BUILDING.md` for a detailed troubleshooting guide.
+
+![](/assets/blog-images/linux-app-ai-agent-8yqt04/img05.webp)
+
+## 8. Takeaways
+
+OpenMinis turns the AI agent from a "cloud black box" into "a programmable digital employee in your pocket" — an on-device Linux sandbox, whole-system integration and compatibility with mainstream skills. Those 3,327 stars aren't just a number; they're the community's consensus that AI should run on the user's own device. Start by installing the iOS TestFlight build and trying a workflow, then replicate a task or two from the AwesomeMinis repo. If you write code, it's worth building from source once to see the sincerity of this GPLv3 project for yourself.
+
+**Project links**:
+- Website: [openminis.app](https://openminis.app)
+- Repo: [github.com/OpenMinis/OpenMinis](https://github.com/OpenMinis/OpenMinis)
+- Skills library: [github.com/OpenMinis/MinisSkills](https://github.com/OpenMinis/MinisSkills)
+- Use cases: [github.com/OpenMinis/AwesomeMinis](https://github.com/OpenMinis/AwesomeMinis)
+
+One-line pitch: **if ChatGPT is a consultant in the cloud, OpenMinis is a private engineer living in your phone**.

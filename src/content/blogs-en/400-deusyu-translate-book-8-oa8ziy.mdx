@@ -1,0 +1,136 @@
+---
+title: "Finishing a 400-page English book is brutal? deusyu_translate-book throws 8 concurrent sub-agents at it"
+publishedAt: "2026-04-08"
+summary: "Translating a 400-page PDF with one chat session breaks down fast: terminology drifts and context gets truncated. deusyu/translate-book splits the book into chunks, runs 8 sub-agents in parallel and keeps terms consistent."
+image: "/assets/blog-images/400-deusyu-translate-book-8-oa8ziy/img01.webp"
+tags: ["AI", "Agent", "Docs"]
+author: "Adam"
+---
+![](/assets/blog-images/400-deusyu-translate-book-8-oa8ziy/img01.webp)
+
+Pick a title (1 of 3)
+
+Finishing a 400-page English book is brutal? deusyu/translate-book throws 8 concurrent sub-agents at it
+
+deusyu/translate-book: slice a whole PDF into chunks and translate in parallel — 8-way concurrency plus a glossary keeps the result from drifting
+
+Context blown up and output truncated? deusyu/translate-book dodges that trap with fresh-context sub-agents
+
+# Throw in a whole PDF and it translates itself — deusyu/translate-book puts a multi-agent pipeline inside your AI coding assistant
+
+## 1. The setup: if only something would do this step for you…
+
+To get through a 400-page English technical book, there are only two conventional routes: read it the hard way for two weeks, or feed it to AI chapter by chapter and stitch the output together by hand. The second sounds easy, but anyone who has actually done it knows the pain — early on, `transformer` comes out as "transformer" (the electrical kind), and later as something else entirely. The protagonist is Alex in one chapter and Alec in the next. Halfway through, the session gets truncated and you have to redo the last two chapters. Once the context gets long, the model starts "forgetting" what came before, and terminology, gender and pronouns all fall apart.
+
+The author of deusyu/translate-book has clearly suffered through this too. The project has 2,096 stars on GitHub and does exactly one thing: hand it a whole book (PDF/DOCX/EPUB) inside the AI agent you already use, and it does the chapter splitting, concurrent translation, terminology consistency checks and merged EPUB/PDF/DOCX/HTML export in one pass.
+
+## 2. What problem it solves
+
+translate-book is an **Agent Skill** for Codex, Claude Code and OpenClaw. Its core positioning is to turn "long-document translation" from manual labor inside a single session into a multi-agent pipeline. It slices a book into chunks of roughly 6,000 characters, and by default 8 concurrent sub-agents translate them independently — each one blind to the full context, yet kept consistent through "neighbor snippets" and a global glossary. After translation, a SHA-256 manifest verifies and merges the output, and Pandoc + Calibre produce HTML with a floating table of contents, DOCX, EPUB and PDF.
+
+Four keywords describe the core features: **parallel sub-agents, resumable runs, terminology consistency, verifiable pipeline**. 2,096 stars, implemented in Python, MIT licensed. It's a standalone project rather than a fork of the earlier `claude_translater`, with the workflow rewritten.
+
+![](/assets/blog-images/400-deusyu-translate-book-8-oa8ziy/img02.webp)
+
+## 3. Core features in depth
+
+### 1. Concurrent sub-agents with independent context windows
+
+The traditional approach stuffs the whole book into one session, and once the context grows the model loses early details. translate-book cuts the book into roughly 6,000-character chunks and hands each one to a sub-agent with a **brand-new context window**; 8 run concurrently by default, batched to stay under API rate limits. Each sub-agent sees only its own source file plus a few neighbor snippets (about 300 characters from each adjacent chunk, read-only, used to disambiguate pronouns and entities), then writes `output_chunk0042.md` and `output_chunk0042.meta.json`. Context doesn't pile up, output doesn't get truncated, and translating a long book stops being a gamble.
+
+### 2. Glossary v2 fixes "translation drift"
+
+When 100 chunks are translated independently, the same proper noun will very likely drift into several renderings. Before translating, the pipeline samples 5 chunks to automatically extract proper nouns and domain terms and generates `glossary.json`; the orchestrator then uses `scripts/glossary.py print-terms-for-chunk` to inject a three-column "source / aliases / translation" table into each chunk's prompt as a hard constraint. v2 adds `id`, `aliases`, `gender`, `confidence`, `evidence_refs` and `notes`, and forbids the same surface form (source or alias) from pointing at two different terms. After you change a term, `run_state.json` records exactly which chunks used it, so only the affected parts are retranslated — no need to rerun the whole book.
+
+### 3. SHA-256 manifest verification and recovery
+
+`manifest.json` stores the SHA-256 hash of every source chunk and verifies a 1:1 source-output match before merging. On top of that, `source_fingerprint.json` binds the temp directory to the bytes of the source file — if you replace the source and rerun, it aborts instead of silently reusing stale chunks. If a run is interrupted, rerunning skips completed chunks automatically; empty chunks abort explicitly instead of being silently dropped; and `--retranslate-untracked` forces old artifacts through the current glossary.
+
+### 4. Multiple output formats, with PDF-friendly handling of formulas and tables
+
+The output side runs Pandoc HTML (with an injected floating TOC) → Calibre → DOCX/EPUB/PDF. For academic PDFs dense with formulas and tables, Calibre's default coordinate-based reflow shreds them, so the README recommends extracting to Markdown with MinerU (≥4.0) or Marker first and then feeding that to `convert.py`. Formulas stay intact as `$...$` / `$$...$$` LaTeX, display math blocks are never split across chunks, and Pandoc converts them to MathML when rendering into HTML/PDF.
+
+![](/assets/blog-images/400-deusyu-translate-book-8-oa8ziy/img03.webp)
+
+## 4. Technical highlights and performance data
+
+- **Configurable concurrency**: 8 sub-agents in parallel by default, tunable at the batch level to balance speed against quality.
+- **No shared-state conflicts**: the explicit design principle is "scripts keep the ledger, the LLM does semantic merging". `glossary.json` and `run_state.json` are written only by the main agent, sub-agents write only their own meta files, and no locks are needed.
+- **Three layers, three files**: `glossary.json` (canonical, read-only to workers), `output_chunkNNNN.meta.json` (raw observations) and `run_state.json` (orchestration) are decoupled.
+- **Three-phase progressive governance**: Phase 1 shipped the sub-agent feedback loop and glossary merging, Phase 2 shipped neighbor context for pronoun resolution, Phase 3 shipped selective rerun based on `run_state.json`; Phase 4 warm-start bootstrap is still gated on real data.
+- **Mature Calibre + Pandoc ecosystem**: reuses industry-grade document conversion tools instead of reinventing wheels, dodging the compatibility traps of parsing PDF/EPUB yourself.
+- **Automatic page-number cleanup**: monotonically increasing page-number sequences (1, 2, 3…) are removed automatically, while years (1984), chapter numbers and citation indices are kept as outliers; `--strip-page-numbers` offers an aggressive mode.
+
+![](/assets/blog-images/400-deusyu-translate-book-8-oa8ziy/img04.webp)
+
+## 5. Who it's for
+
+**Concrete use cases:**
+- You want to translate an English technical book or textbook systematically, but can't spare the weeks to read it and don't want to stitch chapters by hand;
+- You have academic papers (heavy on formulas and tables) and want to pre-extract them with MinerU/Marker before batch translation;
+- A multilingual ebook team needs to ship Chinese/Japanese/Korean/French/German/Spanish editions of the same original quickly (zh/en/ja/ko/fr/de/es are built in and extensible).
+
+**Good fit:** developers already using Codex/Claude Code/OpenClaw who are willing to let the agent take a few extra steps; engineering leads at small publishing or localization teams; researchers who regularly digest long PDFs.
+
+**Poor fit:** lightweight needs of a page or two (browser translation is simpler); environments with no permission to install Calibre/Pandoc and no appetite for fighting with them.
+
+## 6. How it compares
+
+| Dimension | translate-book | Original `claude_translater` | Plain chat-style paragraph translation |
+|------|----------------|------------------------|----------------------|
+| Entry point | Agent Skill (Codex/Claude Code/OpenClaw) | Shell script + several step scripts | A single chat window |
+| Concurrent translation | 8 sub-agents by default | Mostly sequential | Sequential/manual |
+| Context management | Fresh window per chunk + neighbor snippets | Accumulates in one session | Accumulates in one session |
+| Terminology consistency | v2 glossary + selective rerun | None | None |
+| Verification | SHA-256 manifest + source fingerprint | None | None |
+| Output formats | HTML (floating TOC)/DOCX/EPUB/PDF | Single | Usually single |
+| Resumability | Precise resume via run_state.json | Partial | Manual |
+| Formula/table PDFs | MinerU/Marker preprocessing recommended, preserved as LaTeX | Not supported | Not supported |
+
+By comparison, translate-book turns "translating a whole book" from an art into engineering work, with a verifiable artifact for every step.
+
+![](/assets/blog-images/400-deusyu-translate-book-8-oa8ziy/img05.webp)
+
+## 7. Getting started fast
+
+### 1. Prepare dependencies
+
+- Install and log into an agent runtime (Codex / Claude Code / OpenClaw);
+- Install Calibre (which provides the `ebook-convert` command);
+- Install Pandoc;
+- `pip install pypandoc`, and preferably also `pip install beautifulsoup4` to improve the TOC.
+- For formula/table-heavy PDFs, also install MinerU or Marker (the first run downloads roughly 0.8GB of models).
+
+### 2. Install the Skill
+
+- Codex: `npx skills add deusyu/translate-book -a codex -g`
+- Claude Code: `npx skills add deusyu/translate-book -a claude-code -g`
+- OpenClaw: `openclaw skills install @deusyu/translate-book`
+
+Or `git clone` it manually into `~/.agents/skills/` or the corresponding directory and restart.
+
+### 3. Trigger a translation
+
+Codex CLI/extension: `$translate-book Translate /path/to/book.pdf into Chinese.`
+Claude Code/OpenClaw: `translate /path/to/book.pdf to Japanese`, or `/translate-book translate /path/to/book.pdf to Japanese`.
+
+### 4. Collect the artifacts
+
+Everything lands in `{book_name}_temp/`: `output.md` (merged translation), `book.html` (with floating TOC), `book.docx`, `book.epub`, `book.pdf`.
+
+### Advanced tips
+
+- For academic PDFs, extract to `.md` with MinerU first and then feed it to `convert.py --olang zh`;
+- When changing the title, cover or language, delete the old `output.md`, `book*.html`, `book*.docx`, `book.epub` and `book.pdf` before merging again;
+- For a custom cover use `merge_and_build.py --cover cover.jpg`; for an alternate export name use `--export-name "translated-title"`;
+- To strip page numbers and footers, add `--strip-page-numbers` to the Calibre input.
+
+![](/assets/blog-images/400-deusyu-translate-book-8-oa8ziy/img06.webp)
+
+## 8. Summary and next steps
+
+The core value of translate-book is upgrading "translating a book" from one-off work at the mercy of context length into a multi-agent pipeline that can be split, parallelized, verified and resumed. It fixes the three most annoying engineering problems at once: terminology consistency, long-context truncation and repetitive labor.
+
+If you have a long document you've been meaning to read but never had time for, or your team needs to localize ebooks in bulk, run the whole flow on a short book first. Once the glossary and output formats match your expectations, move on to the heavy stuff. Repo: **https://github.com/deusyu/translate-book** — a ⭐ for the author is real support for this independent project line.
+
+#translate-book #TranslateBook #deusyu #AIAgents #AIWorkflow #Automation #OpenSource #GitHub

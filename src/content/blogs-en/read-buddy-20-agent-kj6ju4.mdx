@@ -1,0 +1,83 @@
+---
+title: "Read Buddy: plug 20 content sources into one agent and stop hauling information around by hand"
+publishedAt: "2026-08-27"
+summary: "Anyone who works with content knows the afternoon lost to formats: copying a web page, stripping the ads, exporting YouTube subtitles, pasting WeChat Read highlights one paragraph at a time. Read Buddy is an open-source reading skill pack that pulls every source into structured text an agent can use."
+image: "/assets/blog-images/read-buddy-20-agent-kj6ju4/img01.webp"
+tags: ["AI", "Agent", "Open Source"]
+author: "Adam"
+---
+![](/assets/blog-images/read-buddy-20-agent-kj6ju4/img01.webp)
+
+## 1. Intro: stop fighting the formats by hand
+
+Anyone who works with content has lost an afternoon to "formats": the page you want to quote has to be copied, de-advertised, then dropped into a Markdown tool; the YouTube video you want to remix needs subtitle sites exported over and over; the highlights in your WeChat Read library should become a list, but you can only paste them into a notes app paragraph by paragraph; and to see what the AI world talked about in the last three days, you cycle through eight tabs across RSS, X, Product Hunt and Hacker News.
+
+Read Buddy, a GitHub project (SpaceZephyr/read-buddy, currently 58 stars), exists for exactly this mess. It positions itself as "a reading skill pack for agents": it first fetches the source content back for you, then lets the agent take the next step. The repo already gathers 20 standalone Skills covering web pages, RSS, YouTube, podcasts, X, Feishu, OCR, WeChat Read and personal knowledge sources.
+
+## 2. Project overview: what it is in one sentence
+
+Read Buddy is a collection of "information reading" Skills built on the Agent Skills protocol, running on compatible runtimes such as Claude Code, Codex, Cursor, OpenClaw, Hermes, Gemini CLI and OpenCode. Its core mission: unify scattered sources (web pages, video transcripts, podcast audio, X posts, Feishu docs, image OCR, WeChat Read highlights) into structured Markdown / JSON / SQLite that can be processed further, then hand it to the agent for summaries, translation, topic selection, talking-head scripts and reading analysis.
+
+![](/assets/blog-images/read-buddy-20-agent-kj6ju4/img02.webp)
+
+## 3. Core features in depth
+
+### 1. read-url-markdown + read-web-scraper: two routes from web page to Markdown
+
+`read-web-scraper` is lightweight scraping: it cleans the HTML body and converts it to Markdown, which suits ordinary article pages. `read-url-markdown` adds Chrome CDP on top, handling complex pages that need a logged-in session, JS rendering or scroll-based loading. The output includes title, author, publish time, body Markdown, the original link and image references, with navigation, ads and footers filtered out.
+
+### 2. read-youtube-transcript + read-youtube-feed: subtitles and channel updates
+
+`read-youtube-transcript` pulls Chinese and English subtitles first and turns them into a structured transcript that keeps timestamps and provenance; `read-youtube-feed` fetches recent updates from a given channel or podcast. Use both together, then throw the transcript at `read-content-digest`, and you get takeaways, short posts, long-form drafts and pull quotes directly.
+
+### 3. read-rss-aggregator + read-topic-collector: feeds and trends
+
+`read-rss-aggregator` reads the RSS sources in an OPML file and outputs a digest list of updates; `read-topic-collector` aggregates Product Hunt, Hacker News, official blogs and public X information into a structured trend list, sorted into "news flash / tutorial / methodology / topic pool" — very friendly to independent media authors.
+
+### 4. read-weread-export + read-weread-analyzer + read-weread-coach: the WeChat Read trio
+
+`read-weread-export` exports your highlights and thoughts, in Markdown and PDF; `read-weread-analyzer` builds a 10-dimension, 9:16 reading report from your bookshelf, reading time, highlights and thoughts; `read-weread-coach` uses your reading data for tiered book lists, writing-quote extraction and daily highlight reviews. The whole chain only touches personal data the user has authorized, and depends on the official `WEREAD_API_KEY`.
+
+### 5. read-feishu-doc + read-ocr + read-personal-data-harvester: documents, images and personal data
+
+`read-feishu-doc` reads documents and blocks through the Feishu Open API; `read-ocr` runs OCR on images, PDFs and scans, returning structured JSON with confidence scores; `read-personal-data-harvester` builds a local SQLite collection pipeline that accumulates your reading, watching and bookmarking history. The entire personal data flow runs locally by default and is never uploaded to a third party.
+
+![](/assets/blog-images/read-buddy-20-agent-kj6ju4/img03.webp)
+
+## 4. Technical highlights and performance numbers
+
+Read Buddy's architectural highlight is "protocol-level decomposition": each Skill is a standalone directory containing `SKILL.md` (YAML frontmatter) and `scripts/`, and can be loaded and run on its own. Naming follows the `read-<source>-<action>` convention, e.g. `read-url-markdown`, `read-youtube-transcript`, `read-content-digest`. That design yields three direct benefits: composable (chain several Skills into a workflow, e.g. podcast → transcript → summary → talking-head script), portable (the same Skill installs into 9 runtimes), and degradable (web reading tries lightweight scraping first and falls back to Chrome CDP on failure). Its ecosystem breadth is also worth noting: Claude Code, Codex, Cursor, OpenClaw, Hermes, CodeBuddy, Workbuddy, Gemini CLI and OpenCode are all covered, and installation is a single `npx skills add SpaceZephyr/read-buddy` that auto-detects the runtime.
+
+## 5. Where it fits and who it's for
+
+Three typical scenarios: ① independent media authors running daily topic selection with `read-rss-aggregator` + `read-topic-collector` + `read-content-digest`; ② podcast listeners using `read-xiaoyuzhou-article` (requiring ffmpeg + Groq Whisper) to turn a Xiaoyuzhou episode into a transcript, then handing it to `read-podcast-script-generator` to rewrite as a video script; ③ knowledge-management users funneling WeChat Read highlights, Feishu docs and personal bookmarks through `read-personal-data-harvester` into a local SQLite database to build a sustainable personal knowledge base. Suitable for: content creators, researchers, product managers, heavy podcast listeners, PKM enthusiasts. Not suitable for: scenarios needing real-time monitoring of the whole web, users with strong anti-scraping bypass requirements, and anyone unwilling to configure `GROQ_API_KEY` / `WEREAD_API_KEY`.
+
+![](/assets/blog-images/read-buddy-20-agent-kj6ju4/img04.webp)
+
+## 6. Comparison with alternatives
+
+| Dimension | Read Buddy | A single RSS reader | Self-built scraping scripts |
+| --- | --- | --- | --- |
+| Source coverage | Web / YouTube / podcasts / X / Feishu / OCR / WeChat Read / RSS | RSS / email only | Built as needed |
+| Output formats | Markdown / JSON / SQLite / report HTML | Summaries only | Anything |
+| Workflow chaining | Skills compose (digest → script → writing) | Usually unsupported | Manual orchestration |
+| Runtime compatibility | 9 agent runtimes | Usually a local app | Irrelevant |
+| Local personal data | Local SQLite by default | Partly cloud | Under your control |
+
+The core gap: a single RSS reader can only aggregate a feed, and self-built scripts require glue code per source. Read Buddy splits "reading" and "digesting" into pluggable Skills and puts them under one protocol, giving much fuller coverage of content workflows.
+
+## 7. How to get started fast
+
+The easiest way is to tell the agent: `Install this skill for me: https://github.com/SpaceZephyr/read-buddy`. Or do it with one command:
+
+```bash
+npx skills add SpaceZephyr/read-buddy
+```
+
+To target a specific runtime, add `-a codex` / `-a claude-code` / `-a cursor`. Manual installation means `git clone`, then copying the target Skill directory into the runtime's skills directory. Once installed, the minimal working examples are: type "save this web page as Markdown", "extract the Chinese subtitles from this YouTube video" or "export my WeChat Read highlights" into the agent, and the matching Skill fires.  Advanced advice: get one chain working first (e.g. "YouTube subtitles → summary → short post"), then compose `read-podcast-script-generator`, `read-content-digest` and others into compound workflows as needed.
+
+![](/assets/blog-images/read-buddy-20-agent-kj6ju4/img05.webp)
+
+## 8. Takeaways and next steps
+
+Read Buddy's core value in one sentence: it turns "fishing information out of every format" into a Skill protocol agents can call directly, freeing you from copy-paste so you can spend your energy on topics and creation. Project links: the GitHub repo `SpaceZephyr/read-buddy`, plus the podcast chain it integrates, `SpaceZephyr/onepod-Skill`, and the WeChat Read chain, `SpaceZephyr/space-weread`, all under the MIT license. Before installing, read the "risk control and security notes" and "honest boundaries" sections in the README — especially the three traps of automated X scraping, OCR on low-resolution images, and fact-checking after summaries get rewritten. If you shuttle information between platforms every day, let it take over the first step.

@@ -1,0 +1,107 @@
+---
+title: "MiniCPM5-2B: how a 2B model ends up beating 4B rivals on-device"
+publishedAt: "2026-05-11"
+summary: "MiniCPM5-2B averages 53.9 across the official benchmark suite, pushing the on-device ceiling to a new 2B SOTA and outscoring every 4B-class competitor in its own comparison table — with the data, training recipe and deployment stack all open sourced."
+image: "/assets/blog-images/minicpm5-2b-2-b-4-b-t1redk/img01.webp"
+tags: ["AI", "Quant", "Docs"]
+author: "Adam"
+---
+![](/assets/blog-images/minicpm5-2b-2-b-4-b-t1redk/img01.webp)
+
+Title options (pick 1)
+
+MiniCPM5-2B: how a 2B model ends up beating 4B rivals on-device
+
+Average score 53.9: MiniCPM5-2B pushes on-device LLMs to a new 2B SOTA
+
+No extra parameters, yet it outruns 4B: MiniCPM5-2B reshuffles the on-device deck
+
+# The on-device ceiling gets lifted again: MiniCPM5-2B beats a crowd of 4B opponents with 2B parameters
+
+## 1. Intro: is your laptop still unable to run a decent LLM?
+
+Developers running 7B models locally keep hitting the same wall: VRAM. A single 4090 cannot hold one, and quantization costs accuracy. Anything bigger is effectively off consumer hardware, which leaves cloud APIs — and latency, network dependency and data privacy make that nerve-wracking in production. OpenBMB's answer is to push the limit of the 2B class up another notch. Head to head with LFM2.5-2.6B, Qwen3.5-2B and Gemma-4-E2B-it, MiniCPM5-2B averages 53.9, ahead of every 4B-class rival in its own comparison list (the best of them reaches only 51.1). In other words, at the 2B scale it is open source SOTA.
+
+![](/assets/blog-images/minicpm5-2b-2-b-4-b-t1redk/img02.webp)
+
+## 2. Project overview: OpenBMB's on-device LLM matrix
+
+OpenBMB/MiniCPM is a family of small-but-strong on-device models, and the repo has already collected 11.4K stars. The current MiniCPM5 line ships in 1B and 2B sizes, with the headline keywords being **2B-class open source SOTA**, **UltraData full-stack training data**, **On-Policy Distillation (OPD) post-training**, and ecosystem compatibility with more than ten deployment frameworks including vLLM, SGLang, llama.cpp, Ollama, MLX and LiteRT-LM. The latest MiniCPM5-2B was released on 2026.09.07, landed on HuggingFace and ModelScope the same day, and came with a DSpark speculative decoding build.
+
+![](/assets/blog-images/minicpm5-2b-2-b-4-b-t1redk/img03.webp)
+
+## 3. A close look at the core features
+
+### 1. 2B-class SOTA performance: punching above its weight
+
+MiniCPM5-2B uses a standard `LlamaForCausalLM` architecture with 2,516,756,480 total parameters (about 1.98 billion non-embedding), 42 layers, a GQA setup of 16 Q / 2 KV, and native support for a 131,072-token context. On the official comparison set it scores 53.9 on average and leads same-size models on code reasoning, math reasoning, long-context understanding, tool calling and several classes of agent tasks. It also leads against 4B-class models such as Qwen3.5-4B, granite-4.2-3B, Nemotron-3-Nano-4B, Gemma-4-E4B-it and LFM2.5-8B-A1B. That means deployers get results that used to require 4B on a 2B VRAM budget.
+
+### 2. UltraData full-stack training data
+
+The model is not a one-off artifact; it is the product of a data methodology. MiniCPM5-2B open sources four companion datasets: UltraX high-quality pretraining data for the web side, UltraData-Code organized in L0–L3 tiers, UltraData-SFT-Agent-2609 with 500K samples, and UltraData-RL-2609 covering math, code, general knowledge and long-context reasoning (80K+ RL samples). The full pipeline from pretraining through SFT to RL is open, which drops the barrier to reproduction and further fine-tuning considerably.
+
+### 3. RL + OPD post-training: distill the experts into one
+
+Post-training is where MiniCPM5-2B really differentiates itself. The RL stage uses the critic-based algorithm described in JustRL II and first trains 16 expert models (5 of them agent specialists). The OPD stage computes the full-vocabulary reverse KL divergence between student and teacher logits at every response position as the advantage estimate, and reuses the prompts from RL teacher training as distillation data instead of generating extra corpora. On the official benchmarks this lifts reasoning and general ability by 10.96 points on average and agent ability by 6.96 points.
+
+### 4. Standard architecture, universal framework support
+
+Because it uses the standard Llama architecture, with no custom kernels and no model-code fork, mainstream inference engines load it directly. Official support covers vLLM, SGLang, Transformers, llama.cpp, Ollama, LM Studio, MLX, ArcLight, LiteRT-LM (including Android/iOS/IoT) and vLLM Ascend, and through the FlagOS community it has been adapted to nine chips: Nvidia, Hygon, MetaX, Iluvatar, Zhenwu, Moore Threads, Kunlunxin, Ascend and Armv9. One set of weights goes a long way.
+
+![](/assets/blog-images/minicpm5-2b-2-b-4-b-t1redk/img04.webp)
+
+## 4. Technical highlights and performance data
+
+- **131K native long context**: the 42-layer GQA design balances length against inference cost on-device.
+- **DSpark speculative decoding**: pair it with the `MiniCPM5-2B-DSpark` draft model and enable `--speculative-algorithm DSPARK` in SGLang to speed things up, with output identical to the base model.
+- **Recommended sampling parameters**: `temperature=1.0, top_p=0.95, min_p=0.0`. On llama.cpp you must explicitly set the default `min_p=0.05` to 0, otherwise it filters out exactly the low-probability tokens used to break out of a loop.
+- **Tool calling**: SGLang is the officially recommended backend; add `--tool-call-parser minicpm5` (or `auto`) and XML-style tool calls become OpenAI-compatible `tool_calls` with no extra parsing layer.
+
+## 5. Use cases and who it fits
+
+- **Local coding agents**: run a code assistant on a Mac Studio, a single 4090 or Apple Silicon, wired into Cursor- or Claude-Code-style workflows.
+- **On-device AI assistants and IoT devices**: LiteRT-LM supports the `.litertlm` runtime on Android, iOS, desktop and IoT, on both CPU and GPU.
+- **Domestic chip deployment**: teams that need to move to non-Nvidia hardware quickly can take the FlagOS multi-chip build, covering nine chips including Hygon, Ascend and Kunlunxin.
+- **Data- and privacy-sensitive settings**: finance, government and internal enterprise work where both weights and inference stay local.
+- Not a fit: complex multi-turn planning that only a very large model can handle reliably, frontier math research that depends on very long chains of thought, and high-end scenarios demanding the absolute best per-token quality.
+
+![](/assets/blog-images/minicpm5-2b-2-b-4-b-t1redk/img05.webp)
+
+## 6. Comparison with alternatives
+
+| Dimension | MiniCPM5-2B | LFM2.5-2.6B | Qwen3.5-2B | Gemma-4-E2B-it |
+|---|---|---|---|---|
+| Official average score | **53.9** | Slightly lower | Slightly lower | Slightly lower |
+| Against 4B models | Beats on average | Beats in some | Beats in some | Beats in some |
+| Context | 131K native | Depends on version | Depends on version | Depends on version |
+| On-device frameworks | 10+ officially supported | Narrower coverage | Narrower coverage | Narrower coverage |
+| Multi-chip | FlagOS, 9 chips | Single ecosystem | Single ecosystem | Single ecosystem |
+
+The main reason to pick MiniCPM5-2B: at 2B it is the strongest open source option right now, and it ships model, data, deployment and domestic-chip adaptation as one package. Others can match any single piece; only this one has the whole set.
+
+## 7. Getting started fast
+
+The easiest route is serving it with vLLM:
+
+```bash
+pip install "vllm>=0.21"
+vllm serve openbmb/MiniCPM5-2B --port 8000
+```
+
+On the client side, use the OpenAI-compatible endpoint directly:
+
+```bash
+curl http://localhost:8000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model":"openbmb/MiniCPM5-2B","messages":[{"role":"user","content":"Who are you?"}],"max_tokens":128,"temperature":1.0,"top_p":0.95}'
+```
+
+For tool calling, switch to SGLang and add `--tool-call-parser minicpm5`. For CPU or Apple Silicon inference, load the GGUF with llama.cpp or Ollama. To run on Android or iOS, follow the LiteRT-LM cookbook. For fine-tuning there are four official cookbooks: TRL+PEFT, LLaMA-Factory, ms-swift and unsloth.
+
+## 8. Summary and what to do next
+
+The core value of MiniCPM5-2B fits in one sentence: it lifts 2B-class SOTA above 4B models and open sources the training data, the training method, the deployment frameworks and multi-chip adaptation in one go. For on-device AI application developers it is one of the best value-for-money choices for local deployment today; for the domestic chip ecosystem it is a standard reference implementation for migration. Start by getting a baseline running from the vLLM or SGLang cookbook; if you need tool calling, definitely try SGLang; for on-device deployment go with LiteRT-LM; on non-Nvidia hardware use the FlagOS multi-chip build and skip the migration work.
+
+Project: https://github.com/OpenBMB/MiniCPM. Download the weights as `openbmb/MiniCPM5-2B` on HuggingFace or the repo of the same name on ModelScope; docs live in the `docs/` directory of the repo.
+
+#minicpm #Minicpm #openbmb #LLM #RAG #OpenSource #GitHub

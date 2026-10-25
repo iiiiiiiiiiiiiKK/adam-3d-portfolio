@@ -8,13 +8,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import ContactForm from "../ContactForm";
-import { config } from "@/data/config";
+import { getSiteConfig } from "@/data/config";
 import { SectionHeader } from "./section-header";
 import SectionWrapper from "../ui/section-wrapper";
+import { useI18n } from "@/i18n/context";
 
 const ContactSection = () => {
-  const { titleLines, cardTitle, descriptionPrefix, descriptionSuffix } =
-    config.contact;
+  const { locale } = useI18n();
+  const config = getSiteConfig(locale);
+  const { titleLines, cardTitle, descriptionPrefix, descriptionSuffix } = config.contact;
 
   return (
     <SectionWrapper id="contact" className="min-h-screen max-w-7xl mx-auto ">

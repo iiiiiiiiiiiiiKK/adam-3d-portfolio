@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 import { Button } from "./ui/button";
 import { enableMotion, usePerfProfile } from "@/hooks/use-perf-profile";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/i18n/context";
 
 const DISMISS_KEY = "portfolio:motion-nudge-dismissed";
 
@@ -17,6 +18,7 @@ const DISMISS_KEY = "portfolio:motion-nudge-dismissed";
  */
 export default function MotionNudge() {
   const { ready, rawReducedMotion, motionEnabled, lowEnd } = usePerfProfile();
+  const { t } = useI18n();
   const [dismissed, setDismissed] = React.useState(true);
 
   React.useEffect(() => {
@@ -51,23 +53,23 @@ export default function MotionNudge() {
     >
       <button
         onClick={dismiss}
-        aria-label="关闭"
+        aria-label={t.nav.close}
         className="absolute right-2 top-2 rounded-md p-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
       >
         <X className="size-4" />
       </button>
       <p className="pr-6 text-sm font-medium text-foreground">
-        已开启「减少动态效果」
+        {t.misc.motionNudgeTitle}
       </p>
       <p className="mt-1 text-xs text-muted-foreground">
-        3D 场景和动效都被关掉了。要看完整版本吗？
+        {t.misc.motionNudgeBody}
       </p>
       <div className="mt-3 flex gap-2">
         <Button size="sm" onClick={enableMotion}>
-          打开 3D
+          {t.misc.motionNudgeAccept}
         </Button>
         <Button size="sm" variant="ghost" onClick={dismiss}>
-          不必了
+          {t.misc.motionNudgeDecline}
         </Button>
       </div>
     </div>

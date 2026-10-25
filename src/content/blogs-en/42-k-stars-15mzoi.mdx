@@ -1,0 +1,102 @@
+---
+title: "A 42k-star academic writing suite exists — so why are you still grinding through your paper alone?"
+publishedAt: "2026-07-15"
+summary: "Academic writing was never a solo job, yet every collaboration step keeps dropping the ball: missed searches, fabricated references, misread reviews. A 42k-star skill suite splits the pipeline into five stages and adds citation auditing plus hard integrity gates."
+image: "/assets/blog-images/42-k-stars-15mzoi/img01.webp"
+tags: ["AI", "Agent", "Open Source"]
+author: "Adam"
+---
+## 1. Opening: how many traps does one paper hide?
+
+PhD student A is three chapters in when the advisor sends it back with "the literature review isn't deep enough." Early-career scholar B submits to IEEE and a reviewer points out that "three of your references are fabricated." Grad student C wraps up R1, starts prepping R2, and finds that what the reviewers care about this round has nothing to do with the last one. The shared pain: **academic writing was never a solo job, yet every collaboration step keeps dropping the ball** — missed searches, fabricated references, quotes that don't support the argument, misread review comments, revisions with nowhere to start. These traps don't disappear when you switch to a stronger model. The root cause is process.
+
+## 2. What it is: Academic Research Skills
+
+`Imbad0202/academic-research-skills` on GitHub (42k+ stars) is a set of academic research skills built for Claude Code. It splits the paper pipeline into five stages: **research → write → review → revise → finalize**. The current version is v3.19.0, after 19 major iterations. Core labels: **human-in-the-loop, AI co-pilot, citation trust chain, cross-model blind review**. The project describes itself in one line — "AI is the co-pilot, not the pilot." The co-pilot handles the dirty work: hunting down literature, checking citations, verifying data, auditing logic. You stay in the driver's seat.
+
+![](/assets/blog-images/42-k-stars-15mzoi/img01.webp)
+
+## 3. Core features in depth
+
+### 1. Deep Research: a 13-agent reconnaissance unit for research
+
+Deep Research is not "one model plus one prompt." It splits out **13 agents** across eight modes: Socratic guidance, PRISMA systematic review, intent recognition, dialogue health monitoring, Semantic Scholar API validation and more. The Socratic mode deserves the most attention: v3.0 added an intent-recognition layer that separates "exploratory conversation" from "goal-directed task." In exploratory mode it forbids the premature wrap-up of "want me to summarize this for you?" and raises the turn cap to 60. It also quietly ships a Dialogue Health Indicator that self-checks every five rounds — persistent sycophancy, conflict avoidance, premature convergence — and injects challenging questions when it finds a problem. That check stays invisible to the user so it can't be gamed.
+
+### 2. Academic Paper: a writing line from outline to APA 7 PDF
+
+A writing pipeline strung together from 12 agents, covering eleven modes: Style Calibration (learning your tone from past papers), Writing Quality Check (catching phrasing that reads machine-written at a glance), LaTeX hardening, visualization, revision coaching, citation conversion, leak-prevention protocol, and VLM figure validation. Citations default to APA 7.0, with Chicago, MLA, IEEE and Vancouver also supported. Structures cover six paper types: IMRaD, topical literature review, theoretical analysis, case study, policy brief and conference paper. Output goes Pandoc → DOCX and Tectonic → LaTeX/PDF, and you can also get plain Markdown without either dependency.
+
+### 3. Academic Paper Reviewer: seven reviewers plus a devil's advocate
+
+`full` mode uses a fixed lineup: **Journal-Fit Reviewer + 3 dynamic reviewers + 1 Devil's Advocate**, scoring quality from 0 to 100. The decision mapping is hard-coded: ≥80 Accept, 65–79 Minor Revision, 50–64 Major Revision, &lt;50 Reject. The key point: the DA is not a formality. It ships a **Concession Threshold Protocol** — every rebuttal is first scored 1–5, and the DA may only concede at ≥4 (the rebuttal hits the core attack and brings evidence); at ≤3 it holds the original attack. Consecutive-concession detection, concession-rate tracking and Frame-lock detection are all on the board. This came directly out of v3.0: the author noticed that four rounds of DA debate stayed on "attack the argument, not the premise" and never once questioned whether the question under discussion was the right one.
+
+![](/assets/blog-images/42-k-stars-15mzoi/img02.webp)
+
+### 4. Academic Pipeline: a 10-stage orchestrator with two hard gates
+
+The whole academic pipeline is a 10-stage orchestrator, and each stage needs user confirmation before the next one starts. The harshest part is the **two integrity gates at Stage 2.5 and Stage 4.5** — a pre-writing health check (which caught 15 fabricated references plus 3 statistical errors in the Showcase) and a pre-final check that confirms zero regressions. Each gate runs a 7-mode failure checklist: implementation bugs, hallucinated results, shortcut dependencies, repackaging a bug as an Insight, methodological fabrication, Frame-lock, and citation hallucination. Those seven failure modes are cited directly from Lu et al. (2026, *Nature* 651:914–919), "The AI Scientist," as the design basis.
+
+### 5. Citation trust chain: three-layer locators plus Claim Audit
+
+The Zhao et al. audit of May 2026 — 2.5M papers, 111M citations — triggered the v3.7 rewrite: an estimated 146,000 hallucinated citations that year, with "a real citation supporting the wrong claim" named as an open challenge. v3.7.x adds three things: traceable reference frontmatter (trust-chain frontmatter), three-layer locator anchors (locator infrastructure), and a Claim Audit switch (`ARS_CLAIM_AUDIT=1`). Turn the switch on and every citation pulls the original text for verification, deciding whether the claim is actually supported. The five HIGH-WARN classes that fail the check (claim-not-supported, negative-constraint-violation, fabricated-reference, anchorless, constraint-violation-uncited) are forcibly rejected by the formatter.
+
+![](/assets/blog-images/42-k-stars-15mzoi/img03.webp)
+
+## 4. Technical highlights and performance data
+
+- **10-stage pipeline, 39 agents in total**: 4 core skills (Deep Research / Paper / Reviewer / Pipeline), each with its own agent team.
+- **Transparent cost**: a 15,000-word paper through the full flow costs about $4–6, and `docs/PERFORMANCE.md` lists the token budget per mode.
+- **Cross-model blind review**: under the `ARS_CROSS_MODEL` switch, the primary/orchestrator/primary three-stage blind path follows the standard `[CROSS-MODEL-HANDOFF v1]` protocol, backed by a Python syntax parser at `scripts/cross_model_handoff.py` — no more prose-style "please comply" constraints.
+- **Cross-language intent recognition in Socratic mode**: intent is semantic, not keyword-based, so Socratic guidance works in any language; the generic Trigger Keywords currently cover English and Traditional Chinese and can be extended by hand.
+- **Data Access Level and Task Type annotations**: every skill declares `data_access_level` (raw / redacted / verified_only) and `task_type` (open-ended / outcome-gradable), enforced by `check_data_access_level.py`. The pattern comes from Anthropic's 2026 automated-w2s-researcher practice.
+- **Ecosystem**: supports Claude Code, Claude Science (direct GitHub import), Pi and Codex CLI; multilingual READMEs cover Simplified Chinese, Traditional Chinese, Japanese and Korean.
+
+## 5. Who it's for
+
+- **Scenario 1: a PhD or master's student writing their first English paper alone**: Socratic mode breaks the chapter structure down, Plan mode builds the outline, Style Calibration learns your tone, and the citation trust chain backstops hallucinations.
+- **Scenario 2: an early-career scholar submitting to IEEE/Springer/Elsevier**: Journal-Fit Reviewer picks the venue, the DA guards against frame-lock, Stage 4.5 runs the integrity gate, and Post-Publication Audit catches what's left (the Showcase found 21/68 problems that all three gate rounds had missed).
+- **Scenario 3: a cross-disciplinary team writing a review together**: a systematic review with PRISMA double validation from 13 agents, cross-model blind review to avoid false positives from a shared cognitive frame, and a Material Passport tracking the evidence chain behind every claim.
+- **Not for**: people who won't do the human gatekeeping (human-in-the-loop is the core premise of the whole design), people who want ARS to run experiments (use the companion experiment-agent; ARS doesn't execute experiments), and people who want byte-reproducible LLM output (the docs state plainly that "LLM output cannot be reproduced byte for byte").
+
+![](/assets/blog-images/42-k-stars-15mzoi/img04.webp)
+
+## 6. Comparison
+
+| Dimension | **academic-research-skills (ARS)** | General AI research tools like Elicit / Consensus / Scite | Calling ChatGPT/Claude directly |
+|---|---|---|---|
+| Coverage | Full loop: research → write → review → revise → finalize | Mostly stops at literature search/Q&A | Point capabilities; you wire the flow yourself |
+| Citation trust | Three-layer locators + Claim Audit + trust-chain frontmatter | Most don't validate at claim level | Prone to "real citation, wrong claim" |
+| Review mechanics | 7 agents, multiple perspectives + DA + 0–100 rubric + concession threshold | Usually a single-perspective score | No rubric framework |
+| Human-in-the-Loop | Mandatory confirmation per stage + two hard gates | Mostly auto-passes | Entirely up to the user |
+| Cost/control | ~$4–6 for 15,000 words, open source | Subscription, closed source | Per-token API cost, stack not under your control |
+
+In one line: ARS makes process, trust and collaboration first-class citizens; general tools leave all three to the user.
+
+![](/assets/blog-images/42-k-stars-15mzoi/img05.webp)
+
+## 7. Getting started
+
+**Fastest path (v3.7.0+):**
+
+```text
+/plugin marketplace add Imbad0202/academic-research-skills
+/plugin install academic-research-skills
+```
+
+Setup: install Claude Code and export `ANTHROPIC_API_KEY`; optionally add Pandoc (DOCX export) + Tectonic + Source Han Serif TC (APA 7.0 PDF).
+
+**Minimal working example:**
+
+Open Claude Code, type `/ars-plan` and describe the paper you're writing; ARS walks you through the chapter structure in a Socratic dialogue. If you only want one capability, type `/ars-lit-review "your topic"`.
+
+**Advanced:** To use it in Claude Science, import straight from the GitHub URL (v3.14.0+ required); the import carries only the ARS methodology, so slash commands and hooks don't migrate. To run experiments, pair it with the `experiment-agent` repo. For cross-model blind review, set `ARS_CROSS_MODEL=1`; for Claim Audit, set `ARS_CLAIM_AUDIT=1`. All six install methods are in `docs/SETUP.md`.
+
+![](/assets/blog-images/42-k-stars-15mzoi/img06.webp)
+
+## 8. Takeaways and next steps
+
+The core value of Academic Research Skills in one line: **treat AI as the co-pilot and process as the pilot.** It won't write the paper for you, but it takes the dirty work of writing one — literature search, citation checking, logical consistency, statistical rigor, reviewer pushback — and folds it into a 10-stage pipeline with two hard gates. That leaves you free for the parts only humans do well: defining the problem, choosing the method, interpreting the data, and writing the sentence that follows "I argue that."
+
+Suggestions: start with `/ars-plan` or `/ars-lit-review` to learn the flow; before submitting, make sure the Stage 4.5 integrity report passes and Post-Publication Audit has run; for citation-heavy work, turn on `ARS_CLAIM_AUDIT=1`.
+
+Project: [https://github.com/Imbad0202/academic-research-skills](https://github.com/Imbad0202/academic-research-skills); docs entry point [https://docs.claude.com/en/docs/claude-code/setup](https://docs.claude.com/en/docs/claude-code/setup); companion experiment repo [https://github.com/Imbad0202/experiment-agent](https://github.com/Imbad0202/experiment-agent). If you're tired of fighting papers alone, install it into Claude Code and let the co-pilot take the wheel.

@@ -1,0 +1,149 @@
+---
+title: "Patient records can't leave the intranet, so OpenMed runs medical NLP on a local workstation"
+publishedAt: "2026-08-08"
+summary: "Director Wang at a hospital IT department hit a wall: the department wanted a clinical NLP system to pull diseases, drugs and dosages out of electronic records, and security killed it with one sentence — patient records cannot leave the hospital intranet. Three cloud vendors, three security reviews, three data processing agreements, and quotes starting at ¥360k a year…"
+image: "/assets/blog-images/openmed-nlp-14wtro/img01.webp"
+tags: ["AI", "Open Source", "Security"]
+author: "Adam"
+---
+![](/assets/blog-images/openmed-nlp-14wtro/img01.webp)
+
+## 1. Why you need this tool
+
+Director Wang at a hospital IT department recently ran into a nasty problem: the department wanted to deploy a clinical NLP system to extract diseases, drugs and dosages from electronic medical records. Security killed it with one sentence — "patient records cannot leave the hospital intranet." He tried three cloud vendors in a row, each requiring a security review and a data processing agreement, with quotes starting at ¥360k a year.
+
+This isn't an isolated case. Compliance requirements around medical data leave a huge number of teams stuck at the first step of "let's use AI for something": HIPAA, GDPR and internal hospital network policies all say the same thing — don't send PHI to an external API. But once you demand 100% localization, the open-source options that can actually run clinical NER are few and far between, and most only support English.
+
+OpenMed targets exactly this contradiction: runs locally, a huge catalog of medical models, multilingual PII coverage, and de-identification built in. 4,976 stars on GitHub, over 3.4 million monthly downloads on PyPI, and already running steadily on intranet workstations in a number of hospitals.
+
+## 2. What it is, in one sentence
+
+OpenMed is a **local-first medical AI toolkit** built around two main threads: clinical named entity recognition (NER) and HIPAA-aligned PII de-identification. 2,200+ medical models, 33 PII languages, Apache-2.0. The core runtime is fully offline by default — data never leaves the intranet — and deploys to CPU, CUDA, Apple MLX, Android ONNX and the browser. The SDK is Python, with Swift/Kotlin on mobile, plus a REST service, FHIR/HL7 interoperability and Transformers.js export already in place.
+
+## 3. Core features in depth
+
+### 1. Clinical NER: diseases, drugs, anatomy, genes
+
+OpenMed's model catalog covers five verticals: `disease_detection_superclinical` (disease/diagnosis, 434M), `pharma_detection_superclinical` (drug/treatment, 434M), `pii_superclinical_large` (PII, 434M), `anatomy_detection_electramed` (anatomy/organs, 109M) and `gene_detection_genecorpus` (genes/proteins, 109M). One line of code calls them:
+
+```python
+from openmed import analyze_text
+result = analyze_text(
+    "Patient started on imatinib for chronic myeloid leukemia.",
+    model_name="disease_detection_superclinical",
+)
+for entity in result.entities:
+    print(f"{entity.label:<12} {entity.text:<28} {entity.confidence:.2f}")
+```
+
+Output: DISEASE `chronic myeloid leukemia` 0.98; DRUG `imatinib` 0.95. This out-of-the-box API shape means clinical NLP no longer needs weeks of annotation and fine-tuning.
+
+### 2. PII de-identification: HIPAA Safe Harbor aligned
+
+`extract_pii` and `deidentify` form the privacy core. It supports 18 identifier types, covering names, birthdays, SSNs, phone numbers, emails, addresses, medical record numbers and more. Four masking methods: `mask`, `replace` (Faker swaps in same-language fake data), `hash`, and `shift_dates` (date shifting that preserves the time series).
+
+Worth noting is the **smart entity merging** mechanism: traditional NER often slices `01/15/1970` into three fragments — `01`, `/15`, `/1970` — while OpenMed's merge strategy keeps a full date, phone number or ID as one entity, so downstream rule engines don't miss it.
+
+### 3. 33 PII languages + national ID validation
+
+From Arabic `29801011234567` to Japan's My Number `1234 5678 9012`, the Dutch BSN, Brazil's CPF and Spain's DNI, OpenMed ships a matching Faker locale and validator for each. A single `lang="ja"` switches it; no manual loading of multiple models.
+
+### 4. Multi-platform deployment: Python / Swift / Kotlin / browser
+
+The same ONNX model runs on a Python CPU, on Android ONNX Runtime Mobile, on Apple MLX on iOS, and in the browser via Transformers.js + WebGPU. For field scenarios that need offline record entry on a phone, OpenMedKit (Swift) provides a scan-and-de-identify pipeline.
+
+![](/assets/blog-images/openmed-nlp-14wtro/img02.webp)
+
+## 4. Technical highlights and performance numbers
+
+**MLX acceleration** shines on Apple Silicon: Privacy Filter inference latency is **24–33× faster** than CPU PyTorch (median inference latency). **Batch PII processing** improves throughput **3.3×** on CPU and **2.2×** on MLX compared with per-document processing.
+
+A few architectural points worth noting:
+
+- **OpenAI Privacy Filter architecture** as the base (gpt-oss-style sparse MoE + local attention + sink tokens + RoPE+YaRN + tiktoken `o200k_base`), with OpenMed providing three variants (baseline, Nemotron fine-tune, multilingual) behind the same API;
+- **Automatic backend routing**: an MLX model name falls back to the PyTorch checkpoint on non-Apple hardware;
+- **Offline/air-gapped deployment**: point `model_id` at a local directory and the runtime never contacts the Hugging Face Hub again;
+- **Ecosystem compatibility**: PyTorch, CUDA, MLX, CoreML, ONNX Runtime Mobile, Transformers.js and WebGPU all covered;
+- **REST service** exposes four endpoint groups — `/health`, `/analyze`, `/pii/extract`, `/pii/deidentify` — with keep_alive, hot model unloading, API key/JWT, dynamic batching, rate limiting and observability metrics.
+
+![](/assets/blog-images/openmed-nlp-14wtro/img03.webp)
+
+## 5. Use cases and who it's for
+
+**Typical scenarios:**
+
+- A hospital IT department needs to structure ten years of electronic records in bulk and extract entities, without data leaving the intranet;
+- An insurtech company de-identifies claims text on a local workstation before feeding it downstream;
+- Cross-border multilingual record research that needs to extract from Portuguese, Arabic, Japanese and Turkish mixed together;
+- A mobile follow-up app lets doctors enter records offline on an iPad and automatically masks patient names;
+- Academic research pipes de-identified clinical data into cohort analysis via FHIR/HL7.
+
+**Who it's for:** healthcare IT engineers, clinical researchers, medical NLP teams, medical SaaS startups, and integration vendors that need compliance audits. **Who it's not for:** pure algorithm hobbyists who just want to run a few public dataset demos and don't care about local deployment — cloud inference on Hugging Face is less hassle.
+
+## 6. How it compares
+
+| Dimension | OpenMed | AWS Comprehend Medical | Hugging Face cloud NER | Self-trained BERT-Biomedical |
+| --- | --- | --- | --- | --- |
+| Deployment | Local / mobile / browser | Cloud API only | Cloud API only | Local |
+| Model count | 2,200+ medical models | Single closed model | General models | Train your own |
+| Multilingual PII | 33 languages + national ID validation | Limited | Configure yourself | Build from scratch |
+| De-identification methods | 4 + policy config files | Single option | None built in | None built in |
+| Data leaves the network | No by default | Mandatory | Mandatory | Optional |
+| License | Apache-2.0 | Commercial | Apache/MIT | Your own |
+
+There's really only one core reason to choose OpenMed: **it's one of the few open-source options that simultaneously satisfies "rich vertical medical models," "fully local" and "multilingual PII built in"** — and the SDK is Apache-2.0, so there's no licensing friction for commercial use.
+
+![](/assets/blog-images/openmed-nlp-14wtro/img04.webp)
+
+## 7. Getting started fast
+
+**1. Install (30 seconds)**
+
+```bash
+# CPU / CUDA
+pip install --upgrade "openmed[hf]"
+
+# Apple Silicon acceleration
+pip install --upgrade "openmed[mlx]"
+
+# REST service
+pip install --upgrade "openmed[hf,service]"
+```
+
+**2. Minimal working example**
+
+```python
+from openmed import analyze_text
+
+result = analyze_text(
+    "Patient received 75mg clopidogrel for NSTEMI.",
+    model_name="pharma_detection_superclinical",
+)
+print([(e.label, e.text) for e in result.entities])
+```
+
+**3. Further tips**
+
+- In an intranet environment, point `model_id` at a pre-downloaded local directory so it runs even when the network is down;
+- Use `BatchProcessor(operation="deidentify", batch_size=16)` for tens of thousands of documents;
+- For production, start the REST service from the Docker image with `OPENMED_PROFILE=prod`;
+- For Android integration see `android/README.md`, for iOS see `swift/OpenMedKit`;
+- Agent developers can run `./install-skills.sh` to inject the skill into Claude Code / Codex / OpenCode.
+
+![](/assets/blog-images/openmed-nlp-14wtro/img05.webp)
+
+## 8. Takeaways and next steps
+
+OpenMed breaks the default assumption that "medical NLP has to go to the cloud." 2,200+ models, 33 PII languages, 24× speedup on Apple MLX, Apache-2.0 commercial friendliness, plus full iOS/Android/browser coverage — this is no longer a demo project but an engineered solution you can drop onto a hospital intranet workstation.
+
+**How to use it:** first run `disease_detection_superclinical` against real samples from your department and confirm entity accuracy; then add `pii_superclinical_large` as a compliance guardrail; finally connect it to your existing ETL through the REST service or Docker image. If you're working on a multilingual project, run the `lang="pt"`, `lang="ja"` and `lang="ar"` end-to-end demos — see for yourself whether the Faker-generated fake data matches local conventions.
+
+- GitHub: https://github.com/maziyarpanahi/openmed
+- Website: https://openmed.life/
+- Docs: https://openmed.life/docs/
+- PyPI: https://pypi.org/project/openmed/
+- Paper: https://arxiv.org/abs/2508.01630
+
+One-line pitch: **if you're tired of the tug-of-war between "records can't leave the intranet" and "NLP accuracy," OpenMed is the open-source medical AI toolkit most worth running on your local workstation right now.**
+
+![](/assets/blog-images/openmed-nlp-14wtro/img06.webp)

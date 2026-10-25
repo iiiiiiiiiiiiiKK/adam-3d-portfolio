@@ -1,0 +1,178 @@
+---
+title: "Still hand-editing the AI smell? These 4 open-source projects are a cure for ChatGPT-ese"
+publishedAt: "2026-06-15"
+summary: "Four open-source AI writing tools I actually use every day, from citation checking for papers to stripping the ChatGPT voice out of a draft."
+image: "/assets/blog-images/ai-4-chatgpt-15mrwq/img01.webp"
+tags: ["AI", "Agent", "Open Source"]
+author: "Adam"
+---
+![](/assets/blog-images/ai-4-chatgpt-15mrwq/img01.webp)
+
+Choosing a title (1 of 3)
+
+Four open-source AI writing tools I use every single day
+
+Still hand-editing the AI smell? These 4 open-source projects are a cure for ChatGPT-ese
+
+From papers to weekly reports, 4 open-source projects that make agents write like humans
+
+## 1. The pain every developer has hit at least once
+
+Your product shipped and the weekly report is due. A paper has a deadline and needs polishing. Your boss drops a ChatGPT-generated marketing draft in your lap and asks you to "make it sound human". You open your IDE, ask AI for a hand, and out comes text stuffed with "in today's fast-paced world", "crucial" and "empower". Three revisions later the AI smell is still there and the original meaning is gone. This is the wall every heavy AI writer hits: AI isn't slow, it writes *too much like AI* — and we want the speed of AI with the voice of a person. The four projects below are aimed straight at that wall.
+
+## 2. At a glance
+
+| Repo | Stars | Main language | One-line pitch |
+|---|---|---|---|
+| Imbad0202/academic-research-skills | 48866 | Python | Full academic paper pipeline as Claude Code skills |
+| Sahir619/fable-method | 2289 | Python | Distills Claude Fable 5's workflow into executable skills |
+| surendranb/writing-skills | 35 | Python | 16 quantifiable writing frameworks and persona voices |
+| blader/humanizer | 50604 | Python | An agent skill that detects and rewrites AI-sounding text |
+
+## 3. Project breakdown
+
+### Imbad0202/academic-research-skills — a one-stop pipeline for academic papers
+
+It is an **academic writing suite for Claude Code**, packaging the whole process — topic selection, literature search, writing, citation verification, polishing, submission — into a set of `/ars-*` commands. The headline capability: **v3.8 introduces an auditable citation trust chain** — every citation carries a locator, and with the `ARS_CLAIM_AUDIT=1` environment variable you can reverse-check whether the source really supports your claim, cutting hallucinated citations off at the source.
+
+The technical highlight is that it puts the findings of Zhao et al.'s 2026 audit study (111 million citations) into practice, adding two integrity gates (Stage 2.5 / Stage 4.5) to paper writing, with 20 calibration gold standards and hard thresholds of FNR&lt;0.15 / FPR&lt;0.10.
+
+Who it fits: grad students racing a paper deadline, postdocs, authors submitting to top conferences.
+Who it doesn't: anyone who just wants an elementary-school essay template — the learning curve is steep and the docs run to thousands of words.
+
+**Minimal setup**
+
+Just tell your agent:
+
+```
+Install this skill for me: https://github.com/Imbad0202/academic-research-skills
+```
+
+Or inside Claude Code:
+
+```
+/plugin marketplace add Imbad0202/academic-research-skills
+/plugin install academic-research-skills
+```
+
+Then run `/ars-plan` and build the paper skeleton step by step through Socratic questioning.
+
+*Repo:* **https://github.com/Imbad0202/academic-research-skills**
+
+### Sahir619/fable-method — distilling Claude Fable 5's workflow into executable skills
+
+What it does is unusual: **before Claude Fable 5 was retired, it distilled its way of thinking into four skills** — `fable-method` (think it through first), `fable-loop` (then act), `fable-judge` (verify with evidence), `fable-domain` (auto-derive adapters for new domains). The philosophy at the core is "think / act / prove", and behind every rule there is a test log of something that broke.
+
+The technical highlight is **brutally rigorous evals**: 15 rounds, 260+ agent runs, with a blind LLM judge scoring from diffs and execution rather than "reading the report and grading it". In Round 3's trap where tests and spec disagree, bare Haiku fell for it 4 out of 4 times and looked away; with the method added, all 4 runs proactively reported the conflict. In Round 11 bare Fable 5 went ahead and deployed to staging on its own — that incident is what produced the authorization gate.
+
+Who it fits: engineers who want a mid-tier model (Haiku / Sonnet) to perform close to Opus level.
+Who it doesn't: people who just want a short essay and don't care about the reasoning in between.
+
+**Minimal setup**
+
+Just tell your agent:
+
+```
+Install this skill for me: https://github.com/Sahir619/fable-method
+```
+
+Or as a plugin:
+
+```
+/plugin marketplace add Sahir619/fable-method
+/plugin install fable-method
+```
+
+Then just say "handle this with fable-method".
+
+*Repo:* **https://github.com/Sahir619/fable-method**
+
+### surendranb/writing-skills — 16 quantifiable writing frameworks and persona voices
+
+It ships **9 real writing standards + 7 persona voices**. Each skill is a `SKILL.md` plus a `Verify` checklist the agent must pass before delivering. The 9 frameworks are not vague "write better" advice — they turn **real, existing writing standards** such as GOV.UK, the AP Stylebook, the Plain Writing Act, ASD-STE100 Simplified Technical English and Google developer documentation into executable rules. `plain-language`, for instance, requires sentences of ≤25 words, passive voice ≤10%, and a line-by-line check against a banned-words list.
+
+The technical highlight is **"rules, not vibes"**: every skill ends with a Python validation script, `scripts/validate_skills.py`, and CI blocks non-compliant output outright. The persona voices (Yoda, Paddington, Bob Ross and friends) have **anti-caricature rate limits** built in, to avoid shouty, over-the-top impressions.
+
+Who it fits: people writing technical docs, product copy, internal reports, PR drafts.
+Who it doesn't: people who want freewheeling literary writing — its nature is compliance-oriented.
+
+**Minimal setup**
+
+Just tell your agent:
+
+```
+Install this skill for me: https://github.com/surendranb/writing-skills
+```
+
+Or with a single command:
+
+```
+npx skills add writing-skills
+```
+
+Then trigger it in natural language:
+
+```
+Rewrite this insurance letter in plain language
+```
+
+*Repo:* **https://github.com/surendranb/writing-skills**
+
+### blader/humanizer — a Markdown skill aimed squarely at the AI smell
+
+It exists to **detect and remove signs of AI writing**. It numbers all 25 typical patterns from Wikipedia's "Signs of AI writing" and sorts them by strength — the first 5 warrant a fix if they appear even once, the rest are marked *weak alone* and only count when several pile up. It doesn't just swap words: it **flags every tell, ranks them by strength, rewrites, cross-checks against the original claims, and then delivers**, showing you the entire reasoning path.
+
+The technical highlight is **voice-sample matching**: paste in 2-3 paragraphs you wrote yourself and it learns your rhythm, word choice and punctuation habits (including em dashes), so the rewrite sounds like you rather than like some generic human. It also **holds a hard factual boundary**: when it hits names, numbers, dates or quotes that aren't in the original, it asks you for them instead of inventing them.
+
+Who it fits: anyone who needs to turn a ChatGPT / Claude draft into something that sounds human.
+Who it doesn't: people who want AI to write poetry for them without leaving an AI trace — it does rewriting, not creation.
+
+**Minimal setup**
+
+Just tell your agent:
+
+```
+Install this skill for me: https://github.com/blader/humanizer
+```
+
+Or one command:
+
+```
+npx skills add blader/humanizer --global
+```
+
+Then call it directly:
+
+```
+/humanizer
+
+[paste your AI copy here]
+```
+
+For a closer match to your own voice, add a writing sample:
+
+```
+/humanizer
+
+First learn the tone of this passage:
+[paste 2-3 paragraphs you wrote]
+
+Then rewrite the AI copy below:
+[paste the text to rewrite]
+```
+
+*Repo:* **https://github.com/blader/humanizer**
+
+## 4. Takeaways and next steps
+
+If you only install one, start with `blader/humanizer` — it fixes 80% of the "AI smell" problem immediately. If you write academic papers, add `academic-research-skills`; the citation verification alone is a lifesaver. If you're an engineer who wants agents to trip up less on complex tasks, layer on `fable-method`. `writing-skills` you can pull from as needed — install the framework that matches your most painful writing scenario, e.g. `google-dev-docs` for API docs.
+
+#AIagents #AIworkflow #automation #AcademicResearchSkills #FableMethod #WritingSkills #Humanizer #academic-research-skills #fable-method #writing-skills
+
+![](/assets/blog-images/ai-4-chatgpt-15mrwq/img02.webp)
+
+![](/assets/blog-images/ai-4-chatgpt-15mrwq/img03.webp)
+
+![](/assets/blog-images/ai-4-chatgpt-15mrwq/img04.webp)
+
+![](/assets/blog-images/ai-4-chatgpt-15mrwq/img05.webp)

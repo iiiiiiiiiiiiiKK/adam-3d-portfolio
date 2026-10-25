@@ -1,0 +1,109 @@
+---
+title: "Still grepping through unfamiliar code? This 998-star tool turns your repo into a queryable system graph"
+publishedAt: "2026-05-29"
+summary: "Still grepping through unfamiliar code? This 998-star tool turns your repo into a queryable system graph."
+image: "/assets/blog-images/grep-998-star-1qoviy/img01.webp"
+tags: ["AI", "Open Source", "Productivity"]
+author: "Adam"
+---
+![](/assets/blog-images/grep-998-star-1qoviy/img01.webp)
+
+Title options (pick 1 of 3)
+
+Still grepping through unfamiliar code? This 998-star tool turns your repo into a queryable system graph
+
+Ix cuts the token spend of AI edits on large projects by 30% to 99.7% — with a local graph
+
+It never read the whole repo, yet it named the call chain exactly. Here's how Ix does it
+
+# Taking over unfamiliar code without grep: Ix turns your repo into a queryable system graph
+
+## 1. Intro: why you need this
+
+Every developer has been there. You get pulled into a new project and need to find out which functions the login flow actually walks through, and twenty minutes of digging through the IDE later you still can't find the entry point. Or worse: you ask an AI assistant to change a piece of code, it stuffs 40 files from `src/` into context, answers with total confidence, and still misses a caller.
+
+The problem isn't the person, it's the tooling. grep finds strings. File reads give you a stream of characters. But the structure of the code itself — symbols, calls, dependencies — has never had a queryable representation. So every session re-derives the architecture from scratch, and every function change has to be reassembled by hand in someone's head.
+
+Ix exists to add that layer of "system intelligence": parse the repo into a persistent graph, and let both humans and AI query instead of guess.
+
+![](/assets/blog-images/grep-998-star-1qoviy/img02.webp)
+
+## 2. Project overview: what is it in one sentence
+
+Ix is a system intelligence engine for codebases. Built on tree-sitter, it parses a repo into a persistent graph of symbols, calls, imports and relationships, so developers and AI coding agents can understand code by querying its structure instead of re-grepping and re-deriving. It's written in TypeScript, sits at roughly 1k GitHub stars (998), and runs on macOS, Linux and Windows.
+
+## 3. Core features in depth
+
+### 1. Map: parse once, reuse forever
+
+`ix map .` scans the whole repo with tree-sitter, extracts symbols, calls and imports, and lands the result as a map stored in a local Docker-hosted ArangoDB plus a memory layer. Next standup, next doc, next AI edit — the same map is still there. Unlike re-reading files every session, Ix only rebuilds incrementally when structure changes.
+
+### 2. Explain / Trace / Impact: the three queries you'll run daily
+
+To understand an unfamiliar symbol, run `ix explain AuthService` and it tells you what the symbol is and what it connects to. To follow a full call chain, use `ix trace user_login_flow`. To see how far a change ripples, use `ix impact verify_token`. These three cover reading code, changing code and assessing risk — an order of magnitude faster than hopping between files by hand.
+
+### 3. MCP integration: let AI agents query the graph directly
+
+Ix ships a stdio MCP server, and `ix mcp install` detects Claude Code, Codex, Cursor, VS Code, Gemini CLI, OpenClaw and opencode and registers itself automatically. The AI stops pasting entire files into the prompt and instead pulls "bounded structured slices" through MCP. The README's internal numbers: token consumption drops **30%–99.7%** versus feeding files, depending on task and repo size.
+
+### 4. Structured parsing for 27 languages
+
+JavaScript, TypeScript, Python, Java, Go, Rust, C++ and Zig are all on the supported list, and even CUDA (`.cu` / `.cuh`) is parsed with the C++ grammar, so host-to-kernel calls like `kernel<<<grid, block>>>(args)` land in the graph. On the config side, YAML, JSON, TOML, SQL, Protobuf, Dockerfile, Markdown and LaTeX are recognized as nodes too.
+
+![](/assets/blog-images/grep-998-star-1qoviy/img03.webp)
+
+## 4. Technical highlights and performance data
+
+- **Parsing core**: incremental tree-sitter parsing, noticeably faster than traditional AST tooling, which suits long-running watchers like `ix watch`.
+- **Storage**: ArangoDB (a multi-model graph database) plus a custom memory layer, running in Docker. Ix ships prebuilt images; the repo itself doesn't build the backend.
+- **Three clients, one API**: the CLI, the `ix mcp` server and the Compass visualizer (`ix view`) all share the same HTTP API.
+- **Token economics**: query instead of paste. The README quotes a 30%–99.7% reduction and explicitly labels it an internal measurement, not a public benchmark.
+- **Skill standard compatibility**: `skills/ix/SKILL.md` follows both the Claude Code skill format and the agents.md standard, so Claude Code, Codex and Cursor can load the same tree from their own skills directories.
+
+## 5. Use cases and who it's for
+
+- **New job / inherited legacy code**: use `ix overview` and `ix trace` to map the core flow of an unfamiliar microservice in half an hour.
+- **Heavy users of AI coding agents**: Claude Code, Cursor and Codex users who want AI edits on large repos without blowing the context window or breaking callers.
+- **Architecture review and refactoring**: `ix impact` tells you which callers a change touches before you make it, and `ix smells` surfaces structural problems like circular dependencies and orphan modules.
+- **Not a fit**: solo developers maintaining a few hundred lines of scripts, or air-gapped environments with strict compliance rules against local Docker.
+
+## 6. Competitor comparison
+
+| Dimension | Classic grep + reading | Paste files into an LLM | Ix |
+|---|---|---|---|
+| How you look things up | String matching | Full-text paste + inference | Structured graph queries |
+| Architecture awareness | Re-derived every session | Re-derived every session | Built once, reused persistently |
+| Agent context | Unbounded growth | Unbounded growth | Bounded structured slices |
+| Cross-session memory | None | None | Local persistent graph |
+| Relationship modeling | Manual inference | Guessed from fragments | Reads real edges |
+
+vs code intelligence platforms like Sourcegraph and CodeSee: Ix is local-first and CLI-first, open source, and doesn't depend on a cloud index. vs lightweight indexes like ctags / LSP: Ix upgrades the index into a queryable relationship graph that AI agents can consume directly over MCP.
+
+## 7. Getting started fast
+
+**One-line install** (macOS / Linux):
+
+`curl -fsSL https://ix-infra.com/install.sh | sh`
+
+On Windows, install Node.js 22+ and Docker Desktop first, then run `irm https://ix-infra.com/install.ps1 | iex`. The installer checks for and fills in Node.js 22+, Git, ripgrep and Docker + Docker Compose.
+
+**Minimal working flow**:
+
+`ix map .` to build the graph → `ix explain AuthService` to look up a symbol → `ix mcp install` to register with your AI client → then ask "what does this repo do" in Cursor or Claude Code and let the AI pull a structured answer over MCP.
+
+Going further: run `ix watch` on long-lived projects to track changes; use `ix rank --by dependents --top 10` to find the load-bearing code; set `IX_DEBUG=1` to get a full stack trace when something breaks.
+
+![](/assets/blog-images/grep-998-star-1qoviy/img04.webp)
+
+## 8. Summary and next steps
+
+Ix's core value is turning "code structure" from something re-derived every session into a persistent asset you build once and reuse for months. Whether a human is reading code or an agent is editing it, you can switch from pasting files to querying a graph. If your pain is grepping through unfamiliar repos over and over, or AI blowing its context and missing callers on large projects, Ix is worth a try.
+
+- Project site: https://www.ix-infra.com
+- GitHub: https://github.com/ix-infrastructure/Ix
+- Live demo: https://ix-infra.com/demo/
+- Discord: https://discord.gg/ncEYVHVqZ8
+
+Run `ix map .` and `ix explain` once on a small repo you already know, and the jump from grep to query is immediately obvious.
+
+#ix #Ix #ix-infrastructure #Frontend #WebDev #OpenSource #GitHub

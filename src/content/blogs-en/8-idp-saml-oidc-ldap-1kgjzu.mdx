@@ -1,0 +1,121 @@
+---
+title: "Eight separate login systems? This open-source IdP ties SAML, OIDC and LDAP together"
+publishedAt: "2026-07-16"
+summary: "One login for the web console, another LDAP for GitLab, RADIUS for the VPN, OIDC for every new SaaS — employees juggle eight passwords and IT resets them weekly. This self-hosted open-source IdP unifies SAML, OIDC, LDAP and RADIUS behind one identity source."
+image: "/assets/blog-images/8-idp-saml-oidc-ldap-1kgjzu/img01.webp"
+tags: ["Open Source", "Security"]
+author: "Adam"
+---
+![](/assets/blog-images/8-idp-saml-oidc-ldap-1kgjzu/img01.webp)
+
+## 1. Opening: every team reinvents the identity wheel
+
+Does your company look like this too? The web console uses one login, GitLab uses another LDAP, the VPN uses RADIUS, and every newly integrated SaaS wants OIDC. Employees can't remember eight passwords, and IT spends every week helping people find them. The bigger headache: every time a new application ships, the security team has to review the identity flow all over again, and when the compliance audit comes, nobody can pull a single complete login trail.
+
+The enterprise SSO market has long been owned by Okta, Auth0 and Entra ID, at per-user prices that put small and mid-sized teams off. A self-hostable open-source IdP that supports the major protocols and doesn't lock up user data has become a real requirement for many teams.
+
+![](/assets/blog-images/8-idp-saml-oidc-ldap-1kgjzu/img02.webp)
+
+## 2. Project overview: what it is in one sentence
+
+`authentik` is an open-source identity provider (IdP) positioned as "the authentication glue modern SSO needs", with native support for SAML, OAuth2/OIDC, LDAP, RADIUS, SCIM and more. It runs on Docker Compose or in a Kubernetes cluster and covers everything from a homelab to large-scale production. It currently has **24,751** GitHub stars, is built with a mix of Python and Go, is MIT-licensed, and ships an enterprise edition that adds extra capabilities.
+
+## 3. Core features in depth
+
+### 1. Full protocol coverage, SSO in one place
+
+`authentik` exposes Provider/Application abstractions for SAML 2.0, OAuth2 / OIDC, LDAP, RADIUS, SCIM and other protocols at once. Once an application is onboarded, the legacy system's LDAP auth, the new frontend's OIDC login and the NAS's RADIUS dial-in all converge on the same identity source. Together with the Federation and Source mechanisms, external IdPs (Google Workspace, Azure AD, Okta) and internal user stores (LDAP, SCIM) can sync in both directions.
+
+### 2. Flow-driven registration and authentication orchestration
+
+The project ships a visual Stage/Flow editor that lets you drag steps like "email verification → password strength check → TOTP second factor → terms acceptance" together like building blocks. Admins can configure different registration flows, risk thresholds and MFA policies per application without touching code.
+
+### 3. Fine-grained policy engine and directory sync
+
+`authentik` has a built-in expression policy engine (based on Python expressions) that can authorize dynamically on user attributes, IP and time windows. Directory Sync jobs pull users and groups from LDAP, Microsoft Entra ID, Google Workspace and others, while the Outpost component pushes policies out to reverse proxies (Traefik, NGINX, Caddy) and RADIUS gateways.
+
+### 4. Observability, compliance and auditing all covered
+
+The event stream covers the whole chain — login, registration, password change, application authorization — and can be exported to a SIEM (Splunk, Elastic). Both the admin console and the user login page offer light and dark themes, and the application overview in the screenshots shows each app's active users and recent anomalies at a glance.
+
+![](/assets/blog-images/8-idp-saml-oidc-ldap-1kgjzu/img03.webp)
+
+## 4. Technical highlights and performance numbers
+
+- **Decoupled architecture**: the core Server (Python/Django) handles orchestration and policy distribution, while Outpost (a lightweight Go proxy) is deployed at the gateway to enforce authentication. A single Outpost can handle reverse-proxy auth requests at thousands of QPS.
+- **Complete ecosystem**: an official Helm Chart, AWS CloudFormation templates and a DigitalOcean one-click app cover both containerized and cloud-marketplace deployment paths.
+- **Three CI pipelines**: the repo has separate GitHub Actions build streams for core, outpost and web. The main-branch badge stays green, and code coverage is tracked continuously through codecov.
+- **Protocol compatibility matrix**: SAML 2.0, OAuth2 (including PKCE), OIDC (including FAPI profile), RADIUS, SCIM v2 and LDAP v3 are all implemented in-house, with no dependency on middleware like Keycloak.
+- **Multilingual UI**: a full localization workflow runs through Transifex, with dozens of languages including Chinese and English open to contributors.
+
+## 5. Use cases and audience
+
+**Who it fits**:
+- Mid-to-large engineering teams with 10+ internal apps that need unified login.
+- DevOps leads looking to replace or hedge the cost of Okta and Auth0.
+- Education, open-source projects and homelab enthusiasts who need a self-hosted IdP.
+
+**Not a great fit**:
+- A single static site that just needs one login button — hosted Clerk or WorkOS is less work.
+- Enterprise compliance departments with plenty of budget and zero appetite for ops — a commercial SaaS SLA and certifications will be less stressful.
+
+![](/assets/blog-images/8-idp-saml-oidc-ldap-1kgjzu/img04.webp)
+
+## 6. Comparison with alternatives
+
+| Dimension | authentik | Keycloak | Okta / Auth0 |
+|------|-----------|----------|--------------|
+| Protocol coverage | SAML / OIDC / LDAP / RADIUS / SCIM | SAML / OIDC / LDAP | SAML / OIDC / LDAP |
+| Deployment | Docker / K8s / CloudFormation / DO | Docker / K8s | Hosted SaaS |
+| Auth gateway | In-house Go Outpost, scales out independently | Built-in Gatekeeper or sidecar | Proprietary edge service |
+| Flow orchestration | Visual Flow/Stage drag and drop | Authentication Flow (XML style) | Hosted console + Workflows |
+| Cost | Open source + enterprise subscription | Pure open source (Red Hat commercial edition) | Priced per MAU |
+| Data ownership | Fully self-hosted | Fully self-hosted | Data sits with the vendor |
+
+Compared with Keycloak, `authentik` has a more modern UI and a Flow editor that is friendlier to admins without a security background. Compared with Okta/Auth0, it removes MAU billing and keeps user data from leaving your domain.
+
+![](/assets/blog-images/8-idp-saml-oidc-ldap-1kgjzu/img05.webp)
+
+## 7. Getting started quickly
+
+**1. Docker Compose (five-minute trial)**
+
+```bash
+git clone https://github.com/goauthentik/authentik.git
+cd authentik
+docker compose up -d
+```
+
+Then open `http://localhost:9000/if/flow/initial-setup/` and follow the prompts to create the admin account.
+
+**2. Kubernetes / Helm Chart**
+
+```bash
+helm repo add authentik https://charts.goauthentik.io
+helm install authentik authentik/authentik -n authentik --create-namespace
+```
+
+External PostgreSQL and External Redis are supported, which suits production deployments.
+
+**3. Onboard your first application**
+
+Go to Admin → Applications → Create, pick an OAuth2/SAML Provider, paste the callback URL into the application you're integrating, and the SSO link is done.
+
+**4. Further recommendations**
+- In production, always switch SQLite to PostgreSQL and externalize the secret key.
+- Deploy Outpost in front of your gateway so authentication happens at the traffic entry point.
+- Turn on event stream export and feed the logs into the SIEM you already run.
+
+![](/assets/blog-images/8-idp-saml-oidc-ldap-1kgjzu/img06.webp)
+
+## 8. Takeaways and next steps
+
+With a single open-source protocol stack, `authentik` collapses SAML, OIDC, LDAP and RADIUS — capabilities that used to require stitching several components together — into one self-hostable, visually orchestrated, horizontally scalable IdP. 24k+ stars, three CI pipelines and parallel enterprise and community editions show it is no longer just a personal project but a credible option for production.
+
+If you're planning to consolidate your identity infrastructure, start a minimal environment with Docker Compose and migrate your two or three most-used internal apps onto it for a couple of weeks. If your team is larger, moving straight to a production cluster with the Helm Chart is the steadier route.
+
+- Project: `https://github.com/goauthentik/authentik`
+- Documentation: `https://docs.goauthentik.io`
+- Helm Chart: `https://github.com/goauthentik/helm`
+
+Authentication is the entry point of every system, and it deserves one serious round of selection.

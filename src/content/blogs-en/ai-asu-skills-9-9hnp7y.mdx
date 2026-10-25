@@ -1,0 +1,110 @@
+---
+title: "Shipped code with AI but can't put it on your resume? ASu-skills strings 9 job-hunt entry points into an evidence chain"
+publishedAt: "2026-05-30"
+summary: "Your AI-built projects never survive past three lines on a resume. ASu-skills splits the job hunt into nine independently callable entry points that share one fact base, so real work turns into verifiable evidence, resume files and tracked applications — with no invented claims."
+image: "/assets/blog-images/ai-asu-skills-9-9hnp7y/img01.webp"
+tags: ["AI", "Agent", "Open Source"]
+author: "Adam"
+---
+![](/assets/blog-images/ai-asu-skills-9-9hnp7y/img01.webp)
+
+Title options (pick 1 of 3)
+
+Shipped code with AI but can't put it on your resume? ASu-skills strings 9 job-hunt entry points into an evidence chain
+
+ASu-skills: 9 AI entry points that turn campus recruiting from "fire off 50 applications into the void" into a closed-loop, evidence-backed pipeline
+
+Not one word of it is a lie, yet the resume shines: how hard does ASu-skills' nine-part evidence chain hit?
+
+# ASu-skills: split the job hunt into 9 AI entry points, and stop forcing one resume to cover everything
+
+## 1. Opening: one project between the pits and the payoff
+
+The most crushing part of campus recruiting season isn't writing code. It's that "I did a lot of work, but I can't fill three lines on a resume." One user reported on GitHub that he finished three projects with AI and still could only write "proficient in React" — 50 applications, zero replies. The same thing happened to another candidate: she listed her AI coding conversations as project experience, and the interviewer stopped her with a single question — "who decided this approach?"
+
+So where's the problem? The job-hunt pipeline in the AI era has been cut into fragments: AI coding, resume rewriting, JD analysis, interview prep and progress tracking are scattered across seven or eight tools, and each tool owns one slice. Candidates keep hauling facts between windows, and the result is either exaggeration or self-contradiction. ASu-skills wants to string that whole pipeline together with 9 independently callable entry points, so that "real experience → verifiable evidence → resume file → application action" runs as one closed loop.
+
+## 2. Positioning: what problem it actually solves
+
+ASu-skills is an AI Skills plugin bundle for job hunting and development work. The main repo's language is HTML, and it has already passed 5181 GitHub stars. Its core features boil down to four keywords: **nine independent entry points**, **evidence-driven**, **multi-platform compatibility**, **factual boundaries**.
+
+It supports native installation on Codex, Claude Code, TraeWork and Qoder, and provides bridge entry points for Cursor, OpenCode and WorkBuddy. All entry points share the same `skills/`, `assets/` and `references/`. The entry list has a single source of truth in the root `skills.registry.json`, which `npm run sync:skills` generates and reconciles — change one entry and every platform syncs; CI also verifies consistency with `--check`.
+
+![](/assets/blog-images/ai-asu-skills-9-9hnp7y/img02.webp)
+
+## 3. A deep dive into the core features
+
+### 1. `/contributor`: make a genuine open-source contribution
+
+This entry point doesn't write code for you. It filters GitHub candidate issues by target role, tech stack and time you can invest. It first checks maintenance signals, contribution rules, issue/PR status and duplicate risk, then prepares a minimal change on an isolated branch plus verification results. It forks, pushes and opens the PR only after you confirm each item, and it tracks CI, review and merge status. An unmerged PR is recorded as "submitted" or "in collaboration"; stronger outcome language is used only when GitHub shows it merged and the project explicitly adopts it.
+
+### 2. `/evidence-recap`: turn AI coding conversations back into an evidence chain
+
+This is ASu-skills' differentiator. It organizes material into nine sections: problem context, solution decisions, personal actions, delivery status, adoption scope, effect evidence, personal boundaries, evidence still missing, and likely interview follow-ups. By default it generalizes secrets, emails, client identifiers and internal paths, so sensitive information never lands in a public skill file. The structure naturally separates "what I did" from "what AI did" from "what the team shared", so the resume stops claiming AI output as personal achievement.
+
+### 3. `/great-resume` + `/make-resume`: rewrite and production, decoupled
+
+`/great-resume` handles content positioning: target-role positioning, project rewrites, outcome evidence, and an HR opening statement. When information is thin, it produces a usable draft and flags it with `[TO BE FILLED]` — it will not invent titles, companies, tech stacks or numbers. `/make-resume` handles file delivery: 18 Chinese HTML templates, A4 one- or two-page layouts, in-browser editing of text/photos/fonts/colors, savable local HTML, print-to-PDF export, and optional LaTeX `.tex` source export (three layouts by default: ASu, compact single-column, academic) for continued editing in Overleaf.
+
+![](/assets/blog-images/ai-asu-skills-9-9hnp7y/img03.webp)
+
+### 4. `/job-match` + `/job-apply` + `/offer`: a closed loop across the whole application flow
+
+`/job-match` breaks a JD into hard requirements, core competencies and nice-to-haves, and compares them item by item to produce a requirement–evidence matrix, up to 5 priority gaps to close, and an explainable verdict: "apply now / apply after adding material / apply with caution / not recommended for now". It does not fake a precise match score out of keyword overlap. `/job-apply` connects to your already-logged-in browser through Kimi WebBridge (built on the Chrome DevTools Protocol), fills fields automatically and uploads the resume attachment, stopping before submission by default so you can review. `/offer` turns recruiting emails, chat logs and screenshots into a job-hunt funnel; default statuses are `Applied / Screening / Assessment / Interview / Offer / Rejected / Pending`, ordinary auto-replies can't be read as an interview or an offer, and the progress table supports search, filtering, stats, CSV/JSON backup and print-to-PDF.
+
+### 5. `/interview`: interrogate the resume until it gives
+
+It extracts the claims from your resume and target role that need verification. It first agrees on interview rounds, duration and feedback strategy, then checks through continuous one-question-at-a-time follow-ups whether you can explain personal responsibility, technical implementation, metric definitions, trade-off decisions and failure cases. Each core question uses a pre-locked scoring contract, and a session ledger records verified evidence and gaps. After the debrief you can re-drill weak claims with variant questions, counterfactuals and incident questions — but it won't invent answers for you, and it won't hide thin evidence behind a precise total score that has no calibration behind it.
+
+## 4. Technical highlights and performance numbers
+
+- **Single source of truth**: `skills.registry.json` is the only entry list. Add or remove an entry there first, then `npm run sync:skills` syncs it into the Claude Code, Codex, TraeWork, OpenCode, WorkBuddy and Qoder plugin manifests and install scripts. CI verifies consistency with `--check`, so nine manifests can't drift apart.
+- **Nine-part evidence chain model**: `/evidence-recap` structures AI coding conversations into nine sections and naturally separates human work from machine work — a "facts first" design that is rare among job-hunt tools today.
+- **Browser bridge, not a scraper**: `/job-apply` relies on Kimi WebBridge connecting to your logged-in browser through a local daemon plus CDP, and both the session and page content stay on your machine. Logins, passwords, SMS codes, email codes, MFA, passkeys and CAPTCHAs must be completed by you; it reads neither cookies nor tokens.
+- **Dual-track LaTeX output**: beyond HTML, `/make-resume` also emits `.tex` sources. All three layouts need no extra packages or font configuration and compile straight away in Overleaf with XeLaTeX.
+
+![](/assets/blog-images/ai-asu-skills-9-9hnp7y/img04.webp)
+
+## 5. Scenarios and who it fits
+
+**Scenario 1: new grads with no verifiable experience.** Start with `/contributor` to land an open-source contribution relevant to the role, use `/evidence-recap` to organize the evidence, then hand it to `/great-resume` for resume wording — turning "no internship" into "a PR anyone can verify".
+
+**Scenario 2: applicants whose spray-and-pray is inefficient and whose JD match is fuzzy.** Use `/job-match` to separate already-matched, expression gaps, capability gaps and open questions, and to output application priority; then use `/job-apply` to fill the form and stop before submission to review.
+
+**Scenario 3: candidates who need to close gaps before an interview.** Use `/interview` to predict questions and expose weak spots through follow-ups, then re-drill metric definitions and the boundaries of your personal contribution with variant questions after the debrief.
+
+Who it's for: new graduates, campus and experienced-hire candidates, people building verifiable project experience from scratch, and job seekers juggling application progress across many companies. **Who it's not for**: people who just want one-click "polish" to inflate a resume — the project states its factual boundaries explicitly and will refuse to fabricate, marking gaps with `[TO BE FILLED]` instead.
+
+## 6. Comparison with alternatives
+
+| Tool | Entry points | Evidence chain | Browser form filling | Progress tracker | Factual boundary statement |
+| --- | --- | --- | --- | --- | --- |
+| ASu-skills | 9 independent entry points | Nine-section structure | Yes (Kimi WebBridge) | Built-in `application-tracker.html` | Explicit |
+| Generic resume template sites | Single deliverable | No | No | No | No |
+| AI resume rewriting tools | Single deliverable | No | No | No | Weak |
+| Recruiting site bots | Single action | No | Yes | No | No |
+
+ASu-skills' difference is that it chains "evidence debrief → content rewrite → file production → JD analysis → browser form filling → progress management" into one pipeline, sharing a `career-claim-ledger` of claims and evidence across entry points, so open-source contributions, experience write-ups and resume files all cite the same set of facts and confirmation states.
+
+![](/assets/blog-images/ai-asu-skills-9-9hnp7y/img05.webp)
+
+## 7. How to get started fast
+
+**Step one: pick a platform and install.** Codex users can just send the repo link to Codex with install instructions. Claude Code users run `/plugin marketplace add Hisn00w/ASu-skills` and `/plugin install asu-skills@asu`, then `/reload-plugins`. TraeWork users copy the repo into `~/.trae-cn/plugins/<publisher>/asu-skills/<version>/`. Cursor / OpenCode / WorkBuddy / Qoder each have bridge install instructions in their own repos.
+
+**Step two: pick your first entry point.** The README provides a lookup table: no projects yet → `/contributor`; AI chat logs in hand → `/evidence-recap`; existing project repos → `/project-guide`; existing experience to match against a role → `/great-resume`; content settled and you need an HTML resume → `/make-resume`.
+
+**Step three: combine them.** Recommended pipeline: get evidence with `/contributor` or `/evidence-recap` → produce a study guide and interview notes with `/project-guide` → rewrite experience with `/great-resume` → generate HTML/PDF/LaTeX with `/make-resume` → match against a JD with `/job-match` → fill forms with `/job-apply` (stopping before submission) → find gaps with `/interview` → track progress with `/offer`.
+
+## 8. Takeaways and what to do next
+
+The core value of ASu-skills isn't "making your resume look better". It splits the AI-era job hunt into 9 entry points that can be called independently yet share the same facts, forcing the tooling to work in the order "real experience → verifiable evidence → resume file → application action", which kills exaggeration and credit-claiming at the root. With the three-piece combo of a nine-part evidence chain, a single-source-of-truth registry and a local Kimi WebBridge, it draws a clear line between "what AI wrote" and "what I did".
+
+If you're in campus or experienced-hire recruiting, stuck on "I have AI projects but can't put them on a resume", or you've sent 50 applications with no reply, install ASu-skills and start from either `/evidence-recap` or `/great-resume` — and feel what it's like when the tool stops fabricating for you.
+
+- GitHub repo: https://github.com/Hisn00w/ASu-skills
+- Website: https://hisn00w.github.io/ASu-skills/
+
+One-line pitch: **while everyone else uses AI to inflate their resume, ASu-skills is turning your real experience into a verifiable evidence chain.**
+
+#asu-skills #AsuSkills #hisn00w #MachineLearning #DeepLearning #OpenSource #GitHub

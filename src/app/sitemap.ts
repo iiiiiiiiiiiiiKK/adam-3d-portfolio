@@ -9,10 +9,11 @@ export const dynamic = "force-static";
 const withSlash = (path: string) => (path.endsWith("/") ? path : `${path}/`);
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const posts = getBlogPosts()
-    .sort((a, b) =>
-      a.metadata.publishedAt < b.metadata.publishedAt ? 1 : -1,
-    )
+  const byDate = (a: { metadata: { publishedAt: string } }, b: { metadata: { publishedAt: string } }) =>
+    a.metadata.publishedAt < b.metadata.publishedAt ? 1 : -1;
+
+  const zhPosts = getBlogPosts("zh")
+    .sort(byDate)
     .map((post) => ({
       url: withSlash(`${config.site}/blogs/${post.slug}`),
       lastModified: new Date(post.metadata.publishedAt),
@@ -20,17 +21,29 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.5,
     }));
 
+  const enPosts = getBlogPosts("en")
+    .sort(byDate)
+    .map((post) => ({
+      url: withSlash(`${config.site}/en/blogs/${post.slug}`),
+      lastModified: new Date(post.metadata.publishedAt),
+      changeFrequency: "yearly" as const,
+      priority: 0.4,
+    }));
+
   return [
+    { url: withSlash(config.site), changeFrequency: "monthly", priority: 1 },
     {
-      url: withSlash(config.site),
+      url: withSlash(`${config.site}/en`),
       changeFrequency: "monthly",
-      priority: 1,
+      priority: 0.9,
     },
+    { url: withSlash(`${config.site}/blogs`), changeFrequency: "weekly", priority: 0.7 },
     {
-      url: withSlash(`${config.site}/blogs`),
+      url: withSlash(`${config.site}/en/blogs`),
       changeFrequency: "weekly",
-      priority: 0.7,
+      priority: 0.6,
     },
-    ...posts,
+    ...zhPosts,
+    ...enPosts,
   ];
 }

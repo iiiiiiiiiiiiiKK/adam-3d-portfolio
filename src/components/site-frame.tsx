@@ -2,20 +2,25 @@
 
 import { usePathname } from "next/navigation";
 import Header from "@/components/header/header";
-import Footer from "@/components/footer/footer";
+import { FooterInner } from "@/components/footer/footer";
 import AppOverlays from "@/components/app-overlays";
+import type { Locale } from "@/i18n/types";
 
 /**
- * Wraps the app shell. The `/components*` showcase routes are rendered
- * "bare" (no header / footer / decorative overlays) so the component
- * galleries can be judged in isolation. Everything else gets full chrome.
+ * Wraps the app shell for one locale.
+ *
+ * The site renders twice (root = Chinese, `/en` = English) through two route
+ * groups, each with its own root layout so `<html lang>` is correct. This frame
+ * only needs to know which locale it's wrapping.
  */
 export default function SiteFrame({
   children,
   githubStars,
+  locale = "zh",
 }: {
   children: React.ReactNode;
   githubStars?: React.ReactNode;
+  locale?: Locale;
 }) {
   const pathname = usePathname();
   const bare = pathname?.startsWith("/components") ?? false;
@@ -26,7 +31,7 @@ export default function SiteFrame({
     <>
       <Header githubStars={githubStars} />
       {children}
-      <Footer />
+      <FooterInner locale={locale} />
       <AppOverlays />
     </>
   );

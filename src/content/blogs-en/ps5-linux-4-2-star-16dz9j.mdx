@@ -1,0 +1,83 @@
+---
+title: "Want to run PS5 binaries on Linux? This 42K-star open-source project ports them for you"
+publishedAt: "2026-04-01"
+summary: "AnyPS5 is an open-source tool that rewrites PS5 executables into native Linux and Windows formats with no emulation layer. It reimplements the system prx libraries, recompiles shaders to SPIR-V, and already has 42K stars on GitHub."
+image: "/assets/blog-images/ps5-linux-4-2-star-16dz9j/img01.webp"
+tags: ["Open Source", "Productivity", "Systems"]
+author: "Adam"
+---
+![](/assets/blog-images/ps5-linux-4-2-star-16dz9j/img01.webp)
+
+Title options (pick 1 of 3)
+
+Want to run PS5 binaries on Linux? This 42K-star open-source project ports them for you
+
+AnyPS5 converts PS5 executables to native Linux/Windows formats with zero emulation layer
+
+A 40K-star open-source tool: skip the emulator and move PS5 executables straight to PC
+
+# A 42K-star open-source tool that automatically ports PS5 executables to Linux and Windows
+
+## 1. Still stuck on this problem?
+You have a PS5 executable on hand and want to run it on a Linux server or a Windows desktop for research, testing or a porting evaluation — then you discover there is no PS5 emulator, no official SDK, and no PS5 hardware. Three walls, and you are stuck outside all of them. For developers, "cross-platform" in the console world is close to fantasy, let alone studying compatibility for PS5 exclusives like *Bloodborne* or *Marvel's Spider-Man 2* — you can only stare at a `.prx` file. The PS5 SDK is closed source, the x86_64 instruction set is unusual, and the syscalls are entirely proprietary. Open-source efforts stayed stuck at PS3 and PS4 for years; PS5 is basically a blank space.
+
+## 2. Project overview: AnyPS5 in one sentence
+AnyPS5 is an automatic PS5 executable porting tool. Its positioning is "convert PS5-platform executables into native Linux/Windows formats", with four keywords for the core features: **automatic conversion**, **no emulation layer**, **SPIR-V shader recompilation**, **GPLv2 open source**. It has passed 42K stars and is a rare active open-source project in this space. The main language is C++, with a web-based online converter and a full documentation set (architecture, build, style guide, contribution guide).
+
+## 3. A deep dive into the core features
+
+![](/assets/blog-images/ps5-linux-4-2-star-16dz9j/img02.webp)
+
+### 1. Automatic relinker: rewriting executables into the target platform's native format
+The bundled `relinker` converts a PS5 ELF directly into a native Linux or Windows executable. It does not wrap the binary in a shell — it rewrites the symbol table, sections, entry point and dynamic linking targets, so after conversion you just run `./binary`. The original bytecode is untouched, with zero loss in runtime logic.
+
+### 2. Native reimplementation of the system prx libraries
+The `core/libs/prx` directory holds complete reimplementations of the system libraries, covering PS5-proprietary prx interfaces such as `libc`, `libkernel`, graphics, audio and the filesystem. These libraries are linked in dynamically, so a converted executable still calls system functionality the same way a PS5 title would — except the implementation underneath is the equivalent version on Linux/Windows.
+
+### 3. Shader recompiler: from PS5 bytecode to SPIR-V
+Shaders are the hard part of the PS5. AnyPS5 ships a shader recompiler that reads PS5 GPU shader bytecode directly and emits standard SPIR-V. With `ANYPS5_ENABLE_SPIRV_TOOLS` enabled, Spirv-Tools validates the output so Vulkan drivers can consume it directly. Once this step works, the PS5 graphics pipeline has a chance of being reproduced on PC.
+
+### 4. SDL input mapping and configuration
+The project uses SDL for input abstraction, automatically adapting to gamepad sticks and triggers, while keyboard and mouse are configured through the `anyps5-input.ini` file. For porting evaluations, this layer removes the grunt work of remapping every gamepad button by hand.
+
+![](/assets/blog-images/ps5-linux-4-2-star-16dz9j/img03.webp)
+
+## 4. Technical highlights and performance numbers
+A few of AnyPS5's architectural choices deserve a mention. **Zero emulation layer**: no intermediate process, no instruction-level emulation — PS5 syscalls map directly onto semantically equivalent host interfaces, so startup overhead is negligible. **C++ with strongly typed error handling**: every unsupported or exceptional state throws `std::runtime_error` strictly; `what()` goes to stderr and the process terminates, so no half-dead process is left behind. **Shaders validated by Spirv-Tools**: an industrial-grade validator catches bad SPIR-V before a downstream driver takes it and crashes to a black screen. **Local-only web converter**: the online converter at `https://boykopovar.github.io/AnyPS5/` never lets the file leave the browser, sidestepping privacy and copyright risk.
+
+A community-maintained `blocker map` tracks the porting stage of each PS5 game — which stage it is stuck at, which libraries are missing, what the GPU coverage is — with transparent, checkable progress.
+
+![](/assets/blog-images/ps5-linux-4-2-star-16dz9j/img04.webp)
+
+## 5. Use cases and who it is for
+**Who it suits**: engineers and university students doing console compatibility research, game porting evaluation, or security analysis; reverse-engineering hobbyists; dev teams that want to add PS5 compatibility to an existing toolchain. **Who it does not suit**: ordinary players who expect a normal emulator; non-technical users hoping for "one click to play every PS5 game" (this is a porting tool, not a mature emulator). Concrete scenarios include: porting a homegrown PS5 demo to Linux to validate an algorithm, integrating a PS5 toolchain into CI for ABI compatibility tests, and researching PS5 syscall mapping with zero runtime overhead.
+
+![](/assets/blog-images/ps5-linux-4-2-star-16dz9j/img05.webp)
+
+## 6. Comparison with similar projects
+
+| Dimension | AnyPS5 | RPCS3 (PS3 emulator) | fpPS4 (PS4 emulator) |
+| --- | --- | --- | --- |
+| Target platform | PS5 | PS3 | PS4 |
+| Execution model | Executable converted to native format | Full instruction interpretation | Full instruction interpretation |
+| Emulation layer | None | Yes | Yes |
+| Shader output | Standard SPIR-V | GLSL | GLSL/Vulkan |
+| License | GPLv2 | GPLv2 | GPLv2 |
+
+Side by side, AnyPS5 is one of the few open-source implementations in the PS5 lane that gets both the relinker and shader recompilation working. The competition is not about "who is compatible with more games" — the README openly states this is for non-gaming research — but about whether the architecture is clean, the docs are complete, and the community is active.
+
+## 7. How to get started quickly
+**Use it online**: open https://boykopovar.github.io/AnyPS5/ in a browser, drag in a file, pick the target platform (Linux/Windows), click convert and download. The file never leaves your machine. **Build locally**: clone the repo and follow `docs/dev/BUILD.md`; you need a C++ compiler and SPIRV-Tools (enable as needed). **Configuration**: gamepads are detected automatically; edit `anyps5-input.ini` in the repo root for keyboard and mouse. **Going deeper**: read `docs/dev/ARCHITECTURE.md` to get a handle on the three main threads — relinker, prx reimplementation, shader recompilation — then head to `discussions/categories/game-bring-up` for real game bring-up reports.
+
+![](/assets/blog-images/ps5-linux-4-2-star-16dz9j/img06.webp)
+
+## 8. Summary and next steps
+AnyPS5 turns automatic porting of PS5 executables to Linux/Windows into a clean pipeline: the relinker rewrites the format, prx reimplements the syscalls, and shaders compile to SPIR-V. Three layers, each with its own job, and the absence of an emulation layer gives it a real engineering edge in performance and startup time. Its core value is not "cracking the PS5" but providing an engineering-grade toolchain for studying PS5 system behavior and doing ABI compatibility analysis. **Suggested path**: run a demo file through the web converter first to learn the flow, then clone the repo and get a local build working, then pick a PS5 syscall chain you know and read the source.
+
+- GitHub: https://github.com/boykopovar/AnyPS5
+- Web converter: https://boykopovar.github.io/AnyPS5/
+- Discord: https://discord.gg/BHFztBPUe
+
+The one-line pitch: this is one of the few engineering-grade open-source tools that lets you "just run" PS5 executables on Linux.
+
+#anyps5 #Anyps5 #boykopovar #CommandLineTools #DevTools #OpenSourceProject #GitHub

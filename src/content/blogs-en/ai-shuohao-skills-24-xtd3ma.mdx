@@ -1,0 +1,85 @@
+---
+title: "AI short-drama pipelines get stuck at the breakdown stage? shuohao-skills backstops it with 24 quality gates"
+publishedAt: "2026-07-18"
+summary: "Short-drama teams keep getting blocked at the same concrete spots: characters bleed into each other, art style drifts, outlines veer off halfway. shuohao-skills encodes the whole breakdown as three structured deliverables, guarded by 24 scripted quality gates."
+tags: ["AI", "Agent", "Productivity"]
+author: "Adam"
+---
+## 1. Intro: why you need this tool
+
+Short-drama teams have been racing to adopt AI workflows, but the bottlenecks keep getting more concrete: you throw a novel at the model and either the characters bleed into each other, the art style drifts, or the outline veers off halfway through. By the time you've checked one pass by hand, half a day is gone. What you actually want isn't "AI writes a novel" — it's "AI hands over shootable material": character bibles, episode outlines, art assets, all in one go.
+
+The hard part is determinism. AI produces text easily; structured, shootable output is hard. Every step needs a quality gate, and every round of rework burns model quota and production schedule.
+
+## 2. Project overview: what it is in one sentence
+
+shuohao-skills is a set of AI short-drama production skills for Claude Code and codex. It breaks a novel into three deliverables that feed straight into a shooting pipeline: a character bible, a short-drama adaptation outline, and an art bible.
+
+Key words: **structured**, **scripted quality gates**, **symlink install**, **zero npm dependencies**. It currently has 1252 GitHub stars, and all three skills ship with selftests covering every piece of deterministic logic.
+
+## 3. Core features in depth
+
+### 1. novel-characters: break a novel into a character bible
+
+Feed it a novel, and it outputs character profiles, visual prompts, voice prompts, and character reference images. Both report language and image style are configurable, so the same skill fits Chinese short dramas, English animation, and overseas markets. It moves character consistency upstream to the breakdown stage, so dubbing and art style don't drift later.
+
+### 2. novel-outline: the five-piece adaptation outline
+
+It outputs five documents — adaptation notes, cast list, payoff beat sheet, episode synopses, and asset list — and checks them against 13 scripted quality gates. It also supports a "health check mode for existing outlines", which means a team's old hand-written outline can go straight in for a compliance pass instead of being thrown out and rebuilt.
+
+### 3. novel-art: an art bible for scenes and narrative props
+
+It eats the pre-filled checklist in outline.json and outputs an art document with consistency anchors, lighting and state variants, scale references, and "no people, no hands, white background" prompts, backstopped by 11 scripted quality gates. That "no people, no hands, white background" prompt convention exists specifically for image models, so character artifacts don't contaminate pure scene assets.
+
+### 4. Companion tooling: install.sh and selftest
+
+`./scripts/install.sh` detects whether the local machine is running Claude Code or codex, symlinks the skills into the right directories, and the change takes effect right after `git pull`. `scripts/selftest.mjs` never calls a model, never spends quota, and finishes in one second — a good pre-commit self-check.
+
+## 4. Technical highlights and performance numbers
+
+- **Zero npm dependencies**: every script uses only the Node standard library, which sidesteps `npm install`, lockfile conflicts, and supply-chain risk.
+- **Symlink install**: updating is just `git pull`, no reinstall, and it works inside CI and containers too.
+- **Scripted quality gates**: 13 + 11 gates cover the outline and art outputs; the rules are readable, editable, and replayable.
+- **Self-contained layout**: one directory per skill, holding SKILL.md, scripts, references, examples, and assets, so each can be copied into another project on its own.
+- **Platform compatibility**: verified only on macOS + Node 24; there are no platform-specific calls, so Linux and older Node versions should work in theory.
+
+## 5. Use cases and audience
+
+- **AI short-drama studios**: a standardized pipeline from novel to shot script, cutting the manual alignment between "text" and "shoot".
+- **Animation and comic-drama teams**: they need stable character looks and scene assets, and the art skill's consistency anchors map directly onto pipeline requirements.
+- **Novel IP adapters**: they hold a finished manuscript and want several adaptation options plus A/B tests on art direction, fast.
+- Not a good fit: plain text writing or lightweight scenarios with no need for structured output; non-technical teams that need a graphical GUI.
+
+## 6. Comparison with alternatives
+
+| Dimension | shuohao-skills | Generic ChatGPT prompt templates | Commercial AI short-drama SaaS |
+| --- | --- | --- | --- |
+| Structured output | Three document sets + 13/11 quality gates | Free-form text, no gates | Black-box output, hard to re-edit |
+| Install cost | Symlink script, zero dependencies | None | Sign up and pay |
+| Customizable | Skill source is open, rules editable | Templates copied by hand | Closed |
+| Model choice | Uses your current session quota, no API key | Bring your own | Usually locked to a single model |
+| Image generation | Uses the built-in `$imagegen` in the codex CLI | Needs an external tool | Built in |
+
+The core reason to pick it: **open source + structured output + scripted quality gates**, which lands exactly in the gap between "prompt templates are too loose" and "SaaS is too closed".
+
+## 7. How to get started fast
+
+```bash
+git clone https://github.com/eternityspring/shuohao-skills.git
+cd shuohao-skills
+./scripts/install.sh
+```
+
+Minimal working flow: load `novel-outline` in Claude Code or codex, drop in the novel text, and let the agent run through the 13 quality gates; then load `novel-characters` for the character bible; finally use `novel-art` to turn outline.json into the art bible.
+
+Going further: before adding a new skill, run `for f in skills/*/scripts/selftest.mjs; do node "$f"; done`; pass `--codex` or `--uninstall` as needed to control the install scope.
+
+## 8. Summary and recommended next steps
+
+The core value of shuohao-skills is that it upgrades AI short drama from "a tool that can write" to "a pipeline that can shoot": three structured deliverables + scripted quality gates + symlink install mean even a small team can run an industrial-grade workflow.
+
+How to use it: start with `novel-outline` and run one health-check pass through the 13 gates to see where your existing outline falls short; then chain in `novel-characters` and `novel-art` for a complete loop.
+
+Project URL: https://github.com/eternityspring/shuohao-skills
+
+Apache 2.0 licensed; if you can run Node 18+, you can start.

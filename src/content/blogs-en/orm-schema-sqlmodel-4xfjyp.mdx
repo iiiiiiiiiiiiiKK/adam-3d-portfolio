@@ -1,0 +1,153 @@
+---
+title: "Tired of defining your ORM and your schema twice? SQLModel merges them into one"
+publishedAt: "2026-08-01"
+summary: "Define ORM models with SQLAlchemy, then define the same fields again as Pydantic schemas for FastAPI — and every requirement change means editing both places. SQLModel collapses ORM model, schema and validation into a single class."
+image: "/assets/blog-images/orm-schema-sqlmodel-4xfjyp/img01.webp"
+tags: ["Dev", "Data"]
+author: "Adam"
+---
+![](/assets/blog-images/orm-schema-sqlmodel-4xfjyp/img01.webp)
+
+## 1. Opening: almost every Python backend has hit this pain
+
+If you do Python web development, you have probably lived this scene: you define a set of ORM models with SQLAlchemy, then define another set of schemas with Pydantic for your FastAPI endpoints. The two sets of fields overlap heavily, so every requirement change means editing both places — and you regularly miss one, which breaks the API.
+
+Worse, a newcomer joins the project, sees `UserInDB`, `UserORM` and `UserResponse` with nearly identical fields that somehow can't be merged, debugs for half a day, and finally discovers a type mismatch. That split of "one table, three definitions" is a shared pain for Python backend developers.
+
+Is there a way to merge the ORM model and the API data model into one? The official FastAPI team's answer is **SQLModel** — a library with 18.2K stars on GitHub.
+
+![](/assets/blog-images/orm-schema-sqlmodel-4xfjyp/img02.webp)
+
+## 2. Project overview: one sentence
+
+**SQLModel** is a Python ORM library open-sourced by tiangolo, the author of FastAPI. It is built on Pydantic + SQLAlchemy, and its core idea is "one class serves as ORM model, schema model and validation model at the same time". In one line: less code, more complete database development.
+
+- **Core positioning**: merge SQLAlchemy and Pydantic, eliminate duplicate models
+- **Key traits**: annotation-driven, natively compatible with FastAPI, full editor support
+- **Milestones**: 18.2K stars, long-term maintenance on PyPI, officially recommended in the FastAPI ecosystem
+
+## 3. Core features in depth
+
+### 1. One class = three models
+In traditional development you need an ORM class (SQLAlchemy), an input validation class (Pydantic) and an output serialization class (Pydantic). SQLModel lets a single class inherit from `SQLModel` with `table=True`, so that one class does all three jobs.
+
+```Python
+from sqlmodel import Field, SQLModel
+
+class Hero(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    name: str
+    secret_name: str
+    age: int | None = None
+```
+
+This `Hero` class is both the SQLAlchemy ORM model (it generates the database table) and the Pydantic data model (used for FastAPI request and response validation). The code volume is cut in half, and field consistency is guaranteed by type annotations.
+
+### 2. Native FastAPI compatibility
+Because Pydantic is the foundation, SQLModel models work directly as a FastAPI `response_model` or request body type with zero extra conversion. In a FastAPI project you can even `return` the object the database gave you and serialization just happens.
+
+### 3. The full power of SQLAlchemy
+Don't worry about being crippled — SQLModel is a thin layer on top of SQLAlchemy, and every native capability (complex JOINs, transactions, Session management, custom queries) is still there. You can keep using the APIs you know: `select()`, `Session`, `create_engine()`.
+
+### 4. Editor-grade development experience
+Thanks to Pydantic's type annotations, VS Code and PyCharm autocomplete `Hero.age`, flag a wrong type with a red squiggle, and even complete `.name` on query results. This "writing code feels like writing Markdown" smoothness is where the SQLModel team puts most of its effort.
+
+![](/assets/blog-images/orm-schema-sqlmodel-4xfjyp/img03.webp)
+
+## 4. Technical highlights and performance numbers
+
+- **Two engines underneath**: Pydantic v2 handles validation and serialization, 5–50x faster than v1; SQLAlchemy 2.0 handles SQL generation and connection pooling.
+- **Zero extra runtime overhead**: the thin wrapper adds no middle layer, so the call path matches plain SQLAlchemy.
+- **Annotation-driven**: nullable fields use PEP 604 syntax like Python's `int | None`, so IDE and runtime validation share one source of truth.
+- **Ecosystem compatibility**: plugs into existing FastAPI, Pydantic and SQLAlchemy projects with incremental migration and no rewrite of legacy code.
+- **Broad database support**: through SQLAlchemy it supports SQLite, PostgreSQL, MySQL, Oracle, SQL Server and other mainstream relational databases.
+
+![](/assets/blog-images/orm-schema-sqlmodel-4xfjyp/img04.webp)
+
+## 5. Use cases and audience
+
+**Who it fits**:
+- Full-stack and backend developers building APIs with FastAPI against a relational database
+- Mid-sized teams tired of maintaining ORM and schema in parallel
+- Engineers who want type safety and IDE autocompletion without giving up SQLAlchemy's flexibility
+
+**Typical scenarios**:
+- Backends for small and mid-sized web apps (FastAPI + PostgreSQL/MySQL)
+- Rapid development of internal admin dashboards
+- Data API services that must return strongly typed data to the frontend
+
+**Not a great fit**:
+- Pure data analysis (Pandas or SQLAlchemy Core is a better fit)
+- Projects already deeply invested in Tortoise ORM or Django ORM
+- Complex reporting systems that need heavily customized SQL
+
+## 6. Comparison with alternatives
+
+| Project | Model layers | Type hints | FastAPI friendliness | Learning cost |
+|------|----------|----------|----------------|----------|
+| **SQLModel** | 1 unified layer | Complete | Native support | Low |
+| SQLAlchemy + Pydantic | 2 parallel layers | Manual sync needed | Extra conversion needed | Medium |
+| Tortoise ORM | 1 layer | Partial | Async adaptation needed | Medium |
+| Django ORM | 1 layer | Weak | Incompatible | High (you must learn the whole Django stack) |
+
+Compared with traditional approaches, **SQLModel's advantage is fusing the ORM definition and the API data model into one**, removing 40%–60% of duplicate code while keeping all of SQLAlchemy's capabilities.
+
+![](/assets/blog-images/orm-schema-sqlmodel-4xfjyp/img05.webp)
+
+## 7. Getting started quickly
+
+**1. Install** (uv recommended):
+
+```
+uv add sqlmodel
+```
+
+Or with pip:
+
+```
+pip install sqlmodel
+```
+
+**2. Minimal working example**:
+
+```Python
+from sqlmodel import Field, Session, SQLModel, create_engine, select
+
+class Hero(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    name: str
+    secret_name: str
+    age: int | None = None
+
+engine = create_engine("sqlite:///database.db")
+SQLModel.metadata.create_all(engine)
+
+with Session(engine) as session:
+    session.add(Hero(name="Spider-Boy", secret_name="Pedro Parqueador"))
+    session.commit()
+
+    hero = session.exec(select(Hero).where(Hero.name == "Spider-Boy")).first()
+    print(hero)
+```
+
+**3. Practical advice**:
+- When you move to PostgreSQL, just swap the `create_engine` connection string for `postgresql://user:pwd@host/db`
+- Keep using SQLAlchemy's chained `select()` syntax for complex queries — no mental model switch needed
+- In FastAPI, pass the `Hero` class straight in as `response_model` and JSON serialization plus field filtering are handled for you
+
+![](/assets/blog-images/orm-schema-sqlmodel-4xfjyp/img06.webp)
+
+## 8. Takeaways and next steps
+
+The core value of **SQLModel** is "one Python class carrying three responsibilities: database table, ORM mapping and API data validation". For teams already on FastAPI, this approach can roughly halve the code in the backend data layer while fully preserving SQLAlchemy's flexibility.
+
+**Why it's worth a try**:
+- 18.2K stars, maintained by the official FastAPI team, active ecosystem
+- Zero migration cost — existing SQLAlchemy code can be adopted incrementally
+- Annotation-driven development noticeably cuts debugging time
+
+**Project links**:
+- GitHub: https://github.com/fastapi/sqlmodel
+- Docs: https://sqlmodel.tiangolo.com
+
+If duplicate model definitions are wearing your project down and a new FastAPI service needs a database layer fast, SQLModel is the most worthwhile option right now.

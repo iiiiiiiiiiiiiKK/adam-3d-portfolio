@@ -1,0 +1,100 @@
+---
+title: "A designer put her grandfather's stamp album online — and this 361-star personal site is worth a look"
+publishedAt: "2026-04-16"
+summary: "A designer put her grandfather's stamp album online, and this 361-star personal site is worth a look."
+image: "/assets/blog-images/361-stars-1ntjp8/img01.webp"
+tags: ["Open Source", "Dev"]
+author: "Adam"
+---
+![](/assets/blog-images/361-stars-1ntjp8/img01.webp)
+
+Title options (pick 1 of 3)
+
+A designer put her grandfather's stamp album online — and this 361-star personal site is worth a look
+
+A personal site on the full Cloudflare stack: 3 modules, 4 commands, live
+
+Looks like an ordinary portfolio, hides a complete edge-architecture reference implementation
+
+# A designer put her grandfather's stamp album online — what is hidden inside this 361-star Next.js personal site?
+
+You have seen plenty of designer personal websites, but have you seen one that turns a grandfather's old stamp album into a digital archive? marijanapav.com is exactly that — half portfolio, half experimental playground, with Next.js deployed to the edge on the full Cloudflare stack and D1, R2 and Cloudflare Images built in. It has 361 stars, TypeScript runs the whole thing, and behind the interest sits a genuinely modern edge architecture.
+
+![](/assets/blog-images/361-stars-1ntjp8/img02.webp)
+
+## 1. Opening: a year into your portfolio site, still fighting deployment?
+
+Many independent designers and developers leave their personal sites unfinished at the very last step: shipping. Vercel plans throw errors once you exceed quota, and running your own server means wrestling with CI, CDN and image optimization. A portfolio that loads a 5-second full-size image loses the visitor instantly — anyone who has built a personal site knows that pain. marijanapav.com runs the whole site on Cloudflare Workers + OpenNext, so visitors worldwide hit the nearest node. The site has three independent modules — portfolio, digital stamp album and the Sketchbook playground — with data, files and image storage split across D1, R2 and Cloudflare Images respectively. It is a fairly complete reference implementation of an "edge architecture portfolio".
+
+![](/assets/blog-images/361-stars-1ntjp8/img03.webp)
+
+## 2. Project overview: what is it, exactly?
+
+marijanapav.com is the personal site of designer Marijana Pav, released in October 2025. It is not a conventional résumé site; it stitches together a portfolio, a digitized archive of her grandfather's stamp collection at `/stamps`, and an idea incubator at `/sketchbook`. On the stack side it uses TypeScript + Next.js (with the OpenNext adapter) + Drizzle ORM + Cloudflare Workers, with deployment handled end to end by the Alchemy toolchain. The README's "forever changing" line shows the author treats it as a long-running experimental plot that welcomes frequent small fixes.
+
+![](/assets/blog-images/361-stars-1ntjp8/img04.webp)
+
+## 3. Core features in depth
+
+### 1. The `/stamps` digital album: family memory, redesigned
+
+This is the most distinctive section. Marijana treats her grandfather's physical stamp album as source material and reinterprets it visually as a digital "small stamp archive". It is a historical archive and a design exercise at once, exploring how art, history and typography meet on the web. Each stamp set is a separate research unit, and new sets appear sporadically — the rhythm is slow and steady, unlike a conventional blog that lives on publishing frequency.
+
+### 2. `/sketchbook`: a place for half-formed ideas
+
+The README labels it "WIP", which makes the attitude clear: ship it even when it is not perfect. What lives here are early tests, scattered visual explorations and unfinished ideas, so thinking outside the portfolio has somewhere to settle. Most personal sites only dare to show finished work; this project exposes the process on purpose, which makes it a rare resource for developers who want to learn design.
+
+### 3. Edge-first architecture: the full Cloudflare stack
+
+Technically, the Alchemy toolchain provisions the Worker, the D1 SQLite database, the R2 sketch bucket and the Cloudflare Images binding in one pass. The `IMAGES` binding is a prerequisite for OpenNext to run `next/image` optimization, and the README explicitly reminds you to enable Cloudflare Images before deploying. The three data/media sources are cleanly separated with clear responsibilities: structured data in D1, files in R2, image optimization in Cloudflare Images — no single basket holding all the eggs.
+
+### 4. Drizzle Kit database migrations
+
+`src/db/schema.ts` is the single source of truth for table structure, and `npm run db:generate` generates migrations from it. Use `db:migrate:local` locally and `db:migrate:remote` in production; keeping the commands separate avoids accidents. On a SQLite-family database like Cloudflare D1, the TypeScript + Drizzle combination carries type inference from schema all the way to query results, which is friendly for small teams and personal projects.
+
+![](/assets/blog-images/361-stars-1ntjp8/img05.webp)
+
+## 4. Technical highlights and performance data
+
+A few keywords on the architecture: **edge runtime** — Next.js compiles to a Cloudflare Worker through OpenNext, so requests are handled nearby; **multi-binding orchestration** — Alchemy writes the Worker, D1, R2 and Cloudflare Images into an IaC script in one go, making deployments reproducible; **image optimization pushed to the edge** — `next/image` goes through Cloudflare Images for low-latency global delivery; **type-safe pipeline** — Drizzle ORM + TypeScript, with type inference running from schema to query. Beyond the portfolio it also packs in a real digital archive (`/stamps`) and a playground (`/sketchbook`), so this is a production-grade personal site, not a demo.
+
+![](/assets/blog-images/361-stars-1ntjp8/img06.webp)
+
+## 5. Use cases and audience
+
+- **Independent designers / creative workers**: need a site that carries a portfolio, experimental projects and a long-term archive at once, without being held hostage by a Vercel plan.
+- **Frontend engineers studying edge architecture**: want a real, shipped Next.js example of Cloudflare Workers + D1 + R2 + Images used together.
+- **Content-oriented site owners building family or hobby archives**: want to digitize old objects from a parent or grandparent and care about load speed and international access.
+
+Not a good fit: teams that need a complex CMS workflow, admin backends with complex SSR + ISR business logic, or projects that depend on Node-specific APIs (the Worker runtime still has compatibility limits).
+
+## 6. Comparison with alternatives
+
+| Aspect | marijanapav.com (Cloudflare + OpenNext) | Vercel + Next.js default deploy | Static site (Astro + Pages) |
+|------|-----------------------------------------|---------------------------|------------------------|
+| Runtime | Edge Worker | Edge + Serverless | Pure static + edge functions |
+| Database | D1 (SQLite) | Postgres / Neon | Needs external service |
+| File storage | R2 | Vercel Blob | Needs external service |
+| Image optimization | Cloudflare Images | Vercel Image Optimization | External or self-built |
+| Deployment toolchain | Alchemy (IaC-style) | Vercel CLI / Git integration | Cloudflare Pages Git integration |
+
+marijanapav.com differentiates on "the whole Cloudflare stack + declarative Alchemy deployment", handing the database, object storage, image optimization and Worker orchestration to one ecosystem and cutting down on vendor-switching cost.
+
+## 7. Getting started fast
+
+```sh
+git clone https://github.com/buka-studio/www-marijanapav
+cd www-marijanapav
+npm install
+npm run dev
+```
+
+Before starting dev locally, make sure Cloudflare Images is enabled on your Cloudflare account (the `IMAGES` binding depends on it). After editing `src/db/schema.ts`, run `npm run db:generate` to generate a migration, then apply it locally and in production with `db:migrate:local` / `db:migrate:remote`. To ship: `npm run build && npm run deploy`. If you only want to study the architecture, fork it, disconnect the data sources and run just the frontend — that alone is a good exercise.
+
+![](/assets/blog-images/361-stars-1ntjp8/img07.webp)
+
+## 8. Summary and next steps
+
+marijanapav.com is not a tutorial-grade personal site but a battle-tested edge-architecture sample: portfolio, digital archive and playground share one Cloudflare stack, with deployment, database and media storage all handled by declarative scripts. Designers who want to build a personal site can borrow its visual and editorial thinking directly; frontend engineers get a rare reference implementation that actually runs "Next.js + Cloudflare Workers + D1 + R2 + Images" end to end. Repo: `github.com/buka-studio/www-marijanapav`. Site: `marijanapav.com`. Documentation lives mainly in the README — fork it and trim it to your needs.
+
+#www-marijanapav #WwwMarijanapav #buka-studio #Frontend #WebDev #OpenSource #GitHub

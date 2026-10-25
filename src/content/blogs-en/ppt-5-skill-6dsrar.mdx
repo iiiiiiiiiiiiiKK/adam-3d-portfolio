@@ -1,0 +1,193 @@
+---
+title: "Video, slides, architecture diagrams: 5 open-source skills cover all of it"
+publishedAt: "2026-06-11"
+summary: "Five open-source AI Agent skills I use every day — a short-drama pipeline, automatic talking-head editing, editable PPTX generation, and two diagram generators."
+image: "/assets/blog-images/ppt-5-skill-6dsrar/img01.webp"
+tags: ["AI", "Agent", "Open Source"]
+author: "Adam"
+---
+![](/assets/blog-images/ppt-5-skill-6dsrar/img01.webp)
+
+Title options (pick 1)
+
+5 open-source AI Agent tools I use every day
+
+These 5 GitHub tools squeeze a week of my work into a day
+
+Video, slides, architecture diagrams: 5 open-source skills cover all of it
+
+## 1. Opening: every developer has hit this wall
+
+You get a brief: deliver an AI short drama in three days. Break down characters, write an outline, produce scene settings, write the script, draw storyboards. You open ChatGPT and chat for three hours, rewrite the character sheet eight times, the names in the script don't match the storyboards, and halfway through the storyboard prompts you realize you forgot the character's appearance settings.
+
+Or: you need to cut a talking-head script into a video. Open CapCut, manually slice out every "um", "uh" and "like", align subtitles to timestamps one by one, add titles, fix loudness, export. Three hours later the cut is done except for a thumbnail.
+
+Or: your boss wants a proposal turned into slides. You open WPS, pick a template, align text, tune colors, draw flowcharts, fix font sizes, and lose another evening.
+
+These five projects exist for exactly these situations.
+
+![](/assets/blog-images/ppt-5-skill-6dsrar/img02.webp)
+
+## 2. At a glance
+
+| Repo | Stars | Main language | One-line pitch |
+|---|---|---|---|
+| eternityspring/shuohao-skills | 3.6k | JavaScript | An end-to-end skill set for AI short dramas |
+| duyi2076/duyi-scripted-video-edit | 37 | Python | Automatic Chinese talking-head video editing skill |
+| mujingquan835/dashiai-ppt-skill | 169 | JavaScript | Editable PPTX generation plus in-browser editing skill |
+| tt-a1i/archify | 68k | JavaScript | Architecture, workflow and sequence diagram generation skill |
+| yizhiyanhua-ai/fireworks-tech-graph | 11k | Python | Natural-language to SVG/PNG technical diagrams |
+
+## 3. The projects
+
+### eternityspring/shuohao-skills — from a novel to storyboards in one pipeline
+
+This project splits "AI short-drama production" into five linked skills: `novel-outline` (adaptation outline), `novel-characters` (character design), `novel-art` (art design), `novel-script` (script), `novel-storyboard` (storyboard). Each skill outputs standard JSON that the next one consumes directly, which avoids the classic chain of failures like mismatched character names.
+
+**The core is serialized output plus quality-gate scripts**. Each of the five skills carries 10–17 script checks covering deterministic logic from casing to prompt alignment. No model calls, no token spend, and a run takes under a second. `novel-storyboard` also has built-in alignment with the MiniMax H3 prompt format and word-by-word reconciliation of cut points and timestamps.
+
+**Who it's for**: creators who want to make AI short dramas but get stuck because "the five deliverables don't match"; developers using Claude Code or Codex.
+
+**Who it's not for**: anyone who just wants a 30-second single-shot clip — this set is built for multi-episode, long-form content that needs character consistency.
+
+**Quickest start**
+
+Just tell your Agent:
+
+```
+Install this skill for me: https://github.com/eternityspring/shuohao-skills
+```
+
+Or do it manually:
+
+```bash
+git clone https://github.com/eternityspring/shuohao-skills.git
+cd shuohao-skills && ./scripts/install.sh
+```
+
+Once installed, drop a novel in:
+
+```
+Turn this novel "xxx" into an AI short drama, from outline through storyboards
+```
+
+*Repo:* **https://github.com/eternityspring/shuohao-skills**
+
+![](/assets/blog-images/ppt-5-skill-6dsrar/img03.webp)
+
+### duyi2076/duyi-scripted-video-edit — automatic talking-head editing, tightly scoped
+
+This skill does one thing: turn a talking-head script into a publishable video. Vertical goes through `duyi-koubo-lite`, horizontal through `duyi-koubo-wide`, and both share the `duyi-koubo-core` engine and the `duyi-stage` visual layer.
+
+**The boundaries are spelled out clearly**: it only removes verbal filler and fixes characters the ASR misheard. It does not rewrite for the speaker, does not add arguments, does not polish. Edit decisions are written by the Agent into JSON, and timestamps, cut points, subtitles, compositing and acceptance are all computed by scripts. The horizontal version also supports a left info card and a right asset layer, with timing decided by the Agent.
+
+**Who it's for**: anyone cutting talking-head video daily who wants to automate the mechanical part — removing "um"s, adding subtitles, fixing loudness.
+
+**Who it's not for**: anyone who wants to change the content or reorder sentences — that isn't its job, and forcing it will overstep.
+
+**Quickest start**
+
+Once installed, just tell your Agent:
+
+```
+Use duyi-scripted-video-edit to cut this talking-head clip into a vertical video
+```
+
+Prerequisite: you need to wire up your own ASR adapter (the author verified Doubao Agent Plan ASR).
+
+```bash
+export DUYI_ASR_TOOL=/path/to/asr-adapter.py
+export DUYI_ASR_ENV=/path/to/asr.env
+```
+
+*Repo:* **https://github.com/duyi2076/duyi-scripted-video-edit**
+
+![](/assets/blog-images/ppt-5-skill-6dsrar/img04.webp)
+
+### mujingquan835/dashiai-ppt-skill — edit in the browser, export a real PPTX
+
+12 themes, 1020 layout pages, 8576 adjustable controls. Edit in the browser first, then export editable PPTX in one click — text, charts and layout all remain editable in PowerPoint.
+
+**The highlight is a browser editor with a console plus real PPTX export**. Every page is made of a layout plus copy fields: click text to edit in place, drag images to swap media slots, use sliders to change module counts. After export, everything is restored node by node and text stays editable — it is not an image converted to PDF.
+
+**Who it's for**: people building structured decks — industry research, fundraising reviews, competitive analysis, proposal readouts — who don't want to be trapped by a template.
+
+**Who it's not for**: brand design that needs pixel-by-pixel manual visual customization. This is a template engine, not a design tool.
+
+**Quickest start**
+
+Have your Agent install it:
+
+```
+Install the dashiai-ppt skill for me: npx skills add https://github.com/mujingquan835/dashiai-ppt-skill --skill dashiai-ppt
+```
+
+Then say:
+
+```
+Turn this "xxx competitive analysis" into slides, start with a nine-grid so I can pick a theme
+```
+
+*Repo:* **https://github.com/mujingquan835/dashiai-ppt-skill**
+
+![](/assets/blog-images/ppt-5-skill-6dsrar/img05.webp)
+
+### tt-a1i/archify — one sentence in, one interactive architecture diagram out
+
+Weighing in at 68k stars. Describe a system in natural language and it generates a self-contained HTML architecture diagram, animated, verifiable, exportable. It covers five types: architecture, workflow, sequence, data flow and lifecycle.
+
+**The core is natural language → interactive HTML**. You say "draw a request flow where a browser calls the API, the API checks Redis, and on a cache miss queries PostgreSQL and fills the cache", and it produces a clickable diagram directly. Keep going — "add auth", "highlight the cache-miss path", "switch to a light theme" — and the diagram follows. Supports Cursor, Claude Code, Codex CLI and OpenCode.
+
+**Who it's for**: people who need architecture diagrams for docs, proposals or talks and don't want to spend half an hour dragging boxes in draw.io.
+
+**Who it's not for**: academic settings that require strict UML notation compliance — it leans toward product-documentation style.
+
+**Quickest start**
+
+Install:
+
+```bash
+npx skills add tt-a1i/archify -g
+```
+
+Then tell your Agent:
+
+```
+Use Archify to diagram a web request: Browser calls the API, the API checks Redis, and a cache miss queries PostgreSQL and fills the cache.
+```
+
+*Repo:* **https://github.com/tt-a1i/archify**
+
+![](/assets/blog-images/ppt-5-skill-6dsrar/img06.webp)
+
+### yizhiyanhua-ai/fireworks-tech-graph — 14 diagram types, 12 styles, geometrically aligned SVG
+
+11k stars. This skill turns natural-language descriptions into SVG + PNG technical diagrams, and the emphasis is **geometric safety** — text doesn't overflow, nodes don't overlap, connectors don't break. It covers 14 diagram types (including full UML) and 12 visual styles, four of which are engineering styles with executable contracts (C4, cloud deployment, event flow, reliability investigation).
+
+**The highlight is geometric validation plus PNG/SVG/GIF multi-format export**. The `export-png` command validates the root canvas, checks image dimensions, writes atomically and reads back pixel dimensions; the resulting 1920px PNG drops straight into a document without going blurry. It supports SVG-to-GIF semantic animation, and offline interactive HTML diagrams too.
+
+**Who it's for**: people who need figures for technical blogs, architecture reviews or proposal docs and can't be bothered to draw them.
+
+**Who it's not for**: hand-drawn styles or custom brand illustration — this produces engineering diagrams, not design assets.
+
+**Quickest start**
+
+Tell your Agent:
+
+```
+Install the fireworks-tech-graph skill for me
+```
+
+Then:
+
+```
+Generate a Mem0 memory architecture diagram, dark style
+```
+
+*Repo:* **https://github.com/yizhiyanhua-ai/fireworks-tech-graph**
+
+## 4. Takeaways
+
+Install `tt-a1i/archify` first — diagramming comes up most often day to day, and 68k stars is proof of stability. Then `dashiai-ppt-skill`, which settles work-report scenarios in one shot. `shuohao-skills` as needed — only for AI short dramas, and the real barrier is the scale of the novel.
+
+#AIVideoEditing #ScriptedVideo #TalkingHeadVideo #ShuohaoSkills #DuyiScriptedVideoEdit #DashiaiPptSkill #Archify #FireworksTechGraph #shuohao-skills #duyi-scripted-video-edit

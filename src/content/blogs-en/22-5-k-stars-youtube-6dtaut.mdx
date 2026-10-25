@@ -1,0 +1,87 @@
+---
+title: "This 22.5K-star open-source project got YouTube ads and tracking out of my life for good"
+publishedAt: "2026-09-11"
+summary: "Pre-roll ads you can't skip, a home feed driven by the algorithm, constant tracking. Invidious is a free YouTube frontend that serves video without ads, cookies or JavaScript — and lets you own your subscriptions."
+image: "/assets/blog-images/22-5-k-stars-youtube-6dtaut/img01.webp"
+tags: ["Open Source", "Video", "Productivity"]
+author: "Adam"
+---
+![](/assets/blog-images/22-5-k-stars-youtube-6dtaut/img01.webp)
+
+## 1. Intro: why you need this tool
+
+Scrolling YouTube, you've surely been through this: a forced 30-second pre-roll, a home feed hijacked by the algorithm, privacy tracked relentlessly, and a page that collapses entirely if you turn JavaScript off. YouTube's ad revenue reportedly exceeds $30 billion a year, and what sits behind that revenue is attention and data users are forced to hand over. If you just want to watch a video in peace — no tracking, no ads — this 22.5K-star open-source project on GitHub is exactly what you need.
+
+![](/assets/blog-images/22-5-k-stars-youtube-6dtaut/img02.webp)
+
+## 2. What it is, in one sentence
+
+**Invidious** is an open-source alternative YouTube frontend written in Crystal, built around being lightweight, ad-free, tracker-free and JavaScript-free. It doesn't call the official YouTube API; it pulls data from reverse-engineered endpoints directly, letting users watch, subscribe and import history without signing into a Google account. As of now the project has 22.5K stars under the AGPLv3 license, and it's one of the de facto standards among privacy-focused video tools.
+
+![](/assets/blog-images/22-5-k-stars-youtube-6dtaut/img03.webp)
+
+## 3. Core features in depth
+
+### 1. Clean playback with zero ads and zero tracking
+
+Invidious runs its own backend to fetch video streams, sidestepping the official recommendation algorithm and ad systems. What users see is only the video itself — no pre-rolls, no feed ads, no banner promotions. It also sets no cookies and logs no IP addresses or viewing behavior, and it works fully with JavaScript disabled. That's the biggest difference from conventional ad blockers: it doesn't filter ads, it never receives them in the first place.
+
+### 2. A subscription system independent of Google
+
+You can subscribe to channels and get update notifications on Invidious, with everything stored on the instance server or in a local export file. Subscriptions and watch history import in one click from YouTube, NewPipe or FreeTube, and export back out to NewPipe and FreeTube. Switching platforms no longer means losing your subscription list — migration cost drops to zero.
+
+### 3. Audio mode and background playback
+
+Invidious offers an audio-only mode that keeps playing when you switch a mobile browser to the background. That's extremely useful for music podcasts, audio content and long interviews — it saves data and battery, and dodges the system killing background video.
+
+### 4. A complete developer API
+
+Invidious exposes a full RESTful API, documented at [docs.invidious.io/api](https://docs.invidious.io/api/), covering search, channels, playlists, comments, captions and every other resource. Third-party clients (ForkTube, LibreTube, FreeTube) are mostly built on this API, and developers can spin up their own video aggregators quickly.
+
+![](/assets/blog-images/22-5-k-stars-youtube-6dtaut/img04.webp)
+
+## 4. Technical highlights and performance numbers
+
+Invidious is written in Crystal, a high-performance statically typed language with Ruby-like syntax and C-like compiled output. A single instance can handle tens of thousands of concurrent requests, with memory usage usually under 200MB. Because the project doesn't depend on the official YouTube API, it avoids quota limits and account bans at the root. Localization runs through collaborative translation on Weblate and already covers dozens of languages. On the ecosystem side, browser extensions like Privacy Redirect and LibRedirect can automatically redirect YouTube links to any Invidious instance, making the switch seamless.
+
+![](/assets/blog-images/22-5-k-stars-youtube-6dtaut/img05.webp)
+
+## 5. Where it fits, and who it's for
+
+**Scenario one: privacy-conscious individuals** — viewers who don't want Google tracking them but can't leave YouTube's content behind.
+**Scenario two: schools and corporate intranets** — organizations that need a compliant video service deployed in a controlled environment.
+**Scenario three: third-party client developers** — engineers building ForkTube, LibreTube or CLI tools on the Invidious API.
+**Not for you if**: you depend on YouTube Premium offline downloads, Super Chat or members-only content — those features ride on the official account system.
+
+![](/assets/blog-images/22-5-k-stars-youtube-6dtaut/img06.webp)
+
+## 6. Comparison with alternatives
+
+| Project | Uses official API | Ads | Tracking | Self-hosting difficulty | Language |
+|---|---|---|---|---|---|
+| **Invidious** | No | None | None | Medium | Crystal |
+| NewPipe | No | None | None | Android client only | Java/Kotlin |
+| FreeTube | No | None | None | Desktop client | JS/Electron |
+| Piped | No | None | None | Fairly easy | Java/Node |
+
+Compared with client apps like NewPipe and FreeTube, Invidious's advantage is that you open it in a browser — nothing to install, and links are shareable. Piped has slowed its maintenance pace in recent years, so Invidious's 22.5K stars and consistently active issue handling still make it the most dependable option right now.
+
+![](/assets/blog-images/22-5-k-stars-youtube-6dtaut/img07.webp)
+
+## 7. Quick start
+
+**Regular users**: open [instances.invidious.io](https://instances.invidious.io/), pick a responsive public instance and start using it, ideally with the Privacy Redirect browser extension to jump automatically.
+
+**Self-hosters**: follow the official docs at [docs.invidious.io/installation](https://docs.invidious.io/installation/). Docker one-command startup is supported, e.g. `docker compose up -d`. Configure a reverse proxy and a PostgreSQL database, and remember to enable HTTPS in production.
+
+**Advanced users**: call the RESTful API under the `/api/v1/` path, for example searching videos: `curl https://your-instance/api/v1/search?q=crystal+lang` returns JSON results.
+
+## 8. Takeaways and what to do next
+
+Invidious and its 22.5K stars prove how much the open-source community wants decentralized video watching. It hands the right to watch back to users, the right to privacy back to users, and subscription data back to users. If you just want to watch videos quietly, without ads and without being profiled, pick a public instance and get started now. And if you have ops skills, I'd strongly recommend self-hosting an instance you fully control.
+
+- GitHub: https://github.com/iv-org/invidious
+- Website: https://invidious.io
+- Docs: https://docs.invidious.io
+
+One-line verdict: **Want to escape YouTube's ads and tracking? Invidious, a 22.5K-star open-source frontend, gives you your own clean video site in ten minutes.**

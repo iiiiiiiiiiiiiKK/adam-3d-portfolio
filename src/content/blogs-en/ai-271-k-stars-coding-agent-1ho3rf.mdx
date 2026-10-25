@@ -1,0 +1,99 @@
+---
+title: "AI keeps breaking your codebase? This 271K-star framework gives coding agents some engineering discipline"
+publishedAt: "2026-10-02"
+summary: "Most developers remember the thrill of wiring an AI coding assistant into their IDE: autocomplete, one-click functions, instant unit tests. But the moment you use it on a real requirement, you hit three walls — it starts coding immediately and mangles the requirement, it refuses to test its own work so everything ships broken, and it skips review before committing, leaving you a mess to clean up."
+image: "/assets/blog-images/ai-271-k-stars-coding-agent-1ho3rf/img01.webp"
+tags: ["AI", "Agent", "Open Source"]
+author: "Adam"
+---
+![](/assets/blog-images/ai-271-k-stars-coding-agent-1ho3rf/img01.webp)
+
+## 1. AI coding keeps failing at the critical moment
+
+Most developers remember the thrill of wiring an AI coding assistant into their IDE: autocomplete, one-click functions, instant unit tests. But the moment you use it on a real requirement, you hit three walls — it starts coding immediately and mangles the requirement; it won't test its own work, so everything ships full of bugs; it skips review before committing and leaves you a pile of debt to clean up.
+
+`obra/superpowers`, with 271K stars on GitHub, is aimed at exactly this problem. It is not another tool that writes code faster; it installs a full set of engineering discipline into the coding agent.
+
+![](/assets/blog-images/ai-271-k-stars-coding-agent-1ho3rf/img02.webp)
+
+## 2. Project overview: what exactly is it?
+
+Superpowers is a Skills framework and software engineering methodology for coding agents. Its core language is Shell, it is small, and it has zero dependencies. It breaks brainstorming, plan writing, TDD, subagent-driven development and code review into a set of composable Skills that fire automatically when the agent starts.
+
+The project supports 14 major agent platforms: Claude Code, Cursor, Codex, Gemini CLI, Copilot CLI, Grok Build CLI, Kimi Code, OpenCode, Devin CLI, Factory Droid, Antigravity, Pi, Hermes Agent and more — arguably the broadest coverage in the industry.
+
+![](/assets/blog-images/ai-271-k-stars-coding-agent-1ho3rf/img03.webp)
+
+## 3. A close look at the core features
+
+### 1. brainstorming: talk it through before touching code
+
+When the agent receives a task, it does not generate code directly. It first enters a brainstorm phase, using questions to turn a vague requirement into a clear design document, then presents it to you in small sections for confirmation. This step attacks the root cause of "the AI just makes things up".
+
+### 2. writing-plans + subagent-driven-development: break it down, then delegate
+
+Once the design is confirmed, the agent produces a detailed implementation plan where each task takes "2-5 minutes". Every task carries exact file paths, complete code examples and verification steps. Next comes subagent-driven development: each task is handed to a brand-new subagent, and passes through two review stages — spec compliance, then code quality.
+
+### 3. test-driven-development: enforced RED-GREEN-REFACTOR
+
+Task execution is forced through TDD: write the failing test first, confirm it really fails, then write the minimum code to make it pass, then commit. Any code written before the test is deleted outright, which structurally rules out the fake implementation that "just needs to run".
+
+### 4. requesting-code-review + finishing-a-development-branch: closing the loop
+
+A code review fires between every task, classifying issues by severity, with Critical issues blocking the flow outright. Once all tasks are done, it validates the test state, offers merge / PR / keep / discard options, and cleans up the worktree.
+
+![](/assets/blog-images/ai-271-k-stars-coding-agent-1ho3rf/img04.webp)
+
+## 4. Technical highlights and performance numbers
+
+The README offers a hard data point: the user's agent can work autonomously for "2+ hours" in a row without drifting from the established plan. That is the result of the Skills system firing automatically — the user never has to invoke any skill manually in the prompt.
+
+The architecture has three highlights:
+- **Skill-based abstraction**: every workflow is an independent Skill. Adding a methodology means adding a Skill, with no changes to the agent core.
+- **Cross-platform compatibility**: 14 agent platforms share the same Skills definitions, adapted through each platform's plugin mechanism.
+- **In-process bootstrap injection**: platforms such as Pi and Hermes inject a `using-superpowers` bootstrap at session start, and re-inject it automatically after long-context compaction.
+
+On testing, the project uses the drill eval harness from `superpowers-evals` to verify Skill behavior, and plugin infrastructure tests live under `tests/` and run through `run-*.sh`.
+
+![](/assets/blog-images/ai-271-k-stars-coding-agent-1ho3rf/img05.webp)
+
+## 5. Where it fits and who it's for
+
+- **Solo developers / small teams**: they want AI speed without losing control. Superpowers lets you enjoy the agent's output while keeping final control over design and quality.
+- **Mid-sized engineering teams**: they need a unified engineering standard for coding agents. The Superpowers Skills library is a ready-made, reusable team charter.
+- **Agent platform developers**: they want to add engineering methodology to their own agent. Superpowers is a working reference implementation.
+
+Not suitable for: people who just want to ask how to write a single line of code; projects so small they get thrown away right after shipping.
+
+## 6. Comparison with alternatives
+
+| Project | Positioning | Workflow coverage | Cross-platform | Stars |
+|---|---|---|---|---|
+| **Superpowers** | Full engineering methodology | brainstorm→plan→TDD→review→merge | 14 platforms | 271K |
+| Aider / Continue | AI pair programming | Local code completion | A few | 10K-30K |
+| Cursor Rules | Prompt rules | Lightweight context injection | Single | Built-in |
+
+Superpowers' difference is this: it is not about "making the AI write faster", it is about "making the AI do the whole job by engineering discipline".
+
+![](/assets/blog-images/ai-271-k-stars-coding-agent-1ho3rf/img06.webp)
+
+## 7. How to get started fast
+
+Taking Claude Code as an example, it only takes two commands:
+
+```bash
+/plugin marketplace add obra/superpowers-marketplace
+/plugin install superpowers@superpowers-marketplace
+```
+
+After installation, the Skills activate automatically the next time you talk to Claude Code. It is worth running a small requirement through the full brainstorm → plan → execute chain first, to see for yourself whether the review stage really blocks Critical issues.
+
+If you use another agent, the corresponding commands are listed in the README — copy and go.
+
+## 8. Takeaways and next steps
+
+Superpowers' core value is one sentence: it upgrades the coding agent from a "code generator" to a "developer who works by engineering discipline". Its Skills framework turns methodology into auto-triggered modules spanning requirements, design, implementation, testing and review, and it supports 14 mainstream agent platforms.
+
+Project link: the GitHub repository `obra/superpowers`. The official announcement is at `blog.fsck.com/2025/10/09/superpowers/`, and commercial support is at `sales@primeradiant.com`.
+
+AI writing code is not scary. What is scary is that nobody is watching quality — Superpowers is the one watching it for you.

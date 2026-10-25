@@ -1,0 +1,260 @@
+---
+title: "6 open-source gems I keep to myself: server monitoring, PDF, Markdown and PPT, bundled in one post"
+publishedAt: "2026-06-04"
+summary: "Six open-source projects I actually run every day: a renewal tracker on Cloudflare, free multi-server monitoring, a single-file office suite, a Markdown reader, a PDF editor and an agent skill that builds slide decks."
+image: "/assets/blog-images/6-pdf-markdown-ppt-39srzv/img01.webp"
+tags: ["Open Source", "Writing", "Docs"]
+author: "Adam"
+---
+![](/assets/blog-images/6-pdf-markdown-ppt-39srzv/img01.webp)
+
+Title options (pick 1 of 3)
+
+6 open-source gems I keep to myself: server monitoring, PDF, Markdown and PPT, bundled in one post
+
+From missed renewals to painful slide decks: 6 open-source projects that fix both in one go
+
+These 6 GitHub projects save me two hours of overtime every day
+
+## 1. Intro: from pain to payoff, one project away
+
+After a few years in tech, the number of "expiry dates" I have to track keeps growing. Domains need renewing, SSL certificates need swapping, each VPS bills on its own cycle, and the team's SaaS subscriptions are a mess. Every month one or two services get suspended because I forgot to renew them. I stare at a wall of red monitoring alerts and quietly pay up. Then I swear I'll remember next time — and forget again the time after.
+
+What I was really missing wasn't memory. It was a tool that pulls all those expiry dates — scattered across admin panels, inboxes and text messages — into one calendar view and pushes them in front of me. Over the past year I dug out the open-source projects I'd been hoarding and tried each of them. Here are the 6 most worth sharing, in the hope that you skip a few of the potholes I hit.
+
+![](/assets/blog-images/6-pdf-markdown-ppt-39srzv/img02.webp)
+
+## 2. The shortlist
+
+| Repo | Stars | Main language | One-line pitch |
+|---|---|---|---|
+| ieax/renewhelper | 387 | Vue | Service renewal reminders built on Cloudflare Workers |
+| huilang-me/CF-Server-Monitor | 2092 | JavaScript | A free, real-time multi-server monitoring probe |
+| nyblnet/bento | 5158 | TypeScript | A whole offline office suite inside one HTML file |
+| alexishida/Moji | 481 | TypeScript | A desktop app that opens Markdown the way you open a PDF |
+| SteveTheKiller/KillerPDF | 3950 | C# | A free PDF editor with its own PDF 2.0 engine |
+| zarazhangrui/frontend-slides | 29602 | JavaScript | A web slide-deck skill for coding agents |
+
+## 3. Project breakdowns
+
+### ieax/renewhelper — an expiry-date keeper that lives on Cloudflare
+
+**RenewHelper** solves exactly the pain point from the intro. It puts every recurring subscription, domain, server and certificate expiry date into a single panel deployed on Cloudflare Workers, works out lunar/solar recurrence cycles automatically, and pushes reminders through a dozen-plus channels including Telegram, Bark, DingTalk, Feishu and email. It also generates an `.ics` subscription link you can sync to iOS/Google Calendar. **Since v2.x it ships a cash-flow dashboard**, tracking billed amounts separately from actual spending, with automatic multi-currency conversion. The frontend and backend are fully decoupled, it runs standalone without any CDN, and you can also deploy it locally with Docker.
+
+The technical highlight is using Cloudflare Workers + KV, a pure serverless stack, to hold state. **The free tier is enough for personal use**, so no VPS purchase is needed. A Cron trigger runs on `0,30 * * * *` to scan expiring items every half hour, then auto-renews or marks them disabled.
+
+**Who it's for:**
+
+- Individual developers juggling more than 5 domains, VPS instances or SaaS subscriptions
+- People who want to ride Cloudflare's free tier instead of writing their own cron jobs
+
+**Who it's not for:**
+
+- Team-level asset and contract management (the data model is personal-oriented)
+- Enterprise scenarios that need complex approval flows and role permissions
+
+**Quickest way in**
+
+One-click deploy is recommended: hit the `Deploy to Cloudflare Workers` button in the README and authorize GitHub. ==Note: you must bind the KV namespace to the variable name `RENEW_KV` in the Worker settings, otherwise nothing gets saved.==
+
+Once deployed, visit the Worker domain. The default password is `admin` — change it right after you log in.
+
+```
+0,30 * * * *
+```
+
+Drop that Cron expression into `Triggers → Cron Triggers` and the scheduled scan goes live.
+
+*Source:* **https://github.com/ieax/renewhelper**
+
+### huilang-me/CF-Server-Monitor — a free multi-server monitoring panel
+
+If you want to know whether each server is still alive, want historical CPU/memory/network curves, and don't want to spin up a VPS just for that, **CF-Server-Monitor** is built for you. It stuffs the dashboard, API, database and real-time push into Cloudflare: data lands in D1, real-time push goes through Durable Objects + WebSocket, and the frontend is Vue. On the server side you install only a lightweight agent (written in Go, reporting every 60 seconds by default). **Reporting is one-way — no WebSSH, no remote command execution** — so the security model is noticeably cleaner than a classic controller/controlled probe setup.
+
+The default 60-second interval handles roughly 60 machines; switch to 120 seconds and you can double that. The agent supports Linux, Alpine, OpenWrt, Synology DSM, fnOS, macOS and Windows, and **supports non-root installs** (`systemd --user`), so a regular user account is enough.
+
+**Who it's for:**
+
+- People with several VPS instances or home servers who want one panel showing overall health
+- Users who care about security and privacy and don't want a "controller + controlled" architecture
+
+**Who it's not for:**
+
+- Ops teams that need process-level monitoring, log aggregation or APM
+- People who want a ready-made SaaS and refuse to install an agent on every machine
+
+**Quickest way in**
+
+Connecting the repo to Cloudflare Workers gets you there in one step: log into the Cloudflare dashboard → `Workers & Pages → Create application → Create Worker`, paste the code in, create the D1 database and fill in `API_SECRET`.
+
+On the server side, bring the agent up with the official install command:
+
+```bash
+curl -sSL https://raw.githubusercontent.com/huilang-me/cfsm-agent/main/install.sh | bash -s -- --server https://your-worker.workers.dev --secret YOUR_API_SECRET
+```
+
+==Note: the agent validates `API_SECRET` against the Worker at install time, so the secret must match the backend.==
+
+*Source:* **https://github.com/huilang-me/CF-Server-Monitor**
+
+### nyblnet/bento — an entire office suite inside one HTML file
+
+**Bento** takes the opposite approach to everything above: it isn't deployed on any server, because the file itself is the software. Open a `.bento.html` file and it contains the viewer, the presenter and the editor — double-click to edit, hit F5 to present, email it as an attachment and the recipient needs nothing installed. **The whole file is about 560 KB**, with the renderer, animation engine, chart engine and collaborative CRDT all packed inside.
+
+At the top of the file sits a plain-text JSON block. The data is JSON, with no binary format anywhere. That "view-source transparent" stance buys two things. First, an AI agent can read and write that JSON directly to edit slides (the project ships a Claude Code skill). Second, offline-first: with Offline mode on, sync, collaboration and downloads are hard-blocked, so data never leaves your machine.
+
+**Who it's for:**
+
+- People fed up with PPT/Keynote compatibility who want "one file + any browser" presentations
+- Users who'd rather hand slides to an AI agent for revisions than tweak styles by hand
+- Anyone with strong opinions about local-first data and readable source
+
+**Who it's not for:**
+
+- Traditional office setups that depend on Office 365 co-editing and version history
+- Scenarios that need complex VBA macros or third-party Office plugins
+
+**Quickest way in**
+
+Download `Bento_Slides.bento.html` from the Releases page and double-click it to edit in the browser.
+
+After installing the Claude Code skill, you can have the agent revise slides in one shot:
+
+```
+/plugin marketplace add nyblnet/bento
+```
+
+Then tell the agent what you need:
+
+```
+Replace the pie chart on this slide with a bar chart and keep the data
+```
+
+*Source:* **https://github.com/nyblnet/bento**
+
+### alexishida/Moji — opens Markdown the way you open a PDF
+
+Most people who write documents in Markdown have hit the same wall: you send the file over and the other person has no editor installed, so all they see is raw syntax. **Moji** is an Electron desktop app whose whole goal is "double-click a `.md` file and it opens, WYSIWYG". It's built on Electron + React + TypeScript and includes an editor (CodeMirror 6), preview, outline navigation, search and replace, HTML/PDF/PNG export, and full Mermaid flowchart/sequence diagram rendering (7 diagram types, zoomable, draggable and exportable to PNG after rendering).
+
+There's real engineering effort around large documents: the main process reads in streamed chunks, Markdown is parsed inside a Web Worker, and files over 20 MB automatically switch to block-level virtualization. **Multiple tabs, dirty markers and unsaved-change prompts** are all there too, so it isn't "yet another toy Markdown editor".
+
+**Who it's for:**
+
+- People who write Markdown docs, notes and technical blogs every day
+- Users who need to export `.md` to PDF/HTML in one click and send it to non-technical colleagues
+
+**Who it's not for:**
+
+- Power users who want Vim/Emacs-style keyboard-only operation
+- Team-level collaborative documents (it positions itself as a personal writing tool)
+
+**Quickest way in**
+
+Grab the installer for your platform from Releases:
+
+```
+https://github.com/alexishida/Moji/releases/download/v1.0.7/Moji.Setup.1.0.7.exe
+```
+
+DMG, AppImage and deb builds are on the same page for macOS/Linux. After installing, double-click any `.md` file to open it, and switch between Edit / Preview / Split modes from the top toolbar.
+
+```
+Ctrl + \
+```
+
+That shortcut toggles the split preview, and the left/right pane ratio is remembered automatically.
+
+*Source:* **https://github.com/alexishida/Moji**
+
+### SteveTheKiller/KillerPDF — a free editor with its own PDF 2.0 engine
+
+Software that can edit PDFs on Windows is scarce to begin with, and free options are scarcer still. **KillerPDF** is an open-source take on it: it bundles PDFium rendering plus a PDF 2.0 / PDF/A / PDF/UA engine (shipped separately as the `KillerPDF.Engine` .NET library you can reference on its own), and supports text annotations, drawing, signatures, form filling, merge/split/rotate/crop/reorder, side-by-side comparison of two PDFs, and built-in Tesseract OCR (offline, with extra language packs available for download). **All processing happens locally — no telemetry, no accounts.**
+
+What's more hardcore: every release runs regression tests against veraPDF's compliance corpus of 2,900 PDFs, and zero regressions is a hard requirement. That's a solid engineering attitude. It ships both a standard installer and a portable build, and the portable one bundles its runtime, so you can drop it on a USB stick and run. The CLI is complete too — every core operation runs headless from a terminal.
+
+**Who it's for:**
+
+- Windows users who handle PDFs (contracts, scans, forms) day to day
+- People who don't want an Adobe Acrobat subscription and are uneasy about online PDF tools' privacy
+- Anyone who wants to batch-process PDFs from the command line
+
+**Who it's not for:**
+
+- macOS / Linux users (only Windows builds for now)
+- Enterprise teams that need cloud collaboration and multi-user annotations
+
+**Quickest way in**
+
+Download either the installer or the portable build from Releases, open it and drag files into the window. Batch merging from the command line is just as easy:
+
+```
+KillerPDF.exe --merge out.pdf a.pdf b.pdf scan.jpg
+```
+
+To turn a scan into a searchable PDF, use the OCR subcommand:
+
+```
+KillerPDF.exe --ocr scan.pdf searchable.pdf --lang eng
+```
+
+==Note: extra OCR language packs are downloaded on demand, so the first use needs an internet connection.==
+
+*Source:* **https://github.com/SteveTheKiller/KillerPDF**
+
+### zarazhangrui/frontend-slides — let your coding agent build the deck
+
+This repo is already close to 30k stars, and its form is unusual: **it's a skill for coding agents, not conventional software**. Install it into Claude Code, Codex, Kimi Code, Cursor, Aider or any agent that can read files and run commands, and all you have to say is "build me a pitch deck for an AI startup". The agent first generates 3 visual style previews for you to pick from, then produces the full HTML deck.
+
+Each deck is **a single HTML file with inline CSS/JS — zero dependencies, zero npm, zero build tooling**. The selling point is "anti-AI-slop": it ships a curated set of design styles specifically to avoid the generic "purple gradient on white" AI aesthetic. It can also convert an existing `.pptx` into a web version, keeping all images and content.
+
+**Who it's for:**
+
+- People already using a coding agent for code who want it to handle presentations too
+- Non-designers who need external materials that don't smell like AI
+- Anyone who wants to turn a PPT into a hostable web page that's easy to share
+
+**Who it's not for:**
+
+- Pure Office users who don't use any coding agent
+- Presentation designers who need pixel-level polish inside PowerPoint
+
+**Quickest way in**
+
+Claude Code users install it via the marketplace source. These two commands must be sent separately:
+
+```
+/plugin marketplace add https://github.com/zarazhangrui/frontend-slides
+```
+
+```
+/plugin install frontend-slides@frontend-slides
+```
+
+For other agents (Codex, Cursor and so on), just send the repo link:
+
+```
+Please use this skill: https://github.com/zarazhangrui/frontend-slides
+```
+
+Once installed, state your requirement:
+
+```
+I want an 8-page technical talk on edge computing, with a calm visual style
+```
+
+The agent generates 3 visual previews for you to choose from, then produces the complete HTML.
+
+*Source:* **https://github.com/zarazhangrui/frontend-slides**
+
+![](/assets/blog-images/6-pdf-markdown-ppt-39srzv/img03.webp)
+
+## 4. Wrap-up and what to install first
+
+If you can only install two, I'd go with **RenewHelper + frontend-slides**. The first solves the "domain/service silently expired" pain the same day, and the second turns the coding agent you already have into a slide designer — the best return on effort here. Go deeper on the other four as needed:
+
+- Several VPS instances to monitor in one place → install **CF-Server-Monitor**
+- Writing Markdown docs → try **Moji**
+- Heavy PDF user → install **KillerPDF**
+- Fed up with PowerPoint compatibility → give **Bento** a shot
+
+#AIVideoEditing #ScriptedVideo #TalkingHeadVideo #Renewhelper #CfServerMonitor #Bento #Moji #Killerpdf #FrontendSlides #cf-server-monitor

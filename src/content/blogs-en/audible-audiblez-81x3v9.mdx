@@ -1,0 +1,109 @@
+---
+title: "Still paying for Audible? audiblez turns an ebook into an audiobook in one command"
+publishedAt: "2026-07-17"
+summary: "A 600-page English tech book, a two-hour commute, and Audible asking $30+ per title. audiblez is an 8.4K-star open-source project that turns EPUB files into chaptered .m4b audiobooks with a single command."
+tags: ["Open Source", "Video", "Docs"]
+author: "Adam"
+---
+## 1. Opening: from pain to payoff in one project
+
+Last week a colleague handed me a 600-page English tech book. I opened the PDF and my scalp went numb: a two-hour commute, reading English on a phone in the subway, eyes watering from the strain. So I looked for an audiobook version, searched Audible, and found that either it wasn't there, or a single title cost 30-odd dollars.
+
+I tried the traditional TTS tools myself. Either the voice sounded like a robot reading a script, or I had to spend a whole day fighting with a Python environment, only to end up with dozens of loose wav files and no chapter splits at all.
+
+Then I found Audiblez — an open-source project with 8,400+ stars on GitHub. A 160,000-character copy of *Animal Farm* rendered in about 5 minutes on a Colab T4 GPU, and only about an hour on CPU. The key part: it outputs a `.m4b` file directly, so chapter splitting, track merging and player compatibility are all handled in one shot.
+
+## 2. What it is
+
+Audiblez is a Python tool that converts ebooks into audiobooks. Its entire pitch fits in one line: turn an `.epub` into a chapter-aware `.m4b` audiobook with a single command.
+
+The engine underneath is Kokoro-82M, a TTS model with only 82 million parameters. Don't let the small size fool you — it was trained on less than 100 hours of audio, yet the voice is remarkably natural. It's already open source on Hugging Face.
+
+The current release is v4, and three upgrades push it straight into "actually usable" territory:
+- **GUI**: a wxPython desktop app, so you never have to touch the command line;
+- **CUDA support**: enable GPU acceleration with the `--cuda` flag for roughly a 10x speedup;
+- **Language coverage**: 9 languages — American English, British English, Spanish, French, Hindi, Italian, Japanese, Brazilian Portuguese and Mandarin — backed by 50+ voices.
+
+## 3. Core features in depth
+
+### 1. One command to generate an `.m4b` audiobook
+
+The painful part of a traditional TTS pipeline isn't synthesis, it's post-processing: you split by chapter yourself, glue audio together with ffmpeg, add chapter markers, and package everything into a container your player recognizes. Audiblez wraps up the whole pipeline. Run `audiblez book.epub -v af_sky` and it first produces intermediate files like `book_chapter_1.wav` and `book_chapter_2.wav`, then merges them into `book.m4b`. That file plays directly in VLC or Apple Books, and jumping to a specific chapter works flawlessly.
+
+### 2. 50+ voices × 9 languages
+
+The naming scheme is obvious: the first letter is the language code, the second is the gender. So `af_sky` is the American female voice Sky, and `zm_yunjian` is the Chinese male voice Yunjian. The Chinese set has 8 voices, including the classic Xiaoxiao, Nini, Xiaobei and Yunjian, and its naturalness leaves concatenative TTS far behind.
+
+### 3. Interactive chapter picking (`--pick`)
+
+You don't always want the whole book read aloud. The `--pick` flag lets you interactively select chapters before conversion, skipping the foreword, table of contents and references you'd rather not hear. Saves time and effort.
+
+### 4. Adjustable speed (`-s`)
+
+Supports 0.5x to 2.0x. Blast through a tech book at 1.5x, savor a novel at 0.8x — one flag switches between the two.
+
+## 4. Technical highlights and performance numbers
+
+- **Kokoro-82M model**: just 82M parameters and under 100 hours of training data, yet it beats many larger models on naturalness scores. One of the best value open-source TTS models available;
+- **GPU acceleration**: about 5 minutes to convert 160,000 characters on a Colab T4, roughly 600 characters/second; about 1 hour in CPU mode on an M2 MacBook Pro, roughly 60 characters/second;
+- **Simple architecture**: pure Python, with only `ffmpeg` and `espeak-ng` as dependencies, and cross-platform support for macOS, Linux and Windows;
+- **Apache 2.0 + MIT dual licensing**: the Kokoro model is Apache 2.0, Audiblez itself is MIT — commercial use and redistribution are both fine.
+
+## 5. Where it fits and who it's for
+
+**Good fit**:
+- Commuters: convert your stockpile of English ebooks into audiobooks and load them onto your phone;
+- Language learners: replay text in a native speaker's voice to train listening and pronunciation;
+- Content creators: batch-convert blog posts, tutorials and self-published ebooks into audio to widen distribution;
+- Accessibility needs: an audiobook option for blind or low-vision users, or people with reading difficulties.
+
+**Not a good fit**:
+- Users who need professional voice-actor-grade emotional performance (Kokoro still reads in a fairly neutral tone);
+- Apple Silicon users who want native GPU acceleration (Kokoro has no MLX implementation yet, so on a Mac you're limited to CPU).
+
+## 6. Comparison with alternatives
+
+| Tool | Output format | Chapter splitting | GPU acceleration | Languages | Open source |
+|------|---------|---------|---------|-------|------|
+| Audiblez | .m4b | Automatic | CUDA supported | 9 | Yes |
+| edge-tts | .mp3 | None | No | 100+ | Yes |
+| Google Cloud TTS | .mp3/.wav | None | Cloud | 50+ | No (paid) |
+| ElevenLabs | .mp3 | None | Cloud | 29 | No (paid) |
+
+Audiblez's differentiator: **it's the only option that combines automatic chapter splitting, open source, local GPU acceleration and multiple languages**. edge-tts is free but has no chapters, ElevenLabs sounds top-tier but requires a subscription, and Audiblez lands right in the "good enough and free" sweet spot.
+
+## 7. Getting started fast
+
+**Environment setup** (macOS example):
+
+```bash
+brew install ffmpeg espeak-ng
+pip install audiblez
+```
+
+**Minimal working example**:
+
+```bash
+audiblez mybook.epub -v af_sky
+```
+
+After a few minutes, `mybook.m4b` appears in the same directory. Drag it into any player and you're done.
+
+**Going further**:
+- GPU acceleration: `audiblez mybook.epub -v af_sky --cuda` — first make sure you installed the CUDA build of PyTorch;
+- Faster listening: `audiblez mybook.epub -v af_sky -s 1.5`;
+- Windows users should install inside a venv as the README suggests, to avoid dependency conflicts;
+- For the GUI, just run `audiblez-ui` after `pip install pillow wxpython`.
+
+## 8. Summary and next steps
+
+Audiblez compresses "turn an ebook into an audiobook" from a tedious engineering problem into a single command. The 82M-parameter Kokoro model proves small models can produce natural speech, and with 9 languages, 50+ voices, automatic chapter splitting and CUDA acceleration, it has almost no rival among open-source TTS tools.
+
+**Recommendations**: for tech books, start with `af_sky` or `am_adam` (American male) at 1.3–1.5x. For novels, `bf_emma` (British female) at normal speed feels better. For Chinese content, pick `zf_xiaoxiao` or `zm_yunyang` — naturalness is already close to a real person.
+
+**Links**:
+- GitHub: github.com/santinic/audiblez
+- Model: huggingface.co/hexgrad/Kokoro-82M
+- Docs: `audiblez --help`
+
+One-line pitch: install Python, type one command, and your entire ebook library becomes a private Audible on the spot.

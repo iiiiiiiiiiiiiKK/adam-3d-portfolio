@@ -1,0 +1,132 @@
+---
+title: "Three bookmark clicks every time you open a browser? This 77-star minimalist startpage deletes them"
+publishedAt: "2026-04-27"
+summary: "Three bookmark clicks every time you open a browser — this 77-star minimalist startpage removes all of them. One HTML file replaces your homepage, and druxorey/startpage takes about 10 minutes to deploy."
+image: "/assets/blog-images/3-77-star-startpage-1tp0ch/img01.webp"
+tags: ["Open Source", "Frontend", "Productivity"]
+author: "Adam"
+---
+![](/assets/blog-images/3-77-star-startpage-1tp0ch/img01.webp)
+
+Candidate titles (pick 1 of 3)
+
+Three bookmark clicks every time you open a browser? This 77-star minimalist startpage deletes them
+
+Change one HTML file to replace your browser homepage — druxorey/startpage takes 10 minutes from deploy to daily use
+
+No extensions installed: I turned my browser homepage into a blank workbench
+
+# Three bookmark clicks every time you open a browser? This 77-star minimalist startpage deletes them
+
+## 1. Opening: what if a tool already did this step for you…
+
+What is the first thing you do when you open your browser every day? Click the address bar, type a URL, hit Enter? Or do you scan the bookmarks bar first, then click the target? The default Chrome homepage is a blank field, and the bookmarks bar is a wall of crowded folders. Those wasted clicks add up: at 10 seconds a day, that's 60 minutes a year — enough for two cups of coffee and a full email.
+
+Worse, the built-in "new tab" page in mainstream browsers is stuffed with ads, news feeds and recommendations. It should be the doorway to your tools, and instead it behaves like a content feed app.
+
+That's where a 77-star project called `druxorey/startpage` comes in. It does exactly one thing: turns the browser homepage into a clean dispatch center — search, frequently used sites, minimalist layout. No news, no recommendations, no distractions.
+
+![](/assets/blog-images/3-77-star-startpage-1tp0ch/img02.webp)
+
+## 2. Project positioning: the problem it solves
+
+Startpage is a minimalist browser start page. Its main language is CSS, and the whole thing is lightweight with zero dependencies. It gives you a search box and shortcuts to your frequently used sites, and it's built for keyboard-first operation.
+
+Four keywords define it: **minimal** (no superfluous elements), **customizable** (fork it, edit the HTML, change the links), **keyboard-first** (`Alt + Space` focuses search), and **privacy-friendly** (no data collection, no tracking scripts).
+
+The project currently has 77 stars on GitHub and is still being iterated on; the latest screenshot in the repo is dated 2026-09-04. It wasn't built for multi-device sync or cloud config. It was built for a local experience: open it, use it, close it, leave no trace.
+
+![](/assets/blog-images/3-77-star-startpage-1tp0ch/img03.webp)
+
+## 3. Core features in depth
+
+### 1. Central search bar + shortcuts
+
+The middle of the page is a search box: type a keyword, hit Enter, go. It defaults to Google. Below it is a customizable grid of frequently used sites, each tile an icon plus a name. The page has no scrollbar at all — search and navigation fit in one screen, which lands in the same territory as Google's minimalist style.
+
+### 2. A fully keyboard-driven flow
+
+The repo README lists four core shortcuts:
+
+- `Alt + Space`: focus the search box directly (no mouse trip to the center of the screen)
+- `Enter`: run the search
+- `Ctrl + C`: clear the search box
+- `Escape`: close the settings panel
+
+This combo keeps both hands on the keyboard, so back-to-back searches stay smooth.
+
+### 3. Customization workflow
+
+The author calls it a "personalized startpage." Customizing is dead simple: fork the repo, edit the link list in `index.html`, refresh the browser. There is no frontend build tooling — changes take effect immediately, with no Node.js, Webpack or `npm install`. You're productive in 30 seconds.
+
+### 4. Cross-browser compatibility
+
+The Setup section of the README spells out the settings paths for Firefox and Chrome/Chromium/Brave: on Firefox it's "Settings > Home > Homepage and new windows," on Chrome-family browsers it's "Settings > Appearance > Show home button." Every mainstream browser is covered.
+
+![](/assets/blog-images/3-77-star-startpage-1tp0ch/img04.webp)
+
+## 4. Technical highlights and performance
+
+For a minimalist project whose main language is CSS, the technical story comes down to two words: light and stable.
+
+- **Tiny footprint**: the entire repo (HTML + CSS + JS + assets) is only a few MB, so loading is essentially instant
+- **Zero runtime dependencies**: no React, no Vue, no backend API — a single HTML file runs the whole thing
+- **Pure static deployment**: supports GitHub Pages (the project itself is hosted at `druxorey.github.io/startpage/`), and you can drop it on any static host
+- **Native keyboard bindings**: raw JS listens for `keydown` directly, avoiding any framework overhead
+
+Compared with start pages that bundle weather, news or to-dos, this one chooses "less is more."
+
+![](/assets/blog-images/3-77-star-startpage-1tp0ch/img05.webp)
+
+## 5. Use cases and audience
+
+**Who it's for**:
+
+- Developers who live on the keyboard and care about input efficiency
+- Users who want a work console at the browser homepage instead of a content feed
+- People who like minimalist design and don't want recommendation algorithms in their face
+- Teams that want a zero-cost, low-maintenance browser homepage
+
+**Who it's not for**:
+
+- Heavy multi-device users who need bookmark/config sync across devices (pick something with cloud sync, like Raindrop or Speed Dial)
+- Customization enthusiasts who want weather, news and greeting widgets (this project is just blank space, links and search)
+- Complete beginners who don't want to touch HTML at all (it's simple, but you still have to fork and edit a file)
+
+![](/assets/blog-images/3-77-star-startpage-1tp0ch/img06.webp)
+
+## 6. Comparison with alternatives
+
+| Project | Size | Customization effort | Cloud sync | Highlights |
+|------|------|-----------|--------|------|
+| **druxorey/startpage** | A few MB | Edit the HTML | No | Minimal, keyboard-first |
+| Fxzii Startpage (inspiration) | Similar | Similar | No | Darker theme styling |
+| Native new tab in mainstream browsers | — | Low | Yes | Built-in news/ads |
+| Bookmark managers like Raindrop | Client | Medium | Yes | Heavy bookmark management |
+
+The differentiator for `druxorey/startpage` is restraint. It doesn't do bookmark management, notes or weather. It only solves the path from opening the browser to typing a search or visiting a site.
+
+## 7. Getting started quickly
+
+1. Clone the repo: `git clone https://github.com/druxorey/startpage`
+2. Open `index.html` in an editor and put your own URLs into the matching `<a>` tags
+3. Open the HTML file in a browser to preview it
+4. Set your homepage to that file path in browser settings (or deploy to GitHub Pages and use the live URL)
+
+Going further: add a CSS theme that matches your browsing habits, like an eye-friendly warm background; or extend the JavaScript file with more shortcuts. All the source lives in the `static/` and `scripts/` directories, so the structure is clean and easy to change.
+
+![](/assets/blog-images/3-77-star-startpage-1tp0ch/img07.webp)
+
+## 8. Takeaways and next steps
+
+`druxorey/startpage` isn't a powerful tool — it's a just-right tool. With a minimalist layout, an editable link list and keyboard-first operation, it cuts "opening the browser" from 10 seconds down to 2.
+
+If you're tired of the news feed and ad slots on your browser homepage, and you don't want a bloated bookmark extension, spend 10 minutes forking this project, restyle it, and enjoy a homepage that feels like a tool again.
+
+- Repo: https://github.com/druxorey/startpage
+- Live demo: https://druxorey.github.io/startpage/
+- License: GPL-3.0
+
+A homepage that collects no data is the only homepage that's really yours.
+
+#startpage #Startpage #druxorey #Frontend #WebDev #OpenSource #GitHub

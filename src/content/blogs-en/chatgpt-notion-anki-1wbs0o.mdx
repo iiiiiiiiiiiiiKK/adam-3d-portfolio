@@ -1,0 +1,97 @@
+---
+title: "One open-source project that puts ChatGPT, Notion and Anki out of work at once"
+publishedAt: "2026-08-30"
+summary: "A grad student burning 40 minutes checking eight citations, a GRE taker flipping between five tabs — the real problem is fragmented learning tools. DeepTutor is an open-source, local, auditable agent workspace that keeps chat, quizzes and research in one context loop."
+image: "/assets/blog-images/chatgpt-notion-anki-1wbs0o/img01.webp"
+tags: ["AI", "Open Source", "Docs"]
+author: "Adam"
+---
+![](/assets/blog-images/chatgpt-notion-anki-1wbs0o/img01.webp)
+
+## 1. Intro: from pain to fanboy, one project away
+
+At two in the morning, a grad student named Wang is staring at a literature review ChatGPT produced. The third paragraph has hallucinated citations again, and he has just spent 40 minutes manually checking page numbers in eight papers. The same day, Alice, who is prepping for the GRE, is juggling five browser tabs: ChatGPT for solutions, Notion for wrong answers, Anki for vocabulary, Quizlet for flashcards, YouTube for concept walkthroughs. None of these tools talk to each other, and she burns five hours a week just on planning her review.
+
+Worse: learners worldwide lose more than 90 minutes a day on switching between study tools, and the fragmentation of education SaaS keeps real personalized tutoring stuck in slide decks. The answer comes from **DeepTutor**, open-sourced by the HKU Data Intelligence Lab (HKUDS) at the end of 2025, which hit 10K stars in 39 days and crossed 20K stars in 111 days: a lifelong personalized tutor running on your own machine.
+
+![](/assets/blog-images/chatgpt-notion-anki-1wbs0o/img02.webp)
+
+## 2. Project overview: what it is in one sentence
+
+DeepTutor is an **agent-native learning workspace** open-sourced by the HKUDS team, positioned around "Lifelong Personalized Tutoring". It unifies six modes — Chat, Quiz, Research, Visualize, Solve and Mastery Path — into a single agent loop, so context follows the learner instead of following the tool.
+
+Key milestones: **35K+ GitHub stars**, **Apache 2.0**, **current version v1.5.11** (released 2026.8.10), and an **arXiv paper** (2604.26962). The stack is Python 3.11+ on the backend and Next.js 16 on the frontend, with docs in 11 languages (Simplified Chinese included).
+
+## 3. Core features in depth
+
+### 1. A unified agent loop
+DeepTutor runs all six modes (Chat, Quiz, Research, Visualize, Solve, Mastery Path) in the same agent loop, so switching tasks does not mean switching engines. That means when you work through a calculus problem in Solve, the generated process data can be fed straight into Quiz to produce similar practice problems automatically.
+
+### 2. Three-layer auditable memory (L1/L2/L3)
+Memory is split into three layers: L1 raw traces, L2 surface summaries, L3 synthesized conclusions. Every conclusion traces back to its evidence in the Memory Graph. Against the usual "talk and forget" of chat tools, DeepTutor makes personalization debuggable and editable.
+
+### 3. Multi-engine knowledge base
+Six RAG engines ship in the box: LlamaIndex, PageIndex, GraphRAG, LightRAG, linked-KB and Obsidian vault. Every index is versioned and can be re-indexed, and document parsing supports pluggable components such as MinerU, PyMuPDF4LLM and Docling.
+
+### 4. Sub-agents and Partners
+It can call six coding CLIs — Claude Code, Codex, Gemini, Kimi, opencode and MiMo — as sub-agents. The Partners module turns any chat assistant into a resident companion with IM channels (15 protocols, including Discord, Feishu, WeChat, Zulip and Mattermost).
+
+![](/assets/blog-images/chatgpt-notion-anki-1wbs0o/img03.webp)
+
+## 4. Technical highlights and performance numbers
+
+DeepTutor rewrote roughly 200,000 lines of code (v1.0.0-beta.1), using a Tools + Capabilities plugin model with a single agent loop. Ecosystem compatibility is broad: on the LLM side it supports 10+ providers including OpenAI, Anthropic, Gemini, Qwen, LlamaIndex, NVIDIA NIM, Atlas Cloud, Eden AI and Novita AI; locally it supports Ollama, LM Studio, llama.cpp, vLLM and Lemonade; the RAG backend supports FAISS, LightRAG Server, vector databases and more.
+
+Deployment comes in several shapes: a PyPI package (`pip install deeptutor`), source, a Docker image (`ghcr.io/hkuds/deeptutor:latest`) and CLI-only — four install paths. Containerization supports three production-grade setups: podman, rootless and read-only rootfs. A single exposed port (3782) is enough.
+
+![](/assets/blog-images/chatgpt-notion-anki-1wbs0o/img04.webp)
+
+## 5. Use cases and who it is for
+
+**Case 1: close reading of research papers** — a grad student imports 50 PDFs, uses the PageIndex engine for reasoning-based retrieval, and generates a review with traceable citations.
+
+**Case 2: exam sprint training** — test takers generate targeted drills in Quiz mode, Mastery Path adjusts difficulty by mastery level, and wrong answers land in the Question Bank automatically.
+
+**Case 3: K12 at home** — parents import textbooks into the Knowledge Base and have their kid derive solutions step by step in Solve mode, with the process rendered by the Manim engine.
+
+**Good fit**: grad students, self-learners, educators, exam preppers and technical bloggers who need to accumulate learning context over time. **Not a fit**: absolute beginners who only want one-off Q&A and will not configure a local environment.
+
+## 6. Comparison with alternatives
+
+| Dimension | DeepTutor | ChatGPT Plus | Notion AI | NotebookLM |
+|------|-----------|--------------|-----------|------------|
+| Local deployment | ✅ Full support | ❌ Cloud only | ❌ Cloud only | ❌ Cloud only |
+| Multiple RAG engines | ✅ 6 | ❌ Single | ❌ None | ⚠️ Single |
+| Sub-agent invocation | ✅ 6 CLIs | ⚠️ Limited agents | ❌ None | ❌ None |
+| Auditable memory | ✅ L1/L2/L3 | ❌ Black box | ❌ None | ❌ None |
+| IM channel integration | ✅ 15 | ❌ None | ❌ None | ❌ None |
+| Open-source license | ✅ Apache 2.0 | ❌ Closed | ❌ Closed | ❌ Closed |
+
+DeepTutor's differentiator is open source + local + auditable. Open-source study tools that satisfy all three at once are few and far between.
+
+![](/assets/blog-images/chatgpt-notion-anki-1wbs0o/img05.webp)
+
+## 7. How to get started quickly
+
+The path of least resistance is a PyPI install:
+
+```bash
+mkdir my-deeptutor && cd my-deeptutor
+pip install -U deeptutor
+deeptutor init     # configure port, LLM, embedding
+deeptutor start    # spin up backend + frontend in one go
+```
+
+You need Node.js 20+ and Python 3.11–3.13. Docker users can start it with a single `docker run`. Advanced users can add `--network=host` so the container reaches local model services such as Ollama or LM Studio on the host directly.
+
+## 8. Conclusion and what to do next
+
+DeepTutor uses an open-source, local, auditable agent workspace to redefine the engineering bar for personalized tutoring. It is not another chatbot: it weaves Chat, Quiz, Research, Visualize, Solve and Mastery Path into one context loop, then stacks six RAG engines and fifteen IM channels on top.
+
+If you are tired of fragmented tools, or you need your learning data to stay local, DeepTutor is worth trying right away.
+
+- GitHub repo: https://github.com/HKUDS/DeepTutor
+- Official docs: https://deeptutor.info/
+- arXiv paper: https://arxiv.org/abs/2604.26962
+
+![](/assets/blog-images/chatgpt-notion-anki-1wbs0o/img06.webp)

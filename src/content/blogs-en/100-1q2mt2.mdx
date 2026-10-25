@@ -1,0 +1,101 @@
+---
+title: "Your site still running naked? The open-source firewall chosen by 1 million websites"
+publishedAt: "2026-10-13"
+summary: "A CC attack took down an ecommerce homepage overnight while the traffic masqueraded as real users, and plain IP rate limiting never noticed. SafeLine is a self-hosted WAF that detects by semantic analysis instead of regex, with a 76% detection rate and 0.07% false positives."
+image: "/assets/blog-images/100-1q2mt2/img01.webp"
+tags: ["Open Source", "Productivity"]
+author: "Adam"
+---
+![](/assets/blog-images/100-1q2mt2/img01.webp)
+
+## 1. Intro: why you need this tool
+
+At 3 a.m., the ops engineer at an ecommerce platform gets jolted awake by a phone call: the homepage is suddenly down. Digging in, one backend API endpoint has been hammered by a CC attack all night. Worse, the attack traffic is disguised as normal users, so traditional IP rate limiting is completely useless. This happens every day — according to Cyber Press, global web application attacks grew 38% year over year in 2024, and the average cost of a single data breach has passed 4.5 million dollars.
+
+Small and mid-size companies and individual developers face a more practical dilemma: commercial WAFs bill by traffic, easily hundreds of thousands a year; the open-source option ModSecurity has stale rules and a high false positive rate; and Cloudflare's free tier is unreliable when accessed from mainland China. If you are looking for a WAF that is self-hosted, has high detection, low false positives and an active Chinese community, chaitin/SafeLine may be the answer.
+
+![](/assets/blog-images/100-1q2mt2/img02.webp)
+
+## 2. Project overview: what it is in one sentence
+
+SafeLine is a self-hosted web application firewall open-sourced by Chaitin Tech, and it is essentially a reverse proxy. Written in Go, it has passed 22.3K GitHub stars, topping the overall GitHub Trending chart as well as the Go daily and weekly charts. Cyber Press named it "the most popular open-source web firewall on GitHub", with over 400,000 installations worldwide protecting more than 1 million websites and handling over 30 billion HTTP requests a day.
+
+Four keywords capture the core: **self-hosted** (full control of your data), **smart detection** (semantic analysis rather than regex matching), **dynamic protection** (dynamic HTML/JS encryption), and **rich ecosystem** (K8s Ingress, Kong, AI MCP integration).
+
+## 3. Core features in depth
+
+### 1. Web attack defense
+
+SafeLine's core capability is blocking every common web attack in the OWASP Top 10, including SQL injection, XSS, code injection, OS command injection, CRLF injection, XXE, SSRF, path traversal, backdoor uploads and more. It ships a detection engine based on smart semantic analysis rather than rigid regex rules, which means it identifies 0day variant payloads significantly better than a traditional WAF.
+
+Official cross-comparison on 33,669 samples shows: SafeLine in strict mode detects 76.17%, ModSecurity with comparable rules only 69.74%, and Cloudflare's free tier just 10.70%. On false positives, SafeLine in balanced mode sits at 0.07%, level with Cloudflare's free tier and far below ModSecurity's 17.58%.
+
+### 2. CC attack defense and rate limiting
+
+Traditional IP rate limiting is near useless against proxy-pool attacks. SafeLine offers IP-based rate limiting with custom rules across multiple dimensions — path, IP range, region — which effectively mitigates DoS attacks, brute force, traffic spikes and similar scenarios. For example, you can set "a single IP may hit /api/login at most 10 times per minute", and anything beyond that triggers a slider challenge or an outright block.
+
+### 3. Anti-bot and human verification
+
+The Anti-Bot Challenge is one of the capabilities that sets SafeLine apart from ModSecurity. When it detects suspicious traffic it presents a slider or puzzle captcha: real users pass normally, crawlers and scripts get blocked. The decision draws on browser fingerprinting, behavioral analysis and JS challenges, and it visibly suppresses headless browsers, the Python requests library and Scrapy.
+
+### 4. Dynamic encryption protection
+
+With Dynamic Protection enabled, the HTML and JS of every page visit is encrypted dynamically server-side. Even if a crawler gets the response body, all it sees is obfuscated noise and it must execute JS to rebuild the DOM. This is very effective for protecting frontend data, hiding API endpoints and blocking automated scraping — a capability usually reserved for commercial WAFs.
+
+![](/assets/blog-images/100-1q2mt2/img03.webp)
+
+## 5. Where it fits and who it's for
+
+SafeLine suits these scenarios:
+
+- **Individual developers and solo site owners**: blogs, small SaaS, self-built APIs that need protection from scanning and CC attacks without paying for a commercial WAF.
+- **Small and mid-size business systems**: ecommerce sites, CMS, CRM, internal systems — lots of sensitive data but a limited budget, with compliance requirements.
+- **Kubernetes clusters**: the project provides an Ingress-NGINX plugin so protection can be attached at the K8s entry point.
+- **AI applications and agent backends**: a built-in SafeLine MCP Server lets AI assistants manage WAF rules over the MCP protocol.
+
+Not a fit: very large internet companies with their own data centers (they need custom cluster deployments), and pure static CDN acceleration scenarios (leave those to Cloudflare edge nodes).
+
+## 6. Comparison with alternatives
+
+| Dimension | SafeLine | ModSecurity | Cloudflare Free | Commercial WAF (Alibaba Cloud WAF) |
+|------|----------|-------------|-----------------|------------------------|
+| Self-hosted | ✅ fully private deployment | ✅ but stale rules | ❌ SaaS only | ❌ SaaS only |
+| Detection rate | **76.17%** | 69.74% | 10.70% | ~80% |
+| False positive rate | **0.07%** | 17.58% | 0.07% | &lt; 0.1% |
+| Dynamic encryption | ✅ HTML/JS | ❌ | ❌ | ✅ (expensive) |
+| Anti-bot | ✅ slider challenge | ❌ | basic | ✅ |
+| Access from mainland China | ✅ smooth | ✅ | ⚠️ restricted | ✅ |
+| Learning curve | low, Chinese docs | high | minimal | medium |
+
+The table shows SafeLine ahead on all four of self-hosting, high detection, low false positives and mainland China access at once — an open-source stand-in for a commercial WAF.
+
+![](/assets/blog-images/100-1q2mt2/img04.webp)
+
+## 7. How to get started quickly
+
+SafeLine deploys in a single Docker command. Requirements: a Linux server, Docker, and at least 1 core and 2GB of RAM.
+
+```bash
+bash -c "$(curl -fsSLk https://waf.chaitin.com/release/latest/setup.sh)"
+```
+
+The script pulls the image and starts everything automatically; visit `https://<server-ip>:9443` to reach the admin console. On first login, use the `safeline-ce` command to view the initial password.
+
+Next, add a site under "Application Management" in the console: enter your real domain and backend address, and SafeLine issues the certificate and takes over traffic automatically. The whole process takes under 10 minutes.
+
+Further suggestions: in production, always change the default password and enable 2FA (the admin panel supports it); connect the WAF to Claude/Cursor through the MCP Server and query attack logs in natural language; hook it up to ELK or Loki and export logs for secondary analysis.
+
+## 8. Summary and what to do next
+
+With 22K+ stars, 400,000 installations and 30 billion daily requests, SafeLine has proven itself the open-source WAF worth watching right now. It solves the impossible triangle of "don't want to pay, still need security, and need good access from mainland China", which makes it a strong fit for individual developers and small businesses.
+
+If CC attacks are wearing you down, if compliance has requirements, or if you want to hand WAF management to AI, go search chaitin/SafeLine on GitHub, give it a star, and run one command to install it before you leave work.
+
+- Project: https://github.com/chaitin/SafeLine
+- Chinese docs: https://docs.waf-chaitin.cn
+- Online demo: https://demo.waf.chaitin.com:9443
+- Discord community: https://discord.gg/SVnZGzHFvn
+
+One-line recommendation: the best self-hosted WAF, bar none.
+
+![](/assets/blog-images/100-1q2mt2/img05.webp)

@@ -1,0 +1,83 @@
+---
+title: "Baidu open-sources Unlimited-OCR: 23.6K stars, and you can finally parse a whole PDF without stitching pages"
+publishedAt: "2026-07-24"
+summary: "Traditional OCR turns a scanned contract into fragments: scrambled paragraph order, tables sliced across pages, images and formulas misclassified, plus hours of manual checking. Unlimited-OCR answers with one-shot long-horizon parsing over the whole document."
+image: "/assets/blog-images/unlimited-ocr-23-6-k-star-pdf-1s5aqt/img01.webp"
+tags: ["Open Source", "Docs", "OCR"]
+author: "Adam"
+---
+![](/assets/blog-images/unlimited-ocr-23-6-k-star-pdf-1s5aqt/img01.webp)
+
+## 1. Opening: stop wrestling with it by hand
+
+Anyone who works on document parsing has probably been burned by this: with a scanned contract, traditional OCR finishes and then you still have to check paragraph order by hand, tables get cut in half across pages, images and formulas end up in the wrong buckets — and the whole process is more tiring than typing it in manually. **Unlimited-OCR**, with 23632 stars on GitHub, goes straight at this long-standing pain point. Its approach is "parse a long-span document in a single inference", treating the whole document as one unit instead of stitching pages together.
+
+## 2. Positioning: the problem it solves
+
+**Unlimited-OCR** was open-sourced by Baidu in June 2026 and positions itself as a flagship of the "One-shot Long-horizon Parsing" era. Its keywords are **unified context modelling for the whole document**, **coherent multi-page parsing** and **high-throughput deployment on vLLM/SGLang**. The main line of work builds on DeepSeek-OCR to solve global consistency across multi-page documents, backed by a full ecosystem: Hugging Face models, Baidu Cloud, vLLM, SGLang, ms-swift training and a Hugging Face Spaces demo. Within half a month it went from paper to a production-grade inference stack.
+
+## 3. Core features in depth
+
+### 1. Two configs for single images: gundam and base
+Single-image inference ships two configurations: `gundam` mode (base_size=1024, image_size=640, crop_mode=True) suits complex layouts, using tiling plus global context to improve small text and formula recognition; `base` mode (base_size=1024, image_size=1024, crop_mode=False) runs the full image directly and is faster. Developers just switch three parameters in `model.infer()` to choose accuracy-first or throughput-first depending on document quality.
+
+### 2. One-shot multi-page / PDF parsing
+The headline capability is `model.infer_multi()`, which feeds multiple page images or a whole PDF into the model at once and returns structured output. `ngram_window=1024` balances suppression of repeated cross-page patterns against context retention, and together with PDF-to-image conversion (PyMuPDF at 300 DPI) it chews through full technical manuals and paper collections in one run.
+
+### 3. Three inference backends, no deployment barrier
+Transformers is fine for local debugging; vLLM provides an official Recipe and the `vllm/vllm-openai:unlimited-ocr` image (dual builds for CUDA 13.0 and Hopper-only cu129) for production-level throughput; SGLang targets extreme streaming throughput, where `--enable-custom-logit-processor` with `DeepseekOCRNoRepeatNGramLogitProcessor` suppresses repeated tokens — critical for long documents. The three backends cover the whole path from prototype to production.
+
+### 4. ms-swift integration on the training side
+For teams doing secondary development, the model is already integrated into the ModelScope ms-swift training framework, so LoRA and full fine-tuning work out of the box and you skip building your own Trainer.
+
+## 4. Technical highlights and performance numbers
+
+The project supports a context window of `max_length=32768`, and with the `no_repeat_ngram_size=35` deduplication constraint it handles long documents of dozens of pages reliably. Architecturally it continues DeepSeek-OCR's vision-encoder + LLM path and adds a long-span attention mechanism, so the model always "sees" earlier layout information while generating. Official vLLM and SGLang support means A100/H100 clusters reach throughput comparable to a general LLM service — document parsing is no longer the GPU utilisation bottleneck. On the ecosystem side it is compatible with mainstream versions such as PyTorch 2.10, Transformers 4.57 and PyMuPDF 1.27.2.2, and has been published to three model hubs: Hugging Face, ModelScope and Baidu Cloud.
+
+## 5. Where it fits, and who it's for
+
+- **Finance / legal document digitisation**: contracts, prospectuses and judgments need the relationships between paragraphs, tables and captions preserved;
+- **Academic papers and technical manual archiving**: cross-page formulas, references and figure numbers must be recognised in the same context;
+- **Internal enterprise knowledge bases**: parse in one shot before bulk-ingesting PDFs, cutting downstream ETL work.
+
+It is not suited to simple single-page receipts (traditional PaddleOCR is lighter for that), nor to scenarios with extreme real-time requirements and a limited budget (long-context models still need substantial VRAM).
+
+## 6. Comparison with alternatives
+
+| Project | Multi-page long span | Mainstream inference backends | Training / fine-tuning support | Stars |
+|---|---|---|---|---|
+| Unlimited-OCR | ✅ Native | vLLM/SGLang/Transformers | ms-swift | 23.6K |
+| DeepSeek-OCR | Partial | Transformers | Community options | High |
+| PaddleOCR | ❌ Mostly single page | Own engine | Full PaddlePaddle stack | High |
+| GOT-OCR2.0 | Partial | Transformers | Community options | Medium |
+
+The gap: Unlimited-OCR makes "long span" a first-class citizen, wiring the model architecture, inference backends and training framework together end to end — a tier ahead in engineering completeness.
+
+## 7. Getting started fast
+
+Four steps, minimised:
+1. Prepare a Python 3.12.3 + CUDA 12.9 environment and install `torch==2.10.0`, `transformers==4.57.1`, `pymupdf==1.27.2.2` and other dependencies;
+2. Load the model with `AutoModel.from_pretrained('baidu/Unlimited-OCR', trust_remote_code=True, torch_dtype=torch.bfloat16)`;
+3. Call `model.infer()` for single images and `model.infer_multi()` for multi-page/PDF, with the prompt `<image>document parsing.` or `<image>Multi page parsing.`;
+4. For production, pull the `vllm/vllm-openai:unlimited-ocr` image directly, or follow the official Recipe with the vLLM / SGLang launch scripts.
+
+Once the demo runs, try: switching `image_size` between 640 and 1024 to compare results; batch inference over the `examples/` directory with SGLang's `infer.py` to verify concurrent throughput.
+
+## 8. Summary and what to do next
+
+**Unlimited-OCR**'s core value is upgrading multi-page document parsing from "page-by-page OCR plus post-processing stitching" to "one-shot end-to-end inference". With three production-grade backends and a training framework, the engineering chain is fairly complete. Teams that need document intelligence should try it directly on Hugging Face Spaces, or pull the vLLM image and stress-test it on their own cluster, turning the saved manual checking hours into quantifiable ROI.
+
+- GitHub: https://github.com/baidu/Unlimited-OCR
+- Model: https://huggingface.co/baidu/Unlimited-OCR
+- Paper: https://arxiv.org/abs/2606.23050
+- Demo: https://huggingface.co/spaces/baidu/Unlimited-OCR
+
+One reason to try it, in a sentence: next time you face a several-hundred-page PDF, Unlimited-OCR means no more late nights stitching page numbers.
+
+![](/assets/blog-images/unlimited-ocr-23-6-k-star-pdf-1s5aqt/img02.webp)
+
+![](/assets/blog-images/unlimited-ocr-23-6-k-star-pdf-1s5aqt/img03.webp)
+
+![](/assets/blog-images/unlimited-ocr-23-6-k-star-pdf-1s5aqt/img04.webp)
+
+![](/assets/blog-images/unlimited-ocr-23-6-k-star-pdf-1s5aqt/img05.webp)

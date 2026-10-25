@@ -1,0 +1,91 @@
+---
+title: "158 languages, sub-millisecond queries, 99.2% fewer tokens: the 38,638-star code knowledge graph engine"
+publishedAt: "2026-09-17"
+summary: "AI coding agents burn six figures of tokens grepping through unfamiliar repos and still miss the architecture. This MCP server parses code into a persistent knowledge graph — 158 languages, sub-millisecond queries and a 99.2% token reduction."
+image: "/assets/blog-images/158-99-2-token-38638-stars-1d3tsr/img01.webp"
+tags: ["AI", "Agent", "Open Source"]
+author: "Adam"
+---
+![](/assets/blog-images/158-99-2-token-38638-stars-1d3tsr/img01.webp)
+
+## 1. Opening: why you need this
+
+AI coding assistants have found their way into most developers' workflows, but have you been tortured by this scene: you ask an agent to walk you through an unfamiliar project, it starts `grep`ping and `read`ing and flipping through files, and after five queries the context window is stuffed with a few hundred thousand tokens — and the answers are still frequently off-target. File-level retrieval is both its eyes and its ceiling. Against the Linux kernel's 28M lines across 75K files, traditional approaches collapse outright: tens of minutes with no result. This is the long-standing gap in structured code intelligence — AI can see characters, but not architecture.
+
+![](/assets/blog-images/158-99-2-token-38638-stars-1d3tsr/img02.webp)
+
+## 2. What the project is, in one sentence
+
+`codebase-memory-mcp` is a high-performance code intelligence MCP server built for AI coding agents. It uses tree-sitter to parse a codebase into a persistable knowledge graph: milliseconds to index an average repo, three minutes to ingest the entire Linux kernel, sub-1ms query responses. A single static binary with zero dependencies, 158 languages, and 43 agent clients supported out of the box. It has **38638** stars on GitHub, 15 MCP tools, and 6768 test cases keeping watch.
+
+![](/assets/blog-images/158-99-2-token-38638-stars-1d3tsr/img03.webp)
+
+## 3. A deep dive into the core features
+
+### 1. Blazing-fast indexing and sub-millisecond queries
+
+A RAM-first pipeline is built in: LZ4-compressed reads, in-memory SQLite, combined Aho-Corasick multi-pattern scanning, then a single write to disk followed by memory release. The Linux kernel — 28M LOC, 75K files — finishes in three minutes, producing 4.81 million nodes and 7.72 million edges; regex name search &lt;10ms, Cypher relationship traversal &lt;1ms, call-chain tracing (depth 5) still &lt;10ms. This architecture compresses "build the whole graph" from hours to minutes.
+
+### 2. Hybrid LSP semantic type resolution
+
+Ordinary AST tools can only tell you "who called what" — they can't even distinguish which overload was called. `codebase-memory-mcp` embeds lightweight LSP algorithms for 10 languages: argument binding, return type inference, generic substitution, JSX component dispatch, PHP namespaces + traits + late static binding, C# file-scoped namespaces + records + LINQ, Java class hierarchies + overloads + lambdas, Kotlin extension functions, Rust traits + UFCS. Structurally it stays compatible with tsserver, pyright, gopls, Roslyn, JDT and rust-analyzer, so call edges in Python, TS/JS/JSX/TSX, PHP, C#, Go, C, C++, Java, Kotlin, Rust and Perl are almost never miswired.
+
+### 3. Cross-service tracing and infrastructure-as-code mapping
+
+REST/gRPC/GraphQL/tRPC routes are extracted automatically from manifests into reference edges, with HTTP routes and call sites matched by confidence; Socket.IO, EventEmitter and Pub-Sub emit `EMITS` / `LISTENS_ON` edges across 8 languages. Dockerfiles, Kubernetes manifests and Kustomize overlays all land in the graph: K8s resources become `Resource` nodes, Kustomize overlays become `Module` nodes wired together with `IMPORTS` edges — monorepos and microservice fleets alike can see their boundaries in a single graph.
+
+### 4. Graph snapshots shared across the team
+
+`.codebase-memory/graph.db.zst` is a zstd-compressed SQLite snapshot of the knowledge graph: a new member clones the repo, and the first run decompresses it and indexes only local deltas, skipping a full rebuild. The `Best` profile uses `zstd -9` + index stripping + `VACUUM INTO`; the `Fast` profile uses `zstd -3` for low-latency incremental writes from the watcher. The first export also writes `merge=ours` into `.gitattributes`, so the binary artifact stops producing annoying merge conflicts.
+
+![](/assets/blog-images/158-99-2-token-38638-stars-1d3tsr/img04.webp)
+
+## 4. Technical highlights and performance numbers
+
+- **Hard numbers**: milliseconds to index an average repo; three minutes for the whole Linux kernel; Cypher queries &lt;1ms; five structured queries cost about 3400 tokens versus 412000 for file-by-file retrieval, a **99.2% reduction**; the study reports 83% answer quality, calls down to 2.1× and tokens down to 10× (arXiv:2603.27277).
+- **Architecture highlights**: pure C implementation with 158 tree-sitter grammars vendored into the binary; the local embedding model `nomic-embed-code` (40K tokens, 768d int8) is compiled in too — no Ollama, no Docker, no API key.
+- **Ecosystem compatibility**: macOS (arm64/amd64), Linux (arm64/amd64), Windows (amd64); distributed everywhere via npm, PyPI, Homebrew, Scoop, Winget, Chocolatey, AUR and `go install`; OpenSSF Scorecard and SLSA Level 3 supply-chain certification, with every release scanned by VirusTotal.
+
+![](/assets/blog-images/158-99-2-token-38638-stars-1d3tsr/img05.webp)
+
+## 5. Use cases and who it's for
+
+- **Large-codebase explorers**: taking over an unfamiliar monorepo or microservice fleet and needing call boundaries, service dependencies and a dead-code list fast.
+- **Heavy AI coding agent users**: anyone who wants Claude Code, Codex, Cursor, Cline and friends to stop burning tokens and losing context in long sessions.
+- **Architecture governance and compliance**: teams that need ADRs, HTTP routes and K8s resources in one graph for impact analysis, change auditing and cross-service tracing.
+
+Who it doesn't fit: light users who only need single-file regex replacements, or who don't use AI agents at all — plain `grep` is the better deal.
+
+![](/assets/blog-images/158-99-2-token-38638-stars-1d3tsr/img06.webp)
+
+## 6. How it compares
+
+| Dimension | codebase-memory-mcp | Traditional LSP tools | File-level retrieval agents |
+|-----|---------------------|------------------|------------------|
+| Indexing speed | Linux kernel in 3 minutes | Usually 10–30 minutes | No graph at all |
+| Language coverage | 158 + 10 Hybrid LSP | Usually 1–3 | Depends on grep |
+| Token consumption | 5 queries ≈ 3400 tokens | Depends on implementation | 412000 tokens |
+| Deployment | Single binary, zero deps | Needs Node/Python runtimes | Follows the agent |
+| Cross-service graph | HTTP/gRPC/GraphQL/tRPC + IaC | Mostly unsupported | Unsupported |
+
+## 7. Getting started fast
+
+One line installs it — on macOS/Linux:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/DeusData/codebase-memory-mcp/main/install.sh | bash
+```
+
+Windows PowerShell users download `install.ps1`, run `Unblock-File` first, then execute it. The install script strips macOS quarantine attributes and ad-hoc signs the binary automatically. Once installed, restart Claude Code and tell the agent "Index this project" to build the first graph. For the 3D graph visualization, run `codebase-memory-mcp --ui=true --port=9749` and open `http://localhost:9749` in a browser to pan and zoom through it. Advanced users should turn on `auto_index` and `auto_watch` so new projects build a graph on first connection and later changes update incrementally in the background; to share with a team, commit `.codebase-memory/graph.db.zst` to the repo.
+
+![](/assets/blog-images/158-99-2-token-38638-stars-1d3tsr/img07.webp)
+
+## 8. Takeaways and what to do next
+
+`codebase-memory-mcp` turns a codebase into a knowledge graph that AI can actually understand, freeing agents from the inefficient page-by-page loop. Three minutes to index the Linux kernel, 99% fewer tokens, 43 client types installable out of the box — that combination is close to one of a kind in today's AI coding stack. Install it with the one-line script, pick the project you know best and run `Index this project` to feel a millisecond-level architecture overview; then commit `.codebase-memory/graph.db.zst` to your repo so teammates skip the long cold start.
+
+- GitHub: https://github.com/DeusData/codebase-memory-mcp
+- Docs: https://deusdata.github.io/codebase-memory-mcp/
+- Research paper: https://arxiv.org/abs/2603.27277
+
+One-line recommendation: give AI some structured memory and say goodbye to grep starting today.

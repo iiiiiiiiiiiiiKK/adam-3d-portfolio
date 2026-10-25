@@ -1,0 +1,111 @@
+---
+title: "GitHub dark horse i-have-adhd: 10 rules that cut 80% of AI's hot air"
+publishedAt: "2026-10-04"
+summary: "You ask AI to fix a bug and get an 800-word \"analysis\" that opens with \"Great question!\", closes with \"Hope this helps!\", and buries the answer in the seventh line of the third paragraph. This skill plugin forces output to lead with action."
+image: "/assets/blog-images/github-i-have-adhd-10-ai-80-w62jz7/img01.webp"
+tags: ["AI", "Open Source", "Productivity"]
+author: "Adam"
+---
+![](/assets/blog-images/github-i-have-adhd-10-ai-80-w62jz7/img01.webp)
+
+## 1. Why you need this tool
+
+You ask AI to fix a bug. It replies with an 800-word "analysis report" that starts with "Great question!" and ends with "Hope this helps!", and the answer is hiding in the seventh line of the third paragraph. You have to Ctrl+F to find the command you're supposed to run.
+
+This isn't your fault. It's the default pathology of LLM output: preambles, explanations, pleasantries, restating your question, friendly reminders — all of it buries the actual operation inside noise. For anyone who needs to know "what do I do next" right now, every extra sentence of filler burns attention.
+
+`i-have-adhd`, with 19,832 stars, exists precisely for this scenario.
+
+![](/assets/blog-images/github-i-have-adhd-10-ai-80-w62jz7/img02.webp)
+
+## 2. What it is
+
+`i-have-adhd` is a Skill plugin for AI coding assistants (Claude Code and friends) that forces output to follow ADHD-friendly norms: **action first, numbered steps, zero filler**. It doesn't diagnose ADHD — it rewrites the structure of LLM replies.
+
+Key concepts: **Action-First**, **Numbered Steps**, **Zero Preamble**.
+
+It topped the Python trending list on release day and picked up 19.8K stars in three months.
+
+## 3. Core features in depth
+
+### 1. Answer first: put the instruction on line one
+
+A conventional AI reply goes "greeting → background → analysis → conclusion → pleasantries". `i-have-adhd` forces the model to lead with the next action and put background explanation after the instruction. A before/after shows it better than any description: the original is "Great question! ... Hope this helps!", and the rewritten version opens with `Run npm install jsonwebtoken@latest, then edit src/auth.ts:42.`
+
+### 2. Numbered steps: multi-step tasks must use a 1/2/3 list
+
+When a task involves more than 3 actions, the model must output an ordered list — one action per step, two lines max each. Rule #9 adds a cap: at most 5 items, and anything longer must be split. This avoids the endless "first... second... seventh..." scroll.
+
+### 3. Hard close: one concrete next step
+
+Rule #3 requires the model to end with a next step you can execute immediately, e.g. `Next: paste the first failing line if any test fails.` That kills vacuous lines like "let me know if you need further help" and keeps every conversation at an actionable endpoint.
+
+### 4. Errors stated plainly: strip emotional cushioning from failures
+
+Rule #8 says error messages must be flat and factual — output the error itself, no "sorry you ran into this" emotional filler. That matters most when debugging: developers want a lead to the cause, not psychological comfort.
+
+![](/assets/blog-images/github-i-have-adhd-10-ai-80-w62jz7/img03.webp)
+
+## 4. Technical highlights and performance numbers
+
+The project ships as a Markdown Skill. The whole rule set lives in a single file, `skills/i-have-adhd/SKILL.md`, and the 10 rules total under 200 lines of text. The Skill loads through Claude Code's plugin mechanism with no network requests and no extra dependencies — load time is &lt; 50ms.
+
+On compatibility, it supports the full Claude Code line and can hook into self-hosted repositories via `claude plugin marketplace add`. The rule set is forkable and customizable; the community has already spun off variants like a "teaching edition" and a "customer support edition".
+
+The biggest highlight is **precise modeling of human cognitive load** — the rules aren't written for the LLM to read, they're written for the LLM's working memory to use. Each rule maps to a specific attention drain, e.g. Rule #4 "Suppress tangents" directly targets the cognitive jump cost of straying mid-read.
+
+## 5. Where it fits and who it's for
+
+**Scenario 1: AI-assisted debugging.** When AI helps you chase an error, Action-First mode puts the command to try in your first glance, saving 5–10 seconds of scanning.
+
+**Scenario 2: decomposing long tasks.** When you ask AI to "deploy a K8s cluster", the numbered list plus 5-item cap keeps it readable on one screen.
+
+**Scenario 3: guiding a refactor.** When AI proposes refactoring, it's forced to give a clear sequence of "do X first, then Y" instead of "you could consider... maybe you should...".
+
+**Good fit**: developers whose attention scatters easily; engineers using AI for dense technical Q&A; Tech Leads standardizing AI output across a team.
+
+**Not a good fit**: people who want AI to write long technical blog posts; creative divergence where you want AI to volunteer tangential ideas.
+
+![](/assets/blog-images/github-i-have-adhd-10-ai-80-w62jz7/img04.webp)
+
+## 6. Comparison with alternatives
+
+| Dimension | i-have-adhd | Vanilla Claude Code | LangChain Output Parser |
+|------|-------------|------------------|------------------------|
+| Intervention layer | Skill layer (prompt rules) | None | Application layer (code interception) |
+| Deployment cost | One command | Default | Requires development |
+| Customizability | High (edit SKILL.md) | None | Medium |
+| Supported models | All Claude models | Claude | Any |
+
+Compared with a generic Output Parser, the advantage of `i-have-adhd` is zero runtime overhead, with all rules confined to the prompt layer so they don't break the AI's reasoning chain.
+
+## 7. Getting started fast
+
+**Step 1: install the plugin**
+```bash
+claude plugin marketplace add ayghri/i-have-adhd
+claude plugin install i-have-adhd@i-have-adhd
+```
+
+**Step 2: restart Claude Code**, then type `/i-have-adhd` in any session to activate the skill.
+
+**Step 3: customize the rules.** Fork the repo, edit `skills/i-have-adhd/SKILL.md`, then swap in your local version with:
+```bash
+claude plugin uninstall i-have-adhd
+claude plugin marketplace remove i-have-adhd
+claude plugin marketplace add <your-username>/i-have-adhd
+```
+
+**Going further**: write your team's conventions (e.g. "a PR must include tests first") straight into SKILL.md so AI output automatically follows your process.
+
+![](/assets/blog-images/github-i-have-adhd-10-ai-80-w62jz7/img05.webp)
+
+## 8. Summary and next steps
+
+The core value of `i-have-adhd` fits in one line: **make the first line of AI output the line you can actually execute**.
+
+If you use AI on 20+ technical questions a day, this tool saves you at least 10 minutes of scanning. MIT licensed, forkable, customizable — there's basically no barrier to trying it.
+
+Project: https://github.com/ayghri/i-have-adhd
+
+Recommendation: **give it a star — every time you skip one "Hope this helps!", it pays for itself.**

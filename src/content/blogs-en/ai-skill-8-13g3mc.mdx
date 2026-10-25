@@ -1,0 +1,131 @@
+---
+title: "Want AI to prescribe like Ni Haixia? This Skill distills classic-formula thinking into 8 diagnostic formulas"
+publishedAt: "2026-10-19"
+summary: "Ni Haixia's lecture series is legendary among classic-formula learners, yet the scale - 2,452 pages and 3.5 million characters - keeps almost everyone from finishing it. This open-source Skill turns that corpus into an Agent-activatable diagnostic framework with six-meridian reasoning built in."
+image: "/assets/blog-images/ai-skill-8-13g3mc/img01.webp"
+tags: ["AI", "Agent", "Productivity"]
+author: "Adam"
+---
+![](/assets/blog-images/ai-skill-8-13g3mc/img01.webp)
+
+## 1. Opening: why you need this tool
+
+Anyone who studies Chinese medicine knows Ni Haixia. A legendary practitioner whom countless classic-formula enthusiasts treat as required reading, he left behind the Renji lecture series, which circulates widely in the community. Very few actually finish it: 209 pages of Shanghan Lun lectures, 419 pages of Jingui Yaolue, 461 pages of Huangdi Neijing, plus the Shennong Bencao Jing, acupuncture and case records - 2,452 pages and 3.5 million characters in total.
+
+The bigger problem is that these lectures are densely cross-referenced and full of pattern-differentiation logic. A patient with Taiyang cold damage may implicate miscellaneous-disease clauses from the Jingui Yaolue, the herb selection in the Bencao Jing, and similar cases among the 849 medical records. Ordinary learners struggle to connect that knowledge, let alone get an AI to imitate Master Ni's mode of thinking.
+
+If a tool could distill those 3.5 million characters into diagnostic thinking an AI can invoke, giving you "Ni Haixia's perspective" in real time during consultation, that is exactly the problem the `nihaixia` Skill solves.
+
+![](/assets/blog-images/ai-skill-8-13g3mc/img02.webp)
+
+## 2. Project overview: what it is in one sentence
+
+`nihaixia` is the first open-source project on GitHub to distill Ni Haixia's (1954-2012) complete Chinese medicine thinking system into an activatable Agent Skill. It currently has 1,854 stars and its latest version is v2.1.0. It supports five platforms including Claude Code, Tencent IMA and SkillHub, with core data covering 129 Shanghan Lun entries, 23 Jingui chapters, 71 Huangdi Neijing chapters, 345 herbs, 849 medical records, and 3.5M characters of distilled material.
+
+The project uses the MulanPSL-2.0 license. Its activation phrases are "Ni Haixia", "Haixia perspective", "Master Ni" and "classic-formula thinking", letting any AI Agent switch instantly into Ni Haixia's pattern-differentiation viewpoint.
+
+## 3. Core features in depth
+
+### 1. Six-meridian diagnostic formulas (new in v2.1.0)
+
+This is the heart of the upgrade: it evolves from a knowledge-base lookup tool into a clinical diagnostic assistant with a six-meridian reasoning model. Eight new diagnostic formulas were added, each containing IF-THEN pattern rules, a typing differential table and representative formulas, covering eight scenarios: Taiyang, Yangming, Shaoyang, Taiyin, Shaoyin, Jueyin, Shaoyin heat transformation, and combined/concurrent disease.
+
+Paired with a "rapid diagnostic flowchart", it forms a complete decision tree from patient symptoms to six-meridian localization. Combined with pulse quick reference (8 single pulses + 8 compound pulses) and tongue quick reference (5 tongue presentations + 6 compound presentations), it builds an executable diagnostic path.
+
+### 2. Seven-step pattern-differentiation model
+
+Ni Haixia's clinical method is distilled into seven standard steps: determine exterior/interior, split yin and yang, distinguish cold and heat, judge transmission, assess constitution, select the formula, refine the modifications. This model breaks the "treat the headache as a headache" style of answer AI usually gives, giving the differentiation process a repeatable structure.
+
+### 3. Classic formulas and materia medica
+
+The project distills 129 Shanghan Lun formulas and 23 Jingui chapters, including full composition, dosage, decoction and administration method, and contraindications. The 345 herbs of the Shennong Bencao Jing are classified by the three grades, with five flavors, channel entry and processing key points annotated. For example, the mnemonic for the well-known Minor Bupleurum Decoction: bitter mouth, dry throat, dizziness, alternating chills and fever - any one sign confirms it.
+
+### 4. Clinical case library
+
+849 real cases from Master Ni are stored across six categories: cancer, cardiovascular, metabolic, autoimmune, neuropsychiatric and other. Cancer cases number 147, cardiovascular 22 and metabolic 12. Each case carries Ni's differentiation reasoning and formula choice, giving the AI's answers a real clinical reference.
+
+![](/assets/blog-images/ai-skill-8-13g3mc/img03.webp)
+
+## 4. Technical highlights and performance data
+
+The data draws on 10 lecture documents totaling 2,452 pages: 209 pages of Shanghan Lun lectures (277K characters), 419 pages of Jingui Yaolue lectures (626K), 461 pages of Huangdi Neijing lectures (227K), 216 pages of acupuncture tutorials (347K), and 339 pages of Shennong Bencao Jing transcripts (843K).
+
+The main skill file, SKILL.md, is only 4MB but reaches an information density of 11,169 lines. Version v2.1.0 added 476 lines, with the diagnostic formulas and reasoning model concentrated in lines 6097-6545.
+
+On quality validation: a Darwin skill score of 9.4/10, 10/10 coverage across 10 clinical scenario tests, 100% agreement with source files on dosages checked formula by formula across 11 formulas, and 5 of 6 six-meridian outline clauses matching exactly.
+
+Architecturally it is modular: 9 knowledge modules map to the Shanghan Lun Taiyang chapter / the other five meridians, the case collection, Jingui, Huangdi Neijing, the Liang Dong dialogues, closed-door courses, Hantang, the annotated Huangdi Neijing, and acupuncture plus materia medica. The modules are bidirectionally linked through 11 cross-references, ensuring diagnostic formulas can pinpoint the detailed clauses.
+
+## 5. Use cases and who it's for
+
+**Who it suits**: classic-formula learners who want to look up Ni Haixia's differentiation reasoning and formula choices quickly; AI Agent developers who need expert-level Chinese medicine knowledge in their product; enthusiasts who want "Master Ni's perspective" on health and treatment advice at any time.
+
+**Three typical scenarios**:
+- Everyday cold differentiation: locate the six-meridian pattern from symptoms and get a classic-formula suggestion
+- Formula lookup and comparison: questions such as Minor Bupleurum Decoction, or the difference between raw and prepared aconite
+- Serious disease reference: look up diagnostic approaches for the 147 cancer cases covering liver cancer, breast cancer and more
+
+**Who it does not suit**: acute and critical patients who need professional medical diagnosis (the project explicitly states it is for study and research only); users looking for Western pharmaceutical treatment plans; and readers who do not accept the TCM pattern-differentiation framework.
+
+![](/assets/blog-images/ai-skill-8-13g3mc/img04.webp)
+
+## 6. Competition
+
+| Dimension | nihaixia | Li Ke skill | Hu Xishu skill |
+|:---|:---:|:---:|:---:|
+| Positioning | General teaching (849 cases) | Acute and critical practice | Foremost transmitter of classic formulas |
+| Case count | 849 | 395 | - |
+| Formula count | 129 Shanghan + Jingui | 170+ | - |
+| Core strength | Six-meridian diagnostic formulas + seven-step model | Aconite up to 750g | Six meridians derived from eight principles |
+| Best use | Classic-formula entry and general practice | Acute and critical care | Deep study of the differentiation system |
+
+The three projects form a complementary ecosystem: Ni Haixia covers general teaching, Li Ke focuses on acute and critical care, and Hu Xishu offers the clearest reading of the Shanghan Lun differentiation system. Users can combine them as needed.
+
+## 7. Getting started
+
+**Recommended (one-click install via ClawHub)**:
+
+```bash
+openclaw skills install @jangviktor-web/nihaixia
+```
+
+**Tencent Cloud SkillHub**:
+
+```bash
+curl -fsSL https://skillhub.cn/install/install.sh | bash -s -- --no-skills
+skillhub install nihihaixia-pro
+```
+
+**Manual install**:
+
+```bash
+git clone https://github.com/jangviktor-web/nihaixia.git
+cp -r nihaixia/ ~/.claude/skills/nihaixia/
+```
+
+**Mobile**: download the Tencent IMA app and scan the knowledge code in the project README; no configuration needed.
+
+Once installed, type an activation phrase such as "Ni Haixia" or "Haixia perspective" in the conversation. Minimal example:
+
+> Q: I have a cold, I feel cold, I'm not sweating, and the back of my neck hurts.
+> A: Taiyang cold damage, Ephedra Decoction pattern. No sweating, aversion to cold, body pain: cold binding the exterior. Ephedra opens the pores, Cinnamon Twig releases the muscle layer, Apricot Seed descends qi.
+
+![](/assets/blog-images/ai-skill-8-13g3mc/img05.webp)
+
+## 8. Takeaways and what to do next
+
+The `nihaixia` Skill packs 3.5 million characters of Ni Haixia's Chinese medicine system into 4MB, making it the most complete classic-formula AI knowledge base in the open-source community today. The eight diagnostic formulas, seven-step reasoning model and pulse/tongue quick references added in v2.1.0 upgrade it from "knowledge lookup" to "clinical decision support".
+
+For classic-formula learners: treat it as a portable teaching assistant for Master Ni, validating your differentiation reasoning at any time.
+For AI developers: study its modular design and cross-referencing mechanism to build your own domain Skill.
+For product teams: use it as a fast starting point for a TCM intelligent consultation product prototype.
+
+**Project links**:
+- GitHub: https://github.com/jangviktor-web/nihaixia
+- ClawHub: https://clawhub.ai/jangviktor-web/skills/nihaixia
+- Homepage: https://jangviktor-web.github.io/nihaixia/
+- Tencent IMA: https://ima.qq.com/skill?shareId=70e35c8a24ed4c01a0986f9e3c83f3d1
+
+One-line pitch: invite Ni Haixia into your AI Agent and rethink Chinese medicine through classic-formula thinking.
+
+![](/assets/blog-images/ai-skill-8-13g3mc/img06.webp)

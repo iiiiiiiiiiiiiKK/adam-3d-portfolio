@@ -1,0 +1,157 @@
+---
+title: "Still writing three days of integration code per new service? iii, an 18.5K-star Rust project, packs backend capabilities into a hot-swappable runtime"
+publishedAt: "2026-08-24"
+summary: "Just picked up a new project, you open Confluence and dig through the integration docs: the message queue needs a Kafka consumer, the HTTP gateway needs routes, scheduled jobs need their own scheduler, state needs Redis, observability needs OpenTelemetry, A…"
+image: "/assets/blog-images/iii-18-5-k-star-rust-sd2vyz/img01.webp"
+tags: ["AI", "Agent", "Open Source"]
+author: "Adam"
+---
+![](/assets/blog-images/iii-18-5-k-star-rust-sd2vyz/img01.webp)
+
+## 1. Intro: another new service, another week of integration work
+
+You just picked up a new project, so you open Confluence and dig through the "integration docs": the message queue needs a Kafka consumer, the HTTP gateway needs routes, scheduled jobs need a separate scheduler deployment, state storage needs Redis, observability needs OpenTelemetry instrumentation, and the AI agent needs its own runtime sandbox. Every capability is an island, and just wiring them together takes days.
+
+Observability is the part that really breaks people: team A uses Jaeger, team B uses Datadog, team C hasn't even wired up logs properly. When something breaks you stitch a call chain across four systems, and the time goes into firefighting instead of writing business logic.
+
+This "every new capability = one new integration" pain plays out almost daily in mid-to-large backend teams. **iii**, an open-source project written in Rust, is aimed squarely at it.
+
+![](/assets/blog-images/iii-18-5-k-star-rust-sd2vyz/img02.webp)
+
+## 2. In one sentence: what is this project
+
+**iii** is a real-time service orchestration engine with 18.5K stars on GitHub. The pitch in one sentence: **it packs message queues, HTTP, scheduling, state, streams, agents and observability into a single hot-swappable runtime**.
+
+- **Core positioning**: a zero-integration real-time service bus
+- **Three primitives**: Worker (process) · Function · Trigger
+- **Multi-language SDKs**: Node.js, Python, Rust and Go, all covered
+- **Milestones**: 18,595 stars, distributed across Docker, NPM, PyPI and Crates.io
+
+## 3. Core features in depth
+
+### 1. Three primitives covering every backend scenario
+
+The entire mental model of iii is `Worker · Function · Trigger`.
+
+- **Worker**: any process that can run code can register as a Worker. A TypeScript API service is a Worker, a Python data pipeline is a Worker, a Rust microservice is a Worker. A Worker can even create new Workers at runtime — the foundation for agent self-extension.
+- **Trigger**: any event that "causes a function to run". It can be a direct function call, an HTTP endpoint, a cron schedule, a queue subscription, a state change, a stream event. A Worker just declares "this function responds to this event", and iii's engine handles routing, serialization and delivery.
+- **Function**: a unit of work with a stable ID, named like `content::classify` or `orders::validate`, with contracts on inputs and outputs.
+
+Mapped to code it looks like this:
+
+```bash
+iii worker add queue
+iii worker add agent
+iii worker add observability
+```
+
+One command registers a capability, and the moment it registers it is visible, callable and traceable across the whole system.
+
+### 2. `iii worker add` extends the system in one line
+
+Bringing in a new observability tool used to mean endless glue code; now one line — `iii worker add observability` — puts the capability into the system, tracing included. Same for a new queue: `iii worker add queue` and you're done, no vendor evaluation, procurement and weeks of integration.
+
+Platform teams publish Workers, application teams register Functions and declare Triggers, and agents use the same directory and the same function-calling style — all three roles share one interface.
+
+### 3. Agent-native invocation
+
+When an agent task needs a capability the system doesn't have yet, the agent can add a Worker itself, discover its functions, call them, and trace the results — using the same interface developers use. That means agents are no longer locked into a pre-integrated capability list; they can extend themselves at runtime.
+
+### 4. Real-time observability out of the box
+
+iii-console is a dev-and-ops console written in React + Rust that shows Workers, Functions, Triggers, Queues, Traces, Logs and live status directly. "Open a Trace and you can see it" isn't a slogan — it's literal.
+
+![](/assets/blog-images/iii-18-5-k-star-rust-sd2vyz/img03.webp)
+
+## 4. Technical highlights and performance numbers
+
+- **Rust engine core**: the `engine` directory is the whole runtime; Rust guarantees performance and memory safety, so long-running services don't have to worry about GC pauses.
+- **Declarative Triggers**: Workers only declare "run this function when this happens"; routing, serialization, retries and delivery are all handled by the engine, and business code has no idea whether the layer below is HTTP, a queue or cron.
+- **Agent Skills protocol**: `npx skills add iii-hq/iii/skills` installs readable reference material for agents, covering every primitive — HTTP, queues, cron, state, streams, custom triggers. Each Worker also ships its own Skill, effectively giving agents a manual per Worker.
+- **Full-language SDKs**: Node.js (`pnpm add iii-sdk`), Python (`pip install iii-sdk`), Rust (`crates.io`), Go (`go get`) — a service in any language can register as a Worker.
+- **Ecosystem compatibility**: Docker images, CLI, Console and an official docs site at iii.dev; deployment runs from a single-machine dev setup to container orchestration.
+
+## 5. Use cases and who it's for
+
+- **Use case one: back-office systems with many services and capabilities**. When one project has a web API, scheduled jobs, an AI agent and a message queue, iii puts them in a single runtime with unified observability.
+- **Use case two: agent platform development**. If you want an agent runtime that loads capabilities on demand, iii's "Workers creating Workers" plus "Agent Skills" is a natural fit.
+- **Use case three: platform and infrastructure teams**. When you need to publish a set of reusable capabilities for business teams, iii's Worker directory model was designed for exactly that.
+
+**Who it fits**: mid-to-large backend teams, agent platform builders, architects chasing unified observability, and engineers who like the Rust ecosystem. **Less suited to**: small single-language monoliths, or closed-source commercial products that have concerns about the Elastic License 2.0 (note: the engine is ELv2, while the SDKs and Console are Apache 2.0).
+
+![](/assets/blog-images/iii-18-5-k-star-rust-sd2vyz/img04.webp)
+
+## 6. Comparison with alternatives
+
+| Project | Positioning | How it differs from iii |
+|------|------|----------------|
+| **Temporal** | Workflow orchestration engine | Strong on workflow transactions, but each capability (queue, HTTP, cron) still needs separate integration |
+| **NATS / RabbitMQ** | Messaging middleware | Solves communication, but Worker registration, Trigger declaration and observability are all on you |
+| **MCP (Model Context Protocol)** | Agent tool protocol | Skewed toward agent tool-calling semantics; provides no Worker/Trigger runtime |
+| **iii** | Real-time service bus + primitives | Puts queues, HTTP, cron, state, agents and observability into one hot-swappable runtime |
+
+In one line: **iii doesn't replace a single middleware — it replaces the combination of "several middlewares plus a pile of glue code"**.
+
+![](/assets/blog-images/iii-18-5-k-star-rust-sd2vyz/img05.webp)
+
+## 7. How to get started fast
+
+### 1. Install the CLI in one command
+
+```bash
+curl -fsSL https://install.iii.dev/iii/main/install.sh | sh
+```
+
+### 2. Scaffold a project and start the engine
+
+```bash
+iii project init myapp
+cd myapp
+iii
+```
+
+Once the engine is up, go to `iii worker add` to add capabilities.
+
+### 3. Wire in your first Worker (Node.js example)
+
+```bash
+pnpm add iii-sdk
+```
+
+Write a `worker.ts` that registers a Worker with the SDK and declares its Trigger and Function; once it starts, it shows up in iii-console and can be called directly by other Workers or agents.
+
+### 4. Install Skills for agents
+
+```bash
+npx skills add iii-hq/iii/skills
+npx skills add iii-hq/workers --all
+```
+
+That way agents like Claude and Cursor can "read" all of iii's primitives and proactively call or extend them.
+
+### 5. Advanced tips
+
+- Start by running the built-in Workers `iii-queue`, `iii-state`, `iii-http` and `iii-observability` to get a feel for it.
+- Use iii-console to look at Traces and check whether "observability out of the box" is really all it's cracked up to be.
+- Later, reference the [iii-examples](https://github.com/iii-hq/iii-examples) repo to build more complex business flows.
+
+![](/assets/blog-images/iii-18-5-k-star-rust-sd2vyz/img06.webp)
+
+## 8. Takeaways and next steps
+
+iii's core value compresses into three sentences: **three primitives to unify backend capabilities, one command to extend the runtime, one Trace to see the whole chain**. For teams still losing three days of glue code to every new queue, iii offers a paradigm-level answer.
+
+**Usage advice**:
+1. Get it running locally with the Quickstart first, add two built-in Workers and see the effect.
+2. Pick a service of medium complexity in your team as a pilot and migrate its HTTP, cron and queues to iii.
+3. Once the observability gains are proven, decide whether to roll it out across the stack.
+
+**Project links**:
+
+- GitHub: https://github.com/iii-hq/iii
+- Website and docs: https://iii.dev
+- Worker marketplace: https://workers.iii.dev
+
+**One-line pitch**: if you've had enough of re-integrating every new capability, **iii**'s idea of "packing backend capabilities into a hot-swappable runtime" is worth an afternoon of hands-on testing.
+
+![](/assets/blog-images/iii-18-5-k-star-rust-sd2vyz/img07.webp)

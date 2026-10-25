@@ -1,0 +1,136 @@
+---
+title: "Still clicking your way through the Records of the Grand Historian? This knowledge base brings 577,000 characters to life"
+publishedAt: "2026-06-30"
+summary: "Reading the Shiji usually means hopping between 130 chapters by hand. shiji-kb turns the whole text into a queryable knowledge graph — 14,065 entities, 3,198 events, and 103 SKILL documents instead of a line of traditional code."
+image: "/assets/blog-images/57-1r5adt/img01.webp"
+tags: ["AI", "Agent", "Open Source"]
+author: "Adam"
+---
+![](/assets/blog-images/57-1r5adt/img01.webp)
+
+Choose a title (pick 1 of 3)
+
+Still clicking your way through the Records of the Grand Historian? This knowledge base brings 577,000 characters to life
+
+Shiji knowledge base: 14,065 entities and 3,198 events turn text from two thousand years ago into a queryable database
+
+Not a line of traditional code — AI 'read' the entire Shiji using 103 SKILL documents
+
+## 1. Opening: stop wrestling with it by hand
+
+Reading the Shiji, you want every deed of one figure and you have to flip through a dozen annals and hereditary houses. You want to see how one event unfolded and you shuttle between 130 chapters. You want every point where Xiang Yu and Liu Bang intersect across 577,000 characters and you're down to memory and paper. The sharper sting: experts have repeated that clumsy method for over a thousand years.
+
+## 2. Project overview: what it actually is
+
+**shiji-kb (the Shiji knowledge base)** is an open-source knowledge engineering project that fully structures the 577,000-plus characters of the Shiji. Its core positioning: use AI to convert classical Chinese written two millennia ago into a knowledge graph you can interact with, reason over and query programmatically — and publish the entire pipeline methodology.
+
+As of 2026-05-14 the project has accumulated **14,065 entities, 126,441 annotations, 3,198 historical events and 7,637 event relations**, with a companion Wiki of over **20,830 pages** and a knowledge volume K ≈ 810,000. This isn't another e-book that just puts classical text on a web page. It treats the Shiji as a data source and turns it into a reasoning-capable 'historical database.'
+
+![](/assets/blog-images/57-1r5adt/img02.webp)
+
+## 3. A deep dive into the core features
+
+### 1. Syntax highlighting for 22 entity types
+
+The reader runs NER over the original text and highlights **18 noun categories** — people, places, offices, states, clans, classics and more — plus **4 verb categories**: military, punishment, politics, economics. Click 'Xiang Yu' and you jump to the person page; click 'Kuaiji' and you jump to the place page. It reads like symbol navigation in a modern IDE, and for classical Chinese that's a qualitative upgrade.
+
+The gear button in the top right turns highlighting off for pure reading, and the preference persists.
+
+### 2. Purple Numbers paragraph numbering
+
+A nod to Doug Engelbart: every paragraph gets a unique number you can cite, share and link to precisely. This numbering lets any sentence in the Shiji be located like a line of code — it's the infrastructure that keeps all later annotation, event extraction and AI reflection stable.
+
+### 3. The Shiji metro map
+
+A visual graph of **130 lines × 3,197 stations** with zoom, drag, search and timeline switching. Treat dynasties, people and events as metro lines — the Chu-Han contention becomes the interchange between Line 2 and Line 3. This graph view makes cross-chapter relationship networks visible at a glance.
+
+### 4. Butler Agent and Wiki maintenance
+
+The knowledge base Wiki is maintained by an autonomous AI agent (butler) in rounds. Each round performs one atomic operation, and every 23 rounds are committed as a batch. It has run **12,000+ rounds** (R121 → R12,000), covering stub creation, premium expansion, citation verification, broken-link repair and premium upgrades. Three layers of reflection back it up: W5 process reflection, W9 schema reflection and W11 type audit.
+
+![](/assets/blog-images/57-1r5adt/img03.webp)
+
+## 4. Technical highlights and performance data
+
+**Agentic Ontology, a new paradigm**: traditional ontology building starts from a blank page, top-down, with iteration cycles measured in weeks. This project emerges bottom-up from the raw text, compresses iteration to hours, and scales to thousands of categories and tens of thousands of instances. That's a methodology upgrade for knowledge engineering in the AI era.
+
+**SKILL-driven rather than code-driven**: the pipeline isn't if-else, it's 103 structured natural-language SKILL documents (14 meta-skills plus 89 pipeline skills). This architecture lets historians challenge and improve the rules without knowing how to program, and lets the methodology transfer directly when processing the Book of Han or Zizhi Tongjian.
+
+**Quality assurance**: AI annotation at 90% accuracy plus 5 reflection rounds, 5 days total, about 200 RMB in cost; manual annotation of 577,000 characters from scratch would take an estimated 6–12 months — **roughly a 100× speedup**. Around 28,000 annotation errors have been corrected so far, and the pattern library is up to 134 rules.
+
+**Ecosystem compatibility**: data is released under CC BY-NC-SA 4.0, analysis scripts under MIT, and the source text is public domain. Integration with CHGIS (China Historical GIS) and the Neo4j graph database is already planned.
+
+![](/assets/blog-images/57-1r5adt/img04.webp)
+
+## 5. Where it fits and who it's for
+
+**History enthusiasts**: highlighted reading plus one-click jumps plus a relationship graph — no more Ctrl+F needle-in-a-haystack.
+
+**Academic researchers**: contradiction detection, source tracing, systematic reasoning — archaeology students at Peking University have already tried it in a course on the history of Chinese historiography and sent feedback.
+
+**Content creators**: a source engine for historical fiction, podcasts and short video. Case EP02, "AI Detective: Jing Ke died, Qin Shi Huang kept quiet, so who told the story?", is the full practice run from knowledge graph to audio narrative.
+
+**AI engineers**: a methodology for classical-text knowledge engineering and a reference Agent workflow — this SKILL architecture ports to any annalistic historical material.
+
+Not for: casual readers who only want vernacular translation, or strict textual critics with zero tolerance for AI-generated content.
+
+## 6. How it compares
+
+| Dimension | Traditional e-books (Zhonghua Book Company critical editions, etc.) | Wiki-style classical text projects (Wikisource, etc.) | shiji-kb |
+|------|------------------------------|------------------------|----------|
+| Entity annotation | None | None | 22 types, 126K annotations |
+| Event structuring | None | None | 3,198 events, 98.7% with annotated Gregorian years |
+| Relational reasoning | None | Weak links | 7,637 relations, 9 types |
+| Contradiction detection | None | None | Automatic scan across 130 chapters |
+| Transferable methodology | N/A | N/A | 103 SKILLs, reusable |
+| Open license | Commercial copyright | CC BY-SA | CC BY-NC-SA + MIT |
+
+Core difference: shiji-kb isn't a better electronic edition of the Shiji — it's a reasoning-capable Shiji database plus a reusable methodology for processing classical texts.
+
+![](/assets/blog-images/57-1r5adt/img05.webp)
+
+## 7. Getting started
+
+**Option one: try it online**
+
+- Main site: [baojie.github.io/shiji-kb](https://baojie.github.io/shiji-kb)
+- Mirror (faster in China): [shiji.memify.wiki](https://shiji.memify.wiki/)
+- Recommended chapters: "Basic Annals of Xiang Yu", "Biographies of Assassins", "Hereditary House of Confucius"
+
+**Option two: run the Wiki locally**
+
+```bash
+git clone https://github.com/baojie/shiji-kb.git
+cd shiji-kb
+python3 wiki/server/serve.py wiki/public 8000
+# open http://localhost:8000 in your browser
+```
+
+**Option three: reproduce the whole pipeline**
+
+Follow the SKILL index (`skills/INDEX.md`) in order, starting from `SKILL_01_古籍校勘.md`, and read alongside documents such as "How the Shiji syntax highlighting was built" to work through the nine-step pipeline.
+
+**Advanced suggestion**: read "Agentic Ontology 101" first for the methodology, then the 425-page PDF collection of the 14 meta-skills, and finally dig into whichever pipeline skill interests you.
+
+![](/assets/blog-images/57-1r5adt/img06.webp)
+
+## 8. Summary and what to do next
+
+The core value of shiji-kb is turning classical Chinese from two thousand years ago into a reasoning-capable data asset, and using a transferable SKILL architecture so that each new classical text costs less to process than the last.
+
+**Suggestions**:
+1. History enthusiasts: go straight to the main site and start with the "Basic Annals of Xiang Yu" to try the metro map;
+2. Academic researchers: look at the 12 in-depth cases in "contradiction analysis" and the "source reasoning lab" first;
+3. AI engineers: focus on the Agentic Ontology docs and the big pipeline.svg diagram.
+
+**Project links**:
+- GitHub: [github.com/baojie/shiji-kb](https://github.com/baojie/shiji-kb)
+- Read online: [baojie.github.io/shiji-kb](https://baojie.github.io/shiji-kb)
+- Wiki: [baojie.github.io/shiji-kb/wiki/](https://baojie.github.io/shiji-kb/wiki/)
+- Feedback: GitHub Issues (a screenshot plus one sentence works best)
+
+**One-line pitch**: this is the first open project that treats the Shiji as a data source instead of a text to be engineered — it doesn't just help you understand a story from two thousand years ago, it lets you see how a machine 'reasons' hidden historical patterns out of classical Chinese.
+
+![](/assets/blog-images/57-1r5adt/img07.webp)
+
+#shiji-kb #ShijiKb #baojie #OpenSource #GitHub

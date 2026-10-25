@@ -1,0 +1,98 @@
+---
+title: "Stop burning $200 a month on OpenAI Operator"
+publishedAt: "2026-04-25"
+summary: "Operator costs $200 a month, runs in the cloud, and locks you to one model. Nanobrowser is a 14K-star open-source Chrome extension that puts multi-agent browser automation in your local browser, running on whatever LLM you pick — including Ollama and DeepSeek."
+image: "/assets/blog-images/openai-operator-200-1iekkt/img01.webp"
+tags: ["AI", "Agent", "Open Source"]
+author: "Adam"
+---
+![](/assets/blog-images/openai-operator-200-1iekkt/img01.webp)
+
+Title options (pick 1 of 3)
+
+Stop burning $200 a month on OpenAI Operator
+
+A 14K-star open-source gem: Nanobrowser makes browser automation cost nothing
+
+Zero LLM spend: he built a multi-agent web workflow out of an open-source extension
+
+# Stop burning $200 a month on OpenAI Operator
+
+## 1. Intro: why is your browser automation tool this expensive?
+
+For product research, you open five competitor sites, scrape their pricing, grab screenshots, then organize everything into a spreadsheet. For cross-border e-commerce, you log into three platforms every day, export orders and reconcile inventory. For content ops, you open news sites one by one, copy headlines, extract the key facts and summarize. These workflows are mechanical but slow: do them by hand and you lose an afternoon; write a script and you fight Selenium and anti-bot measures for just as long.
+
+So plenty of people pin their hopes on AI browser agents like OpenAI Operator. The reality: a $200-a-month subscription, a high barrier to entry, private data uploaded to the cloud, and a fixed model you can't swap. Want to run it locally? Want a cheaper model? Want DeepSeek or local Ollama? Not a chance.
+
+Nanobrowser, the project we're looking at today, aims straight at those pain points. It has picked up 14,000+ stars on GitHub: an open-source Chrome extension that stuffs multi-agent browser automation into your local browser, skipping the subscription, paying per usage, and staying fully under your control.
+
+![](/assets/blog-images/openai-operator-200-1iekkt/img02.webp)
+
+## 2. Project overview: a free, open-source AI browser agent
+
+Nanobrowser's positioning is clear — an open-source, self-hostable Chrome extension that uses multi-agent collaboration to complete complex web automation tasks. It isn't another ChatGPT wrapper; it's an open-source replacement for OpenAI Operator. Four core keywords: **multi-agent architecture, bring-your-own LLM, local execution, fully open source under Apache 2.0**. It currently sits at 14,023 GitHub stars, the main repo is written in TypeScript, and it follows the Manifest V3 spec.
+
+## 3. Core features in depth
+
+### 1. Planner + Navigator multi-agent collaboration
+
+Nanobrowser splits a task between two roles: `Planner` thinks and plans, `Navigator` drives the browser. Planner breaks a complex task into sub-steps; Navigator actually clicks, types, scrolls and scrapes data. When it hits an obstacle, Planner adjusts the plan on the fly and tells Navigator to retry or take another route. That division of labor lets even a small 7B model handle navigation while the heavy reasoning goes to a stronger model, so both cost and stability come out better.
+
+![](/assets/blog-images/openai-operator-200-1iekkt/img03.webp)
+
+### 2. Flexible multi-LLM support
+
+Nanobrowser natively supports OpenAI, Anthropic, Gemini, DeepSeek, Grok, Azure OpenAI, OpenRouter, Ollama, and any custom OpenAI-compatible endpoint. More interesting: Planner and Navigator can run on different models. Let Claude Sonnet 5.5 do the planning and Claude Haiku 4.5 do the execution; or run the whole pipeline on a local Qwen3-30B-A3B-Instruct for zero API cost. On a tight budget, Gemini Flash is cheap and it works.
+
+### 3. Local execution, data never leaves the browser
+
+Every inference call goes out with your own API key, or runs entirely through local Ollama. Nanobrowser itself collects no data and has no middleman server. For workflows involving accounts, cookies or form contents, the data stays on your machine the whole time.
+
+### 4. Task history and follow-up questions
+
+The sidebar keeps a built-in conversation log: after a task finishes you can ask follow-ups, reuse it, or archive it. A scraping flow from the last run can be executed again with a different set of parameters, so you don't have to retype the instructions.
+
+![](/assets/blog-images/openai-operator-200-1iekkt/img04.webp)
+
+## 4. Technical highlights and performance numbers
+
+Nanobrowser is built on WXT + Manifest V3, with HMR during development, and its extension ID stays stable across reloads. Under the hood it uses Puppeteer to control the browser and the Vercel AI SDK to unify multi-model calls, and borrows Browser-Use's navigation abstraction.
+
+Local model combinations the community has actually tested and recommends: Qwen3-30B-A3B-Instruct-2507, Falcon3 10B, Qwen 2.5 Coder 14B and Mistral Small 24B all work. For the best value, run `Planner` on Gemini 3.5 Flash-Lite and `Navigator` on Gemini 3.5 Flash-Lite — a single task can cost just a few cents.
+
+## 5. Use cases and who it's for
+
+**Use cases**: (1) day-to-day cross-border e-commerce operations (orders, inventory and pricing scraped across platforms); (2) content operations (scheduled news scraping, trending-topic roundups, briefing generation); (3) product and competitor research (bulk product data collection, comparison tables); (4) automated testing (simulating user click paths, regression checks).
+
+**Who it fits**: budget-conscious indie developers, enterprise teams that need data processed locally, and engineers researching multi-agent systems.
+
+**Who it doesn't fit**: absolute beginners who want click-and-go and don't want to configure an API key. Firefox and Safari users are out of luck for now — the official promise covers only full support on Chrome and Edge.
+
+## 6. Comparison with alternatives
+
+| Dimension | Nanobrowser | OpenAI Operator | Traditional RPA (e.g. UiPath) |
+|------|------------|----------------|----------------------|
+| Price | Free (pay only for LLM usage) | $200/month | Expensive enterprise licensing |
+| Model choice | OpenAI/Claude/Gemini/DeepSeek/Ollama, anything | Fixed GPT series | Usually no AI at all |
+| Data privacy | Runs in the local browser | Processed in the cloud | On-prem, but complex |
+| Multi-agent | Planner + Navigator collaboration | Single agent | Usually none |
+| Open source | Apache 2.0 | Closed source | Partly closed |
+| Setup effort | Install extension + add key, a few minutes | Sign up, subscribe | Weeks to months |
+
+## 7. How to get started fast
+
+Fastest route: search for "Nanobrowser" in the Chrome Web Store, hit "Add to Chrome", and you're done in seconds. If you want the latest build, download `nanobrowser.zip` from the GitHub Releases page, unzip it, then turn on "Developer mode" in `chrome://extensions/` → "Load unpacked".
+
+First run: click the toolbar icon to open the sidebar, go to Settings and enter your API key, then pick a model for Planner and Navigator separately. To run locally, put Ollama's `http://localhost:11434/v1` in as a custom Base URL.
+
+Going further: building from source needs Node.js 24 LTS + pnpm 10+, and `pnpm install && pnpm build` produces the production bundle. For development, `pnpm dev` starts HMR — change a line of code and it hot-reloads instantly.
+
+![](/assets/blog-images/openai-operator-200-1iekkt/img05.webp)
+
+## 8. Takeaways and next steps
+
+With the combination of open source + multi-agent + multi-model + local execution, Nanobrowser hands browser automation — something previously reserved for the big players — to ordinary developers. For teams that want to save the $200 a month, keep their data in their own hands, and switch LLMs freely, it offers an entry point that costs essentially nothing.
+
+**Reasons it's worth a try**: 14K stars of community validation, Apache 2.0 and commercially friendly, zero cost with local Ollama, and support for domestic models like DeepSeek. Head to https://github.com/nanobrowser/nanobrowser and leave a star, or go straight to https://nanobrowser.ai to download it and keep that $200 a month in your pocket.
+
+#nanobrowser #Nanobrowser #AIAgents #AIWorkflows #Automation #OpenSource #GitHub

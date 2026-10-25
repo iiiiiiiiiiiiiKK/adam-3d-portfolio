@@ -1,0 +1,139 @@
+---
+title: "A 20K-star skill router for security work: stop making AI guess commands and get 4x faster at reverse engineering and pentesting"
+publishedAt: "2026-09-18"
+summary: "AI assistants are good at writing code but bad at choosing security tooling. reverse-skill routes a task to the right methodology, bootstraps the local toolchain and keeps an auditable evidence trail — for APK reversing, pentesting, CTF and more."
+image: "/assets/blog-images/20-k-star-ai-4-1vyla1/img01.webp"
+tags: ["AI", "Open Source", "Docs"]
+author: "Adam"
+---
+![](/assets/blog-images/20-k-star-ai-4-1vyla1/img01.webp)
+
+## 1. Intro: why you need this tool
+
+When you're doing reverse engineering, an AI assistant facing an APK sample often gets stuck at the first choice: decompile with jadx, or go straight to Frida dynamic hooking? When the encryption parameters in front-end JS won't crack, do you hang BurpSuite and capture traffic, or analyze the obfuscated opcode VM? Worse, on the same machine IDA, Ghidra, radare2, apktool and yara are scattered all over the place, so every task means digging through docs again, guessing commands, and stepping on the same trap.
+
+An internal 2025 survey by a Chinese security team found that security researchers waste 40% of their working time on "picking tools + tuning the environment + trying commands", leaving less than 30% for actual vulnerability analysis and report writing. AI is good at writing code, but what it lacks is a set of "skill routing" for reverse engineering, pentesting and security research scenarios — hand it an APK and it doesn't know what step one is; hand it a chunk of obfuscated JS and it generates a pile of pseudo-code that won't execute.
+
+`reverse-skill` exists to fix exactly this: after an AI agent receives a task, it routes itself to the right methodology, checks the local toolchain, executes a reproducible workflow, and turns what it learned into a reusable knowledge base.
+
+![](/assets/blog-images/20-k-star-ai-4-1vyla1/img02.webp)
+
+## 2. Project overview: what it is in one sentence
+
+`reverse-skill` is a **security skill routing package for AI coding clients**, with more than **20,274** GitHub stars, main repo version v1.0.0, compatible with Claude Code, Kiro, Cursor, Cline and other mainstream AI code clients. It's made of four core modules: automatic AI routing + on-demand toolchain bootstrap + a self-evolving experience base + ops contract auditing. It covers 20+ security research scenarios, including APK reversing, ELF binaries, front-end JS encryption, CTF, pentesting, IoT firmware and LLM security.
+
+Four keywords capture the core features: **Routing**, **Bootstrap**, **Evolution** and **Ops**. It isn't a tool — it's a methodology scheduling layer on top of your tools.
+
+![](/assets/blog-images/20-k-star-ai-4-1vyla1/img03.webp)
+
+## 3. Core features in depth
+
+### 1. AI routing: the end of guessing commands
+
+Conventional AI assistants handling a security task tend to just print `jadx-cli` commands without checking whether a JDK is even installed. `reverse-skill`'s `master-route.ps1` script acts as first-level triage: after receiving the task it reads `RULES.md` for global rules, loads `case-init` to generate a scope (authorization + network profile), and finally dispatches the task to the matching scenario skill (apk-reverse, js-reverse, pwn-chain and so on).
+
+The routing matrix in `skills/routing.md` maps task types to precise methodologies: APK → jadx/apktool; ELF binaries → IDA/radare2; front-end JS encryption → Reqable MCP + js-reverse; CTF → CTF-Sandbox-Orchestrator (with 40+ sub-skills built in). This matrix isn't static documentation — it filters out tools that aren't installed locally based on `tool-index.md`, so the AI stops handing you "air commands".
+
+### 2. On-demand toolchain bootstrap: fill in whatever is missing
+
+The repo ships `refresh-tool-index.ps1` (Windows) and `refresh-tool-index.sh` (Linux/macOS). Running them scans the machine for installed tools such as jadx, frida, nmap, ghidra and burpsuite-mcp, and generates the `skills/tool-index.md` index. Before dispatching a task, the AI checks that table and, when something is missing, either tells the user where to install it or switches to an alternative.
+
+Platform differentiation is another highlight: Kali Linux users run `kali/scripts/refresh-tool-index.sh`, which recognizes Kali's preinstalled security toolset automatically; Ubuntu/Debian and macOS each have their own deployment docs, `docs/platforms/linux.md` and `docs/platforms/macos.md`. This bootstrap mechanism means the AI no longer depends on a hardcoded tool list.
+
+### 3. A self-evolving experience base: field-journal and the Evidence chain
+
+After every task, contract files under `skills/ops/` force three kinds of records: Evidence (raw evidence, such as a dumped dex or a post-hook memory snapshot), Finding (the vulnerability or logic discovery) and Path (the reproduction path). These records go into `field-journal/`, and the next time a similar task fires, the AI searches past experience first and reuses the methodology instead of stepping on the same trap again.
+
+Take OLLVM deobfuscation: the repo ships `skills/reverse-engineering/references/ollvm-deobfuscation.md`, paired with `skills/reverse-engineering/dsl-vm-reverse/` for custom opcode VMs. When the AI handles an obfuscated sample, it first checks the journal for similar cases, then decides between an llvm-pass and unicorn emulation.
+
+### 4. Ops contract auditing: the scope gate holds the compliance line
+
+Authorization auditing is the first gate of security research. `RULES.md` mandates that before any "ACT-class" operation, the AI must complete `case-init` and generate scope.md (explicit authorization scope + network profile). Active scanning of unauthorized targets is forbidden; dynamic execution of unauthorized samples is forbidden. This "scope gate before ACT" mechanism writes compliance constraints into the routing layer instead of relying on users' good intentions.
+
+![](/assets/blog-images/20-k-star-ai-4-1vyla1/img04.webp)
+
+## 4. Technical highlights and performance numbers
+
+- **Scenario coverage**: 20+ main scenarios + 40+ CTF sub-skills, 60+ independent skill modules in total.
+- **AI client compatibility**: Claude Code, Codex CLI, Cursor, Cline and Kiro are all supported, plugged in through a unified `RULES.md` + `MASTER-ROUTING.md` protocol.
+- **Toolchain ecosystem**: integrates 30+ mainstream security tools — jadx, apktool, Frida, IDA Pro, radare2, Ghidra, nmap, burpsuite-mcp, yara and more — covering static analysis, dynamic debugging, traffic capture and vulnerability scanning end to end.
+- **Architectural novelty**: methodology (`routing.md`), toolchain (`tool-index.md`), experience base (`field-journal`) and compliance contract (`ops/`) are decoupled into four layers, each upgradable on its own.
+- **Protocol design**: `README_AI.md` is the bootstrap entry point written for AI agents, with a strict instruction sequence — an engineering attempt by the author to control AI behavior.
+
+![](/assets/blog-images/20-k-star-ai-4-1vyla1/img05.webp)
+
+## 5. Where it fits and who it's for
+
+**Typical use cases:**
+
+1. **Mobile app security audits**: you get an APK and have two hours to decompile it, locate vulnerabilities and produce a report; `reverse-skill` orchestrates the jadx + Frida + MobSF workflow for you.
+2. **CTF competitions**: Crypto/Misc/Reverse/Pwn run in parallel, and CTF-Sandbox-Orchestrator provides routing across 40+ sub-skills, with the AI identifying the challenge type and loading the matching template.
+3. **Red team pentesting**: from recon to exploitation to reporting, `skills/pentest-tools/` + `skills/attack-chain/` chain into a complete attack path, with the scope gate preventing overreach.
+
+**Who it's for:** security researchers, CTF players, pentest engineers, mobile security auditors, and researchers working at the AI + security intersection.
+
+**Who it's not for:** complete beginners (you need some grounding in reversing and pentesting concepts first); people who just want an out-of-the-box GUI tool (this is a routing package, not GUI software); and anyone planning to use it without authorization (the project explicitly emphasizes Authorized Pentesting).
+
+## 6. Competitive comparison
+
+| Project | Positioning | AI routing | Tool bootstrap | Experience capture | Compliance audit | Stars |
+|------|------|---------|----------|----------|----------|---------|
+| **reverse-skill** | AI security skill router | ✅ All scenarios | ✅ Auto scan | ✅ field-journal | ✅ scope gate | 20,274 |
+| BurpSuite plugin ecosystem | Traffic analysis toolset | ❌ | ❌ | ❌ | ❌ | — |
+| MobSF | Mobile security framework | ❌ | ❌ | ❌ | ❌ | 10k+ |
+| Hand-rolled prompt library | Scattered experience | ❌ Manual | ❌ | ❌ Manual curation | ❌ | — |
+| Pentest Swarm AI | Red team orchestration | Partial | ❌ | ❌ | Partial | — |
+
+By comparison, `reverse-skill`'s differentiation is **packaging AI routing, tool bootstrap, experience capture and compliance auditing into a single protocol**. However powerful BurpSuite plugins get, they're built for humans; a hand-rolled prompt library can't reuse experience across tasks; Pentest Swarm AI leans red team and doesn't open-source its core code. `reverse-skill` opens its core under MIT, paired with the GPLv3 CTF-Sandbox-Orchestrator submodule, balancing openness and compliance.
+
+![](/assets/blog-images/20-k-star-ai-4-1vyla1/img06.webp)
+
+## 7. Getting started fast
+
+**Environment setup:**
+
+- JDK (a dependency of jadx/apktool)
+- Node.js 22.12+ (JS toolchain and MCP services)
+- Python 3.x (Frida and helper scripts)
+- A coding AI client: Claude Code / Cursor / Cline, your pick
+
+**Three-step deployment:**
+
+1. Clone the repo:
+   `git clone https://github.com/zhaoxuya520/reverse-skill.git`
+
+2. Refresh the tool index (pick the command for your platform):
+   - Windows: `powershell -File skills/scripts/refresh-tool-index.ps1`
+   - Linux/macOS: `bash skills/scripts/refresh-tool-index.sh`
+   - Kali: `bash kali/scripts/refresh-tool-index.sh`
+
+3. Load it into your AI client: feed `README_AI.md` to Claude Code or Cursor and let the AI initialize the workspace following the bootstrap instructions.
+
+**Minimal working example:**
+
+With an APK sample in hand, type this in your AI client: "Analyze samples/test.apk following the reverse-skill flow". The AI routes itself to `skills/apk-reverse/`, runs `case-init` to generate scope.md, calls jadx to decompile, and outputs a timeline plus evidence records.
+
+**Advanced tips:**
+
+- Read `skills/MASTER-ROUTING.md` first (the PRIMARY fast path) to understand routing priority
+- Use `skills/scripts/master-route.ps1` for a one-off triage test
+- For long-term use, add the `work/` directory to gitignore and keep case data local
+
+## 8. Summary and next steps
+
+`reverse-skill`'s core value: **it packages the methodology, toolchain, experience and compliance of security research into a protocol an AI can consume**. For people already using AI for security research, it solves the root problem of "the AI doesn't know what to do next"; for security engineers still flipping through docs and tuning environments by hand, it can compress that 40% of repetitive work to under 10%.
+
+**Recommendations:**
+
+- Security researchers: start with CTF scenarios — CTF-Sandbox-Orchestrator's 40+ sub-skills show results immediately
+- Pentest engineers: start from `skills/pentest-tools/`, run one complete case with the scope gate to validate the compliance flow
+- AI tool developers: study the protocol design of `RULES.md` + `MASTER-ROUTING.md`; it's a model for writing "OS-level instruction sets" for AI agents
+
+**Project links:**
+
+- GitHub: https://github.com/zhaoxuya520/reverse-skill
+- Chinese docs: `README_zh.md`
+- AI entry point: `README_AI.md`
+- Contact: ww7517437@gmail.com / QQ group 942400892 / Discord reverse-skill
+
+**One-line pitch:** if you use AI for security research and keep getting stuck on guessing commands, `reverse-skill` is the missing routing layer.

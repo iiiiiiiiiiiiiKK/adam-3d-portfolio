@@ -7,16 +7,9 @@ import { Textarea } from "./ui/ace-textarea";
 import { cn } from "@/lib/utils";
 import { useToast } from "./ui/use-toast";
 import { Button } from "./ui/button";
-import { config } from "@/data/config";
+import { getSiteConfig } from "@/data/config";
 import { z } from "zod";
-
-const formSchema = z.object({
-  fullName: z.string().min(2, "Full name must be at least 2 characters"),
-  email: z.string().email("Please enter a valid email address"),
-  message: z.string().min(10, "Message must be at least 10 characters"),
-});
-
-type FieldErrors = Partial<Record<keyof z.infer<typeof formSchema>, string>>;
+import { useI18n } from "@/i18n/context";
 
 /**
  * Static-site friendly contact form. There is no backend on this deployment,
@@ -24,6 +17,21 @@ type FieldErrors = Partial<Record<keyof z.infer<typeof formSchema>, string>>;
  * nothing is sent anywhere until they hit send themselves.
  */
 const ContactForm = () => {
+  const { locale, t } = useI18n();
+  const config = getSiteConfig(locale);
+
+  const formSchema = React.useMemo(
+    () =>
+      z.object({
+        fullName: z.string().min(2, t.form.errors.name),
+        email: z.string().email(t.form.errors.email),
+        message: z.string().min(10, t.form.errors.message),
+      }),
+    [t]
+  );
+
+  type FieldErrors = Partial<Record<"fullName" | "email" | "message", string>>;
+
   const [fullName, setFullName] = React.useState("");
   const [email, setEmail] = React.useState("");
   const [message, setMessage] = React.useState("");
@@ -46,15 +54,15 @@ const ContactForm = () => {
       return;
     }
 
-    const subject = `Hello from ${fullName}`;
+    const subject = locale === "en" ? `Hello from ${fullName}` : `来自 ${fullName} 的问候`;
     const body = `${message}\n\n——\n${fullName}\n${email}`;
     window.location.href = `mailto:${config.email}?subject=${encodeURIComponent(
       subject
     )}&body=${encodeURIComponent(body)}`;
 
     toast({
-      title: "邮件已准备好",
-      description: "已打开你的邮件客户端，点发送即可。",
+      title: t.form.toastTitle,
+      description: t.form.toastDesc,
       variant: "default",
       className: cn("top-0 mx-auto flex fixed md:top-4 md:right-4"),
     });
@@ -64,10 +72,10 @@ const ContactForm = () => {
     <form className="w-full mx-auto sm:mt-4" onSubmit={handleSubmit}>
       <div className="flex flex-col md:flex-row gap-4 mb-4">
         <LabelInputContainer>
-          <Label htmlFor="fullname">称呼</Label>
+          <Label htmlFor="fullname">{t.form.name}</Label>
           <Input
             id="fullname"
-            placeholder="你的名字"
+            placeholder={t.form.namePlaceholder}
             type="text"
             value={fullName}
             onChange={(e) => {
@@ -75,15 +83,13 @@ const ContactForm = () => {
               setErrors((p) => ({ ...p, fullName: undefined }));
             }}
           />
-          {errors.fullName && (
-            <p className="text-sm text-red-500">{errors.fullName}</p>
-          )}
+          {errors.fullName && <p className="text-sm text-red-500">{errors.fullName}</p>}
         </LabelInputContainer>
         <LabelInputContainer>
-          <Label htmlFor="email">邮箱</Label>
+          <Label htmlFor="email">{t.form.email}</Label>
           <Input
             id="email"
-            placeholder="you@example.com"
+            placeholder={t.form.emailPlaceholder}
             type="email"
             value={email}
             onChange={(e) => {
@@ -91,15 +97,13 @@ const ContactForm = () => {
               setErrors((p) => ({ ...p, email: undefined }));
             }}
           />
-          {errors.email && (
-            <p className="text-sm text-red-500">{errors.email}</p>
-          )}
+          {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
         </LabelInputContainer>
       </div>
       <div className="grid w-full gap-1.5 mb-4">
-        <Label htmlFor="content">想聊的事</Label>
+        <Label htmlFor="content">{t.form.message}</Label>
         <Textarea
-          placeholder="项目、合作，或者只是打个招呼。"
+          placeholder={t.form.messagePlaceholder}
           id="content"
           value={message}
           onChange={(e) => {
@@ -107,19 +111,15 @@ const ContactForm = () => {
             setErrors((p) => ({ ...p, message: undefined }));
           }}
         />
-        {errors.message && (
-          <p className="text-sm text-red-500">{errors.message}</p>
-        )}
-        <p className="text-sm text-muted-foreground">
-          点击发送会调用你自己的邮件客户端，内容不经过任何第三方服务。
-        </p>
+        {errors.message && <p className="text-sm text-red-500">{errors.message}</p>}
+        <p className="text-sm text-muted-foreground">{config.contact.formNote}</p>
       </div>
       <Button
         className="bg-gradient-to-br relative group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600 block dark:bg-zinc-800 w-full text-white rounded-md h-10 font-medium shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset]"
         type="submit"
       >
         <div className="flex items-center justify-center">
-          发送邮件 <ChevronRight className="w-4 h-4 ml-4" />
+          {t.form.send} <ChevronRight className="w-4 h-4 ml-4" />
         </div>
         <BottomGradient />
       </Button>

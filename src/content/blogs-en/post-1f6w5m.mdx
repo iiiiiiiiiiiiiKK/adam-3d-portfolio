@@ -1,0 +1,146 @@
+---
+title: "Why do the images in your Chinese articles always feel a little off?"
+publishedAt: "2026-10-11"
+summary: "Anyone who writes long-form Chinese posts knows the stall: the draft is done, the illustrations won't come. This 9.3K-star Codex Skill turns the judgments, flows and metaphors inside an article into white-background hand-drawn images."
+image: "/assets/blog-images/post-1f6w5m/img01.webp"
+tags: ["AI", "Agent", "Open Source"]
+author: "Adam"
+---
+![](/assets/blog-images/post-1f6w5m/img01.webp)
+
+## 1. Opening: why you need this tool
+
+Anyone who writes long-form Chinese articles knows the pain: the piece is finished, and the illustration step stalls.
+
+You open Midjourney or GPT-4o, type a prompt, and what comes back is either a PPT-style infographic, or a flat illustration polished to the point of having no personality, or some random mascot smiling in the corner.
+
+Worse, what you want is not "a nice-looking image" but "an image of the core judgment in the article" — something like "trust is paved one piece of evidence at a time", that kind of cognitive move. AI doesn't get it, designers don't get it, and in the end you drop in a landscape photo with zero information gain just to fill the space.
+
+`helloianneo/ian-xiaohei-illustrations`, with 9.3K stars on GitHub, solves exactly this problem: it is not a prompt collection but a Skill for the Codex Agent, built to turn the judgments, workflows, states and metaphors in Chinese articles into white-background, hand-drawn, weird-but-clean body illustrations.
+
+![](/assets/blog-images/post-1f6w5m/img02.webp)
+
+## 2. What it is: one sentence
+
+`ian-xiaohei-illustrations` is a Codex Skill that guides an AI agent to generate "weird Xiaohei body illustrations" for Chinese articles.
+
+Four core features:
+
+- **16:9 white-background hand-drawn style**: pure white background, black hand-drawn line work, fine lines with a slight wobble — clearly distinct from PPT infographics and commercial illustration.
+- **Xiaohei carries the action**: the default visual IP "Xiaohei" is a small character — solid black, white dot eyes, thin legs, blank expression — that carries the core cognitive action in the frame. It is not decoration.
+- **A few Chinese annotations in red, orange and blue**: handwritten annotations are minimal and the palette is restrained; each image expresses exactly one core structure.
+- **Shot list before images**: the Skill flow forces a planning list of 4-8 images (theme, core meaning, structure type, Xiaohei's action) before any image is generated.
+
+The project has 9359 stars in total; together with the author Ian's companion projects `ian-handdrawn-ppt` and `obsidian-ai-second-brain`, it forms a complete content-production toolchain for a one-person AI company.
+
+## 3. Core features in depth
+
+### 1. Extracting cognitive anchors
+
+Step one of the Skill is "read the article, find the anchors". It forces the AI to pick the passages that genuinely deserve an illustration — usually a cognitive turn, a process structure, a state comparison, or a visualizable metaphor. This mechanism avoids the useless output of "illustrating for the sake of illustrating".
+
+### 2. Shot list first
+
+Before generating images, the Skill requires the AI to output a complete shot list: which paragraph each image follows, what the theme is, the core meaning, the structure type (Workflow / system detail / before-after / character state / conceptual metaphor and 8 types in total), what Xiaohei is doing, and the suggested Chinese annotation words. This step turns "blind-box image generation" into "shooting from a script".
+
+### 3. Reinventing physical metaphors
+
+The Skill asks the AI to invent a new low-tech, weird but coherent physical metaphor for every image instead of reusing old cases. The example images — "one fish, many meals", "idea press", "information well", "trust bridge" — are each an independent little metaphor system. This constraint gives the images a memorable hook and binds them tightly to the article's content.
+
+### 4. Xiaohei must carry the core action
+
+This is the hardest rule in the Skill: "if the image still works completely without Xiaohei, then Xiaohei is too decorative." This QA rule guarantees that the Xiaohei IP is not a mascot sticker but an absurd worker taking part in the system's operation.
+
+![](/assets/blog-images/post-1f6w5m/img03.webp)
+
+### 5. Non-PPT style constraints
+
+The outputs the Skill explicitly forbids include: PPTX / PDF / Keynote, editable SVG / HTML graphics, commercial poster covers, and text-heavy infographics. What it wants is not a "universal image" but an "article-specific image".
+
+### 6. Edit and regenerate workflow
+
+For the problems common to AI images — typos, hallucinated labels, style drift — the Skill provides fine-grained editing commands such as "remove the title", "fewer annotation words" and "regenerate by paragraph", so users can iterate without throwing away the whole image.
+
+## 4. Technical highlights and performance data
+
+- **Modular style DNA**: five reference documents — `references/style-dna.md`, `xiaohei-ip.md`, `composition-patterns.md`, `prompt-template.md`, `qa-checklist.md` — split the visual rules into independently maintainable modules. Adding a style or adjusting the whitespace ratio means editing one file.
+- **8 composition patterns**: Workflow, system detail, before-after, character state, conceptual metaphor, layered method, map route, and mini comic panels — covering 90% of the visualization needs of technical and methodology articles.
+- **OpenAI Agent compatible**: the repo ships `agents/openai.yaml`, which Codex and compatible agent frameworks can load directly with no extra wrapper.
+- **Open source under MIT**: free for commercial use, modification and redistribution; together with the author's `Awesome Claude Code Skills` it forms an ecosystem.
+- **Built-in QA checklist**: white background, whitespace, Xiaohei's action, Chinese annotations, non-PPT feel, no reuse of old cases — six automatic checks written into `qa-checklist.md` and run against every generated image.
+
+## 5. Use cases and audience
+
+**A great fit for**:
+
+1. **Knowledge-oriented WeChat accounts / bloggers**: people writing long Chinese articles who need 4-8 consistently styled body illustrations, and those illustrations must deliver a cognitive gain.
+2. **Methodology content creators**: people working on AI workflows, indie making or content-production methodology who need to turn abstract judgments into visual metaphors.
+3. **Notion / Obsidian knowledge-base users**: people using AI to organize a personal knowledge base who want every document image to share one visual language.
+
+**Not a fit for**:
+
+1. Design needs that call for commercial posters, brand key visuals or polished flat illustrations.
+2. Print material that requires editable vector source files (SVG/AI).
+3. Content that needs children's cartoons, cute IPs or sticker-pack styles.
+
+![](/assets/blog-images/post-1f6w5m/img04.webp)
+
+## 6. Comparison with alternatives
+
+| Project | Positioning | Visual style | Chinese support | Shot list flow |
+|-----|------|---------|---------|---------------|
+| **ian-xiaohei-illustrations** | Body-illustration Skill for Chinese articles | 16:9 white-background hand-drawn, Xiaohei IP, weird | Native Chinese annotations | ✅ Required first |
+| Generic Midjourney prompt collections | Illustration for every use case | Style varies | Weak | ❌ |
+| Canva / Figma templates | Infographics / posters | Flat PPT style | Handwriting possible | ❌ |
+| Napkin.ai and similar AI infographics | Structure diagrams / flowcharts | Modern flat | Weak | ❌ |
+
+The core difference: `ian-xiaohei-illustrations` has extremely high visual recognition (one glance and you know it is "Xiaohei style"), and it turns the whole chain of "understand the article → invent a metaphor → visualize" into a standardized process rather than a one-off prompt.
+
+## 7. Quick start
+
+### Install
+
+Clone the repo and copy the skill subdirectory into the Codex skills directory:
+
+```bash
+git clone https://github.com/helloianneo/ian-xiaohei-illustrations.git
+mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills"
+cp -R ./ian-xiaohei-illustrations/ian-xiaohei-illustrations "${CODEX_HOME:-$HOME/.codex}/skills/"
+```
+
+### Minimal working example
+
+Paste this into Codex:
+
+```text
+Use $ian-xiaohei-illustrations to design and generate 5 weird Xiaohei body illustrations for this Chinese article.
+```
+
+If you only want the plan and no images yet:
+
+```text
+Use $ian-xiaohei-illustrations, but don't generate images yet.
+Analyze the article below, find the parts worth illustrating, and output a shot list of about 5 images.
+```
+
+### Going further
+
+- Keep Chinese annotations to 2-6 characters; that gives the lowest typo rate.
+- When serious typos appear, first use a local "remove the wrong text" edit, then regenerate with fewer annotation words.
+- Don't copy the compositions in `examples/images/`; the example images are only for style calibration.
+
+![](/assets/blog-images/post-1f6w5m/img05.webp)
+
+## 8. Summary and action items
+
+`ian-xiaohei-illustrations` solves an overlooked pain point: what long-form Chinese articles lack in body illustrations is not "a nice-looking image" but "a visual language that draws the cognitive moves". As a Codex Skill, it turns "understand the article → shot list → physical metaphor → Xiaohei's action → QA" into a reusable, standardized process, and 9.3K stars confirm the demand for this workflow among Chinese content creators.
+
+If you are a knowledge-oriented writer, a methodology blogger, or someone building a one-person company with AI, put it in your Codex skills directory and try a batch of 5 images on your next article.
+
+- **GitHub repo**: https://github.com/helloianneo/ian-xiaohei-illustrations
+- **Author's homepage**: https://www.ianneo.xyz
+- **Companion project**: `ian-handdrawn-ppt` (a Skill for hand-drawn PPT-style illustrations in Chinese)
+
+One-line pitch: let AI draw the judgments in your article instead of attaching a nice-looking picture.
+
+![](/assets/blog-images/post-1f6w5m/img06.webp)

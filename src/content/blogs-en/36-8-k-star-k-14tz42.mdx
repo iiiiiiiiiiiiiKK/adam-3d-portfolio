@@ -1,0 +1,109 @@
+---
+title: "This 36.8K-star financial model turns candlesticks into a language LLMs can actually read"
+publishedAt: "2026-09-06"
+summary: "Anyone doing quant research knows the pain: general time-series models fall apart on financial candlesticks. Over 60% of an A-share one-minute bar is noise, crypto chops 24/7, and fitting raw OHLCV with a vanilla Transformer never captures the discrete structure or the market's grammar."
+image: "/assets/blog-images/36-8-k-star-k-14tz42/img01.webp"
+tags: ["AI", "Open Source", "Quant"]
+author: "Adam"
+---
+![](/assets/blog-images/36-8-k-star-k-14tz42/img01.webp)
+
+## 1. Why you need this
+
+Anyone doing quant research knows the pain: general time-series models fall apart the moment they meet a financial candlestick. More than 60% of an A-share one-minute bar is noise, crypto swings around the clock, and a vanilla Transformer regressing directly on continuous OHLCV values (open/high/low/close/volume) is like carrying water in a colander — it can't hold the discrete structure, let alone learn the "grammar" of the market.
+
+The more practical problem: open source has long lacked a pretrained foundation model built specifically for financial candlesticks. Want to fine-tune? You chew through a general GPT-style model. Want a specialized one? You hit paid APIs and closed weights. Then Kronos showed up — a foundation model that teaches candlesticks to "speak", packing data from 45 global exchanges into 499M parameters and open-sourcing three weight sizes on day one.
+
+## 2. What it is, in one sentence
+
+Kronos is the first open-source foundation model for financial candlesticks, built around a "language modeling for K-lines" approach. It quantizes continuous OHLCV sequences into hierarchical discrete tokens, then feeds them to an autoregressive Transformer for large-scale pretraining. As of November 2025 it has passed 36.8K GitHub stars, was accepted to AAAI 2026, and the paper is on arXiv (2508.02739).
+
+Four keywords: **finance-specific**, **tokenized pretraining**, **unified multi-task**, **fully open weights**. Kronos-mini (4.1M), Kronos-small (24.7M) and Kronos-base (102.3M) are already released; the Large version (499.2M) is not yet public.
+
+![](/assets/blog-images/36-8-k-star-k-14tz42/img02.webp)
+
+## 3. Core features in depth
+
+### 1. A two-stage candlestick tokenization pipeline
+
+Kronos's core idea is to treat candlesticks as language. In stage one, a dedicated Kronos-Tokenizer quantizes continuous multi-dimensional OHLCV data into hierarchical discrete tokens, preserving the semantic levels of fields like open and close. In stage two, an autoregressive Transformer pretrains on those tokens and produces a unified representation. Compared with direct numeric regression, this is far more noise-resistant and much easier to transfer to downstream tasks such as classification and generation.
+
+### 2. A unified multi-task interface
+
+Kronos folds price forecasting, volatility modeling and signal generation into one pretrained backbone, so you no longer hand-build a head per task. Swap the Tokenizer and Predictor pairing and you can scale anywhere from 4.1M to 499.2M — the mini version runs experiments on a single laptop GPU.
+
+### 3. Batch parallel prediction
+
+The `predict_batch` API forecasts many assets in parallel, with all series sharing one set of hyperparameters (temperature T, top-p sampling, sample count). On multi-GPU machines throughput goes up 3–5x, which makes it a natural fit for factor scanning and bulk scoring ahead of portfolio backtests.
+
+### 4. A complete fine-tuning and backtest pipeline
+
+The project ships a Qlib-based fine-tuning example covering A-share daily data preprocessing, two-stage fine-tuning of Tokenizer and Predictor, and a simple Top-K backtest. The maintainers are explicit that this is a demo, not a production strategy, but the whole chain is wired up — researchers can copy the pattern onto their own datasets.
+
+![](/assets/blog-images/36-8-k-star-k-14tz42/img03.webp)
+
+## 4. Technical highlights and numbers
+
+Kronos trains on cross-market candlesticks from 45 global exchanges — currently the largest publicly available pretraining corpus of its kind. The architecture is a decoder-only Transformer plus hierarchical tokenization, and it clearly beats general time-series baselines such as TimeGPT and Lag-Llama on multiple financial forecasting benchmarks.
+
+On ecosystem compatibility: all weights are hosted on the Hugging Face Hub (the `NeoQuasar` org) and load with a single `from_pretrained` call. Multi-GPU fine-tuning works through PyTorch + torchrun, and everything plays nicely with Qlib, pandas and matplotlib. The paper was accepted to AAAI 2026, the community is active, and the latest update landed in November 2025.
+
+## 5. Who it's for
+
+**Quant researchers**: if you need to validate candlestick-based factors fast without training a Transformer from scratch, Kronos-mini at 4.1M parameters fine-tunes on a single GPU.
+
+**Crypto and FX traders**: 24-hour pairs like BTC/USDT are extremely noise-sensitive; Kronos's live demo shows 24-hour-ahead forecasts that can serve as an auxiliary signal source.
+
+**Academic and institutional researchers**: teams reproducing the AAAI 2026 paper, running comparisons, or migrating to private data can fine-tune straight from the open weights.
+
+**Who it's not for**: retail traders chasing "plug and play, steady annualized returns" — Kronos is a research backbone, not a risk-managed strategy product.
+
+![](/assets/blog-images/36-8-k-star-k-14tz42/img04.webp)
+
+## 6. Comparison
+
+| Project | Data scope | Open source | Finance-specific | Smallest model |
+|------|----------|----------|----------|------------|
+| Kronos | Candlesticks from 45 exchanges | All three sizes open | ✅ | 4.1M |
+| TimeGPT-1 | General time series | Closed API | ❌ | Undisclosed |
+| Lag-Llama | Univariate time series | Open source | ❌ | General |
+| Chronos | General time series | Open source | ❌ | 8M |
+
+Kronos wins on all three axes at once — finance-specific candlestick modeling, fully open source, multiple sizes — and its pretraining data dwarfs comparable open projects.
+
+## 7. Getting started fast
+
+Setup takes three steps: Python 3.10+, `pip install -r requirements.txt`, and a CSV with `open/high/low/close` columns.
+
+Minimal working example (forecast in 4 steps):
+
+```python
+from model import Kronos, KronosTokenizer, KronosPredictor
+import pandas as pd
+
+tokenizer = KronosTokenizer.from_pretrained("NeoQuasar/Kronos-Tokenizer-base")
+model = Kronos.from_pretrained("NeoQuasar/Kronos-mini")
+predictor = KronosPredictor(model, tokenizer, max_context=2048, device="cuda:0")
+
+df = pd.read_csv("data.csv")
+pred_df = predictor.predict(df=df, x_timestamp=df['timestamps'][:400],
+                           y_timestamp=df['timestamps'][400:520], pred_len=120)
+```
+
+What to do next: experiment with `Kronos-mini` first, confirm your data format is right, then move to `Kronos-base` for accuracy. For A-share factor research, reuse the Qlib pipeline under `finetune/`.
+
+![](/assets/blog-images/36-8-k-star-k-14tz42/img05.webp)
+
+## 8. Takeaways
+
+Kronos's real contribution is turning financial candlesticks into a language a foundation model can learn: hierarchical tokenization handles the noise, an autoregressive Transformer unifies multiple tasks, and open weights across sizes handle deployment. For any quant team that wants to skip the "build a model from scratch" phase, this is the financial foundation model worth bookmarking from 2025.
+
+Suggested path: run the demo's BTC/USDT 24-hour forecast first, fine-tune the mini version on your own data to validate, then upgrade to base or apply for large access as needed.
+
+Links:
+- GitHub: https://github.com/shiyu-coder/Kronos
+- Hugging Face models: https://huggingface.co/NeoQuasar
+- Live demo: https://shiyu-coder.github.io/Kronos-demo/
+- Paper: https://arxiv.org/abs/2508.02739
+
+One-line pitch: Kronos is WordPiece for candlesticks — financial time-series modeling finally has an open backbone that is genuinely fine-tunable, commercially usable and reproducible.

@@ -1,0 +1,267 @@
+---
+title: "Stop chatting with Claude raw: these 7 Skills make it 10x more reliable"
+publishedAt: "2026-06-23"
+summary: "I installed seven Agent Skills repos and put each one through real work. These are the ones that held up, why they did, who each repo is actually built for, and which ones most people should skip."
+image: "/assets/blog-images/claude-7-skills-1voi8y/img01.webp"
+tags: ["AI", "Agent", "Open Source"]
+author: "Adam"
+---
+![](/assets/blog-images/claude-7-skills-1voi8y/img01.webp)
+
+Picking a title (3 options, choose 1)
+
+I installed 7 Agent Skills repos — these are the ones worth keeping
+
+Stop chatting with Claude raw: these 7 Skills make it 10x more reliable
+
+7 GitHub gems I keep to myself: turn your Agent into a dedicated employee
+
+## 1. Intro: stop hand-cranking it
+
+Your PM drops a line: "Pull every form field out of this PDF for me." You open Acrobat, copy, paste, reformat — half an hour gone. A colleague already threw the whole proposal at an Agent and attached the extracted Excel sheet in the reply.
+
+The problem isn't that you're slow. It's that you're still driving the Agent with "manual labor plus a general-purpose chat box." Out of the box, a Claude or a Codex doesn't know your brand's type scale, doesn't know which test framework your project uses, doesn't know what kind of cover image you want. Turn it loose and you get something that looks right but needs three rounds of rework.
+
+The 7 repos below solve exactly that: package reusable instructions, scripts and constraints into a "Skill", so the Agent works by your rules the moment it's installed.
+
+## 2. Projects at a glance
+
+| Repository | Stars | Main language | One-line positioning |
+|---|---|---|---|
+| anthropics/skills | 177.3K | Python | Anthropic's official Skill example library, covering PDF/Word/PPT/Excel |
+| obra/superpowers | 289.2K | Shell | A complete development methodology + skill set for coding agents |
+| addyosmani/agent-skills | 97.6K | JavaScript | 25 production-oriented engineering Skills spanning the whole dev lifecycle |
+| zjunlp/SkillNet | 1.3K | Python | Infrastructure for searching, evaluating, composing and orchestrating Skills |
+| KKKKhazix/khazix-skills | 20.8K | Python | A personal Skill collection from Khazix (Digital Life), focused on Chinese-language scenarios |
+| Pluviobyte/rnskill | 1.6K | Python | Xuetawuyun's Chinese Skill megapack: 60 directories covering video, articles and coding |
+| ibelick/ui-skills | 8.8K | TypeScript | A UI Skill registry for design engineers |
+
+## 3. Project breakdown
+
+### anthropics/skills — Anthropic's official example library
+
+This is Anthropic's own reference implementation library for Skills. Every entry follows the same shape: a folder plus a `SKILL.md`, with YAML frontmatter for metadata and the body for instructions, loaded dynamically by the Agent. **Use it as a dictionary of templates — it's much faster than figuring things out yourself.**
+
+The technical highlight is that it open-sources the implementation underneath Claude's document capabilities: `skills/docx`, `skills/pdf`, `skills/pptx` and `skills/xlsx` are the document-handling Skills Claude actually uses, with the source code in plain sight.
+
+Who it's for: developers who want to write their own Skills, and anyone curious what a "complex Skill inside a production AI product" looks like. Not for people who just want to install a ready-made Skill — this repo is not an off-the-shelf product.
+
+**Minimal setup**
+
+Run this in Claude Code:
+
+```
+/plugin marketplace add anthropics/skills
+```
+
+Then pick `Browse and install plugins` → `anthropic-agent-skills` → `document-skills` → `Install now` in the interactive menu. Once it's installed, just tell Claude Code:
+
+```
+Use the PDF skill to extract all form fields from path/to/some-file.pdf
+```
+
+*Repo:* **https://github.com/anthropics/skills**
+
+![](/assets/blog-images/claude-7-skills-1voi8y/img02.webp)
+
+### obra/superpowers — a methodology for coding agents
+
+**It isn't a Skill. It's an entire development methodology for coding agents.** The core loop: talk the requirements through with a spec first, in chunks you sign off on; then produce an implementation plan; finally run "subagent-driven-development" so agents review and check each other, staying on course for an hour or two on their own.
+
+The list of supported agents is startling: Claude Code, Cursor, Codex CLI, Gemini CLI, GitHub Copilot CLI, OpenCode, Kimi Code, Qwen Code and 16+ others are all on the install list. **Its core value is keeping "junior-engineer-style free-form coding" out of the door** — strict TDD, YAGNI and DRY as three hard rules, written into the harness.
+
+Who it's for: people who write code with agents long-term and want more control over the planning phase. Not for people who just want an agent to fix a one-line bug — it confirms the objective with you every time it starts, which is a sledgehammer for that nut.
+
+**Minimal setup**
+
+Run this in Claude Code:
+
+```
+/plugin install superpowers@claude-plugins-official
+```
+
+Or install from the GitHub source:
+
+```
+/plugin marketplace add obra/superpowers-marketplace
+/plugin install superpowers@superpowers-marketplace
+```
+
+Once installed, open any new project and tell the Agent "I want to build X". It will ask what you're actually trying to achieve before writing a single line of code.
+
+*Repo:* **https://github.com/obra/superpowers**
+
+### addyosmani/agent-skills — 25 production-grade engineering Skills
+
+An engineering Skill pack open-sourced by Addy Osmani (Google Chrome team). **The difference from superpowers: it splits the process into 9 slash commands** — `/spec`, `/plan`, `/build`, `/test`, `/constraints`, `/review`, `/webperf`, `/code-simplify`, `/ship` — each one mapping to a stage of the development lifecycle.
+
+Its 25 Skills cover API design, UI engineering, TDD, performance audits and more. The nicest touch is `/build auto` mode: you approve the plan once, the Agent runs every task to completion, each task still test-driven and committed separately, pausing on failures or risky steps.
+
+Who it's for: engineering teams and solo developers who want precise, command-level control over Agent behavior. Not for people who just want to try one or two Skills — this is a suite, and buying it piecemeal makes little sense.
+
+**Minimal setup**
+
+One command installs the whole thing:
+
+```
+npx skills add addyosmani/agent-skills
+```
+
+Want to look before you install:
+
+```
+npx skills add addyosmani/agent-skills --list
+```
+
+Once it's in, just say `/spec I want to build a user login feature` and it enters the requirements-clarification flow.
+
+*Repo:* **https://github.com/addyosmani/agent-skills**
+
+![](/assets/blog-images/claude-7-skills-1voi8y/img03.webp)
+
+### zjunlp/SkillNet — the infrastructure layer for Skills
+
+The previous three projects are "Skills themselves". SkillNet wants to be "npm for Skills". Think of it as a search, rating, composition and orchestration platform for Skills: search public Skill repos by keyword or semantic similarity; evaluate a Skill's safety, completeness, executability and maintainability; analyze `compose_with` and `depend_on` relationships among your local Skills; and finally generate an execution prompt you can feed straight to a downstream Agent.
+
+==Note: orchestration requires an OpenAI-compatible endpoint and the Claude Agent SDK; search and download need no API key==. It has already indexed 500K+ GitHub Skills, ships with an MCP server, and both OpenClaw and JiuwenClaw have turned it into a built-in marketplace.
+
+Who it's for: teams researching Agent engineering, and platform builders who need to manage Skills at scale. Not for individual users — its value is in scale, and installing a single Skill never touches it.
+
+**Minimal setup**
+
+Install the SDK:
+
+```
+pip install skillnet-ai
+```
+
+Search for and download a Skill:
+
+```python
+from skillnet_ai import SkillNetClient
+
+client = SkillNetClient()
+results = client.search("pdf understanding", limit=5)
+client.download(results[0].skill_url, target_dir="./my_skills")
+```
+
+Or use the CLI:
+
+```
+skillnet search "pdf understanding" --limit 5
+skillnet download <skill_url> -d ./my_skills
+```
+
+*Repo:* **https://github.com/zjunlp/SkillNet**
+
+![](/assets/blog-images/claude-7-skills-1voi8y/img04.webp)
+
+### KKKKhazix/khazix-skills — a Chinese personal Skill collection
+
+Six Skills open-sourced by the WeChat account "Digital Life Khazix", released only after each one had run in his own projects. **The ones most worth installing are `leader` (manager) and `storage-analyzer` (junk cleanup)**.
+
+`leader`'s design philosophy is that "the unit of human-AI collaboration is now the goal, not the task": it digs into the codebase and does hands-on research first, then asks you at most 5 questions that only you can answer, and finally outputs a goal brief. The accompanying "seven questions of a goal" — purpose, done state, evidence, anti-cheating, boundaries, tradeoffs, unknowns — answers head-on the question of "what happens when the AI drifts for a whole night".
+
+`storage-analyzer`, meanwhile, is CleanMyMac turned into a Skill: it scans the disk and gives you an interactive HTML report in the browser, graded green/yellow/red, with a concrete path for every item and an explanation of the impact of deleting it. **It beats CleanMyMac by telling you what each item *is* and what happens if you delete it, instead of just slapping on a "safe to delete" label**.
+
+Who it's for: Chinese-speaking users, people running long-horizon tasks with Claude Code or Codex, and Mac users whose disks are permanently in the red. Not for people who only work with English-language agents — the Skill text is mostly Chinese.
+
+**Minimal setup**
+
+Tell the Agent:
+
+```
+Install this skill for me: https://github.com/KKKKhazix/khazix-skills/tree/main/neat-freak
+```
+
+Then try cleaning up your disk:
+
+```
+Take a look at my storage
+```
+
+Or try leader:
+
+```
+Write a goal for the agent for me
+```
+
+*Repo:* **https://github.com/KKKKhazix/khazix-skills**
+
+![](/assets/blog-images/claude-7-skills-1voi8y/img05.webp)
+
+### Pluviobyte/rnskill — Xuetawuyun's complete Chinese Skill set
+
+**60 top-level Skill directories, split into content creation and coding/development.** The author says he "spent under 10 hours total over the past month, gained 2k followers on Douyin and landed his first sponsored deal" — all on the back of this Skill set combined with Codex, HyperFrames, HeyGen and IndexTTS2.
+
+A few Skills worth calling out individually: `ra-cover-skill` generates a 5:2 editorial infographic-style cover straight from a title and topic, redesigning the concept image on the right every time so it never keeps copying the node layout and composition of the reference cover; `novel-distill` reads chapters, compares candidate events, and outputs event cards and storyboards tagged as "F = source fact / P = audiovisual suggestion / A = new adaptation", so it won't mistake a reference video's capabilities for the source novel's; `ra-人话` ("plain speech" — the directory name keeps its original characters) is Chinese de-AI-flavored writing, hard-banning binary-contrast shells, fake-insight markers and lecture-hall colon phrasing.
+
+Who it's for: content creators (especially short-video, novel-adaptation and WeChat official account people) and anyone running automated workflows with Codex. Not for pure software engineers — its coding Skills are still being filled in, and the value today is on the content side.
+
+**Minimal setup**
+
+Install everything:
+
+```
+npx -y skills add Pluviobyte/rnskill -g --all
+```
+
+Or just the cover Skill:
+
+```
+npx -y skills add Pluviobyte/rnskill --skill rn-cover-skill
+```
+
+Then tell Codex:
+
+```
+Use $rn-cover-skill to make a 5:2 cover titled "Open-source Claude-style cover Skill"
+```
+
+*Repo:* **https://github.com/Pluviobyte/rnskill**
+
+![](/assets/blog-images/claude-7-skills-1voi8y/img06.webp)
+
+### ibelick/ui-skills — a Skill registry for UI design engineers
+
+A Skill registry built specifically for the "Design Engineer" role. The CLI lets you browse, list by category, and fetch by name; the MCP endpoint `https://www.ui-skills.com/mcp` exposes `list_skills` and `get_skill` so an Agent can plug straight in; the site also offers a Playbook that turns "lessons learned from UI Skills" into a design-engineering practice manual.
+
+Who it's for: hybrid engineers doing frontend plus design, and teams that want to give their Agent UI rules. Not for pure backend or pure copywriting roles — every Skill here revolves around UI.
+
+**Minimal setup**
+
+Start the CLI:
+
+```
+npx ui-skills start
+```
+
+See the categories:
+
+```
+npx ui-skills categories
+```
+
+List by category:
+
+```
+npx ui-skills list --category motion
+```
+
+Install a single one:
+
+```
+npx ui-skills get baseline-ui
+```
+
+*Repo:* **https://github.com/ibelick/ui-skills**
+
+![](/assets/blog-images/claude-7-skills-1voi8y/img07.webp)
+
+## 4. Takeaways and what to do next
+
+1. Want the fastest win: install `storage-analyzer` from `KKKKhazix/khazix-skills` first. Within ten minutes you'll feel the thrill of the Agent scanning your disk and handing back a report.
+2. In it for the long haul: install either `obra/superpowers` or `addyosmani/agent-skills`, pick one. The former leans on methodology, the latter on command-style control — choose by how you like to collaborate.
+3. Doing content creation: install the full `Pluviobyte/rnskill` set and you can run a complete pipeline in one evening with Codex. If you want to build your own Skills, go look at the official templates in `anthropics/skills`.
+
+#AIAgents #AIWorkflow #Automation #Skills #Superpowers #AgentSkills #Skillnet #KhazixSkills #Rnskill #UiSkills

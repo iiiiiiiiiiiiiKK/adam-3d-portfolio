@@ -1,0 +1,125 @@
+---
+title: "100 books in and still nothing sticks? Cangjie Skill turns books into tools your agent can actually call"
+publishedAt: "2026-07-09"
+summary: "Most of what you read never makes it into your work. Cangjie Skill distills books, long videos and podcasts into Agent Skills with trigger conditions and boundaries, filtered by triple verification and stress-tested before delivery — 21 skill packs and 250+ skills live."
+image: "/assets/blog-images/100-cangjie-skill-agent-dlfpvr/img01.webp"
+tags: ["AI", "Agent", "Video"]
+author: "Adam"
+---
+![](/assets/blog-images/100-cangjie-skill-agent-dlfpvr/img01.webp)
+
+Title options (pick 1 of 3)
+
+100 books in and still nothing sticks? Cangjie Skill turns books into tools your agent can actually call
+
+Buffett's 60 years of shareholder letters become 20 skills: Cangjie Skill distills 250+ methodologies, already proven in production
+
+Not a line of backend code, yet Poor Charlie's Almanack becomes 12 decision skills: how does Cangjie Skill do it?
+
+## 1. Intro: from frustration to fan, one project away
+
+You watched a 90-minute deep dive on Bilibili and bookmarked it. You read an 8,000-word guide on WeChat and forwarded it. You bought that legendary book three months ago and still haven't opened it — and then nothing happens.
+
+You're not alone in this. One survey of knowledge workers found that fewer than 5% of people can actually invoke a book's methodologies in a work setting after finishing it. Read ≠ used, bookmarked ≠ learned. AI training data lags behind: the newest Bilibili videos, YouTube uploads and podcasts are things large models have never seen. The notes you wrote, the quotes you clipped, the videos sitting in Watch Later — all of it ends up as dust in a digital warehouse.
+
+The real pain isn't "no content". It's that "content never turns into tools". Cangjie Skill goes straight at that point: distilling the high-value methodologies inside books, long videos, podcasts and courses into Skill toolkits that an AI agent can actually call.
+
+## 2. Project overview: what it is in one sentence
+
+Cangjie Skill is a content distillation framework built on the RIA-TV++ pipeline. It turns raw text — books, video transcripts, podcast transcripts, interview records — into Agent Skill toolkits that can be invoked on their own, composed together, and stress-tested.
+
+The one-liner: after you finish reading, watching or listening, you walk away with a set of methodologies you can call.
+
+Core tags: methodology distillation, Agent Skill, RIA-TV++, multi-platform support (Claude Code / OpenClaw / DeepSeek Harness). Over a year after launch, it sits at 8,173 GitHub stars, covering 21 published skill packs and more than 250 individual skills.
+
+## 3. Core features in depth
+
+### 1. The seven-stage RIA-TV++ pipeline
+
+The heart of Cangjie Skill is RIA-TV++. Unpack the name: RIA comes from Zhao Zhou's sticky-note method in *How to Read a Book Well Enough* (Reading / Interpretation / Appropriation), TV is Triple Verification, and ++ is the extension aimed at agent execution (Execution steps + Boundary).
+
+The pipeline runs in seven steps: whole-content understanding (borrowing Adler's analytical reading, producing `BOOK_OVERVIEW.md`) → five extractors in parallel (frameworks / principles / cases / counterexamples / terminology) → triple verification filtering (at least 2 independent corroborations in the source, the ability to answer new questions the text never states, and not being common knowledge — pass rate only 25–50%) → RIA++ six-dimension structuring → Zettelkasten link generation into `INDEX.md` → stress testing (including cross-skill confusion questions) → delivery of a reader-facing `DIGEST.md` long-form piece, plus installing the skills that pass into the skills directory of Claude Code / Cursor.
+
+### 2. Not compression — structured reuse
+
+Traditional book notes are "compress 100,000 characters into 5,000". Cangjie Skill outputs a multi-skill repository where each piece carries trigger conditions, applicable boundaries, usage patterns and relations to the others: a `BOOK_OVERVIEW.md` for global understanding, an `INDEX.md` as the skill map, a `DIGEST.md` as the long-form essence, several `*/SKILL.md` files as independent modules, and `test-prompts.json` as verification cases.
+
+*Poor Charlie's Almanack* compresses into 12 decision and judgment skills, *Contagious* splits into 15 STEPPS spread-strategy skills, and volumes 1–5 of *Selected Works of Mao Zedong* compress into 25 skills on cognition, strategy, organization and execution. Every piece can be invoked by an agent on its own in a real scenario — not a summary you forget after reading.
+
+### 3. Triple verification filters out fake methodologies
+
+This is the biggest difference from ordinary summarization tools. Every candidate methodology must pass three tests: at least 2 independent corroborations in the source, the ability to answer new questions the content never states (predictive power), and not being common knowledge (distinctiveness). The pass rate is usually just 25–50% — a large amount of content that looks like methodology is filler, and gets eliminated outright.
+
+### 4. Multi-platform support
+
+It natively supports three platforms: Claude Code, OpenClaw and DeepSeek Harness. DeepSeek Harness installs through a standalone `.tgz` plugin package — one command puts the skill into `~/.dsh/packages`. The v2.0.0 release in March already ships the adaptation layer inside the Release package, so it doesn't pollute the main repo.
+
+## 4. Technical highlights and performance numbers
+
+- **Methodology density**: Buffett's 1957–2023 shareholder letters — 60+ years of material — distill into 20 investment judgment skills; Andrew Ng's *AI for Everyone* video course distills into 25 skills, more skills than the entire *Poor Charlie's Almanack*;
+- **Coverage**: 21 published skill packs spanning 8+ domains — investing (*Berkshire Hathaway shareholder letters*, *Duan Yongping's investment Q&A*), marketing (*Explosive Copywriting*, *Contagious*, *Influence*), organization (Netflix's *No Rules Rules*), personal branding (*1000 True Fans*), AI prompt engineering (15 skills from 165 AI product system prompts), X growth, and classics (*I Ching*, *The Art of War*, *Huangdi Neijing*, *Selected Works of Mao Zedong*);
+- **Quality verification**: every skill ships with `test-prompts.json` stress tests, and cross-skill confusion questions make sure it won't be triggered by mistake;
+- **Ecosystem fit**: it meshes with nuwa-skill (distilling people) and darwin-skill (letting skills keep evolving) as a trio.
+
+![](/assets/blog-images/100-cangjie-skill-agent-dlfpvr/img02.webp)
+
+## 5. Use cases and who it's for
+
+**Use case one: internalizing long video courses**. Deep dives and high-quality courses on Bilibili and YouTube that you forget right after watching — hand them to Cangjie Skill, pull the subtitles, and get 20+ callable skills so the next similar problem can be answered directly.
+
+**Use case two: integrating methodologies across books**. *Influence*, *Contagious* and *Explosive Copywriting* all cover persuasion and spread. Distill them and link them with Zettelkasten, and a single marketing diagnosis can invoke three skills at once — better than reading any one book.
+
+**Use case three: reusing podcast and interview material**. Drop in transcripts of good interviews and podcasts, extract executable frameworks, and feed them to writing agents and decision agents.
+
+**Who it fits**: knowledge workers, AI agent developers, content creators, consultants, and social media operators. **Who it doesn't**: people who only want a summary and won't bother invoking anything (what it outputs is not an article), and material whose content quality is bad to begin with (you can't make bricks without straw).
+
+## 6. Comparison with alternatives
+
+| Dimension | Cangjie Skill | Traditional summarizers | Notion AI-style notes | nuwa-skill |
+|------|---------------|--------------|------------------|------------|
+| Output form | Multi-skill toolkit | Single-file summary | Note outline | Persona skill |
+| Trigger | Agent invocation | Human reading | Human search | Agent invocation |
+| Verification | Triple verification + stress tests | None | None | None |
+| Platform support | Claude Code / OpenClaw / DeepSeek | None | Its own platform | Same ecosystem |
+| Distillation target | Books/videos/podcasts/courses | Text | Text | People |
+
+Cangjie Skill complements nuwa-skill inside the ecosystem: nuwa distills people (thinking styles, expressive DNA), Cangjie distills books (methodologies, frameworks, principles), and darwin keeps them evolving. The three mesh into a complete methodology flywheel.
+
+![](/assets/blog-images/100-cangjie-skill-agent-dlfpvr/img03.webp)
+
+## 7. How to get started fast
+
+**Claude Code users**:
+
+```bash
+git clone https://github.com/kangarooking/cangjie-skill
+cd cangjie-skill
+# copy SKILL.md into Claude Code's skills directory
+```
+
+**DeepSeek Harness users**:
+
+```bash
+mkdir -p ~/.dsh/packages
+curl -fL "https://github.com/kangarooking/cangjie-skill/releases/download/v2.0.0/dsh-cangjie-skill-2.0.0.tgz" \
+  -o ~/.dsh/packages/dsh-cangjie-skill-2.0.0.tgz
+dsh plugin --profile web add ~/.dsh/packages/dsh-cangjie-skill-2.0.0.tgz
+dsh web
+```
+
+**Minimum viable example**: after starting a new task, just say `Please use cangjie-skill to distill this book into a set of executable Agent Skills: <file path>`. Start with the subtitle file of one long Bilibili video to validate the flow before compressing a whole book.
+
+**Advanced tip**: pair it with the `video-downloader` skill — download the video, extract the subtitles, then hand the text to Cangjie Skill for methodology extraction and stress testing.
+
+## 8. Takeaways and next steps
+
+What Cangjie Skill solves isn't "how to read a book" but "how to make a book actually usable". Triple verification, stress testing and multi-platform support turn methodologies from one-off summaries into ammunition an agent's toolbox can fire again and again.
+
+**Usage advice**: 1) start with a single video lesson or one chapter to get familiar with the output structure; 2) once you have 3–5 skills, link them with Zettelkasten; 3) swap skill packs with other developers and get the methodology flywheel spinning.
+
+**Project links**:
+- GitHub: https://github.com/kangarooking/cangjie-skill
+- Website (with visual browsing of Skill Packs): https://cangjie-skill.com/
+- Ecosystem: nuwa-skill (distilling people) + darwin-skill (letting skills evolve)
+
+Plenty of people read books. Very few make the books work for them.

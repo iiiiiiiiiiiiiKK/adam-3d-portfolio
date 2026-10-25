@@ -1,12 +1,16 @@
-import { EXPERIENCE, SkillNames, SKILLS } from "@/data/constants";
+import { getExperience, getSkills, SkillNames } from "@/data/content";
 import { SectionHeader } from "./section-header";
 import { Badge } from "../ui/badge";
 import { cn } from "@/lib/utils";
 import SectionWrapper from "../ui/section-wrapper";
-import { motion } from "motion/react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getDictionary } from "@/i18n/dictionaries";
+import type { Locale } from "@/i18n/types";
 
-const ExperienceSection = () => {
+const ExperienceSection = ({ locale = "zh" }: { locale?: Locale }) => {
+  const t = getDictionary(locale);
+  const experience = getExperience(locale);
+  const skills = getSkills(locale);
+
   return (
     <SectionWrapper
       id="experience"
@@ -15,8 +19,8 @@ const ExperienceSection = () => {
       <div className="w-full max-w-4xl px-4 md:px-8 mx-auto">
         <SectionHeader
           id="experience"
-          title="经历"
-          desc="这几年在做什么。"
+          title={t.sections.experience.title}
+          desc={t.sections.experience.desc}
           className="mb-12 md:mb-20 mt-0"
         />
 
@@ -24,9 +28,9 @@ const ExperienceSection = () => {
           {/* Connector Line - simplified to a subtle border */}
           <div className="absolute left-8 md:left-1/2 top-4 bottom-4 w-px bg-border hidden md:block -translate-x-1/2" />
 
-          {EXPERIENCE.map((exp, index) => (
+          {experience.map((exp, index) => (
             <div key={exp.id} className="relative">
-              <ExperienceCard experience={exp} index={index} />
+              <ExperienceCard experience={exp} index={index} skills={skills} />
             </div>
           ))}
         </div>
@@ -38,34 +42,30 @@ const ExperienceSection = () => {
 const ExperienceCard = ({
   experience,
   index,
+  skills,
 }: {
-  experience: (typeof EXPERIENCE)[0];
+  experience: ReturnType<typeof getExperience>[0];
   index: number;
+  skills: ReturnType<typeof getSkills>;
 }) => {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{
-        duration: 0.4,
-        delay: index * 0.1,
-        ease: "easeOut",
-      }}
-      viewport={{ once: true, margin: "-50px" }}
+    <div
+      className="animate-in fade-in slide-in-from-bottom-4"
+      style={{ animationDelay: `${index * 100}ms`, animationFillMode: "both" }}
     >
-      <Card
+      <div
         className={cn(
-          "bg-card text-card-foreground border-border",
+          "rounded-xl border bg-card text-card-foreground border-border",
           "hover:border-primary/20 transition-colors duration-300",
           "shadow-sm hover:shadow-md"
         )}
       >
-        <CardHeader className="pb-3">
+        <div className="flex flex-col space-y-1.5 p-6 pb-3">
           <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
             <div className="space-y-1">
-              <CardTitle className="text-xl font-bold tracking-tight">
+              <h3 className="text-xl font-bold tracking-tight leading-none">
                 {experience.title}
-              </CardTitle>
+              </h3>
               <div className="text-base font-medium text-muted-foreground">
                 {experience.company}
               </div>
@@ -74,8 +74,8 @@ const ExperienceCard = ({
               {experience.startDate} - {experience.endDate}
             </Badge>
           </div>
-        </CardHeader>
-        <CardContent className="space-y-6">
+        </div>
+        <div className="p-6 pt-0 space-y-6">
           <ul className="list-disc list-outside ml-4 space-y-2 text-base text-muted-foreground leading-relaxed">
             {experience.description.map((point, i) => (
               <li key={i}>{point}</li>
@@ -84,7 +84,7 @@ const ExperienceCard = ({
 
           <div className="flex flex-wrap gap-2">
             {experience.skills.map((skillName) => {
-              const skill = SKILLS[skillName as SkillNames];
+              const skill = skills[skillName as SkillNames];
               return (
                 <Badge
                   key={skillName}
@@ -101,9 +101,9 @@ const ExperienceCard = ({
               );
             })}
           </div>
-        </CardContent>
-      </Card>
-    </motion.div>
+        </div>
+      </div>
+    </div>
   );
 };
 
