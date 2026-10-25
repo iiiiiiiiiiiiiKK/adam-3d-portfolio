@@ -70,7 +70,13 @@ const HeroSection = () => {
                   <p
                     className={cn(
                       "md:self-start md:mt-4 font-medium text-md text-slate-500 dark:text-zinc-400",
-                      "cursor-default sm:text-xl md:text-xl whitespace-nowrap bg-clip-text "
+                      "cursor-default sm:text-xl md:text-xl bg-clip-text",
+                      // `whitespace-nowrap` only from md up: the English role line
+                      // ("Independent maker drifting through trading markets") is
+                      // far longer than the Chinese one and used to push the whole
+                      // hero block wider than the phone viewport, which made the
+                      // left-aligned column look off-centre on mobile.
+                      "whitespace-normal text-balance text-center md:whitespace-nowrap md:text-left"
                     )}
                   >
                     {config.role}
