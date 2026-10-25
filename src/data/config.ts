@@ -36,7 +36,7 @@ const GITHUB = `https://github.com/${GITHUB_USER}`;
 function build(locale: Locale): SiteConfig {
   if (locale === "en") {
     return {
-      title: "Adam | Independent maker drifting through trading markets",
+      title: "Adam | Independent maker in trading markets",
       description: {
         long: "Adam's personal site: finance and quant, cross-border e-commerce growth, full-stack engineering and AI agent tooling. Things I've built, and things I'm still poking at.",
         short:
@@ -57,7 +57,7 @@ function build(locale: Locale): SiteConfig {
         "indie hacker",
       ],
       author: "Adam",
-      role: "Independent maker drifting through trading markets",
+      role: "Independent maker in trading markets",
       email: "changyuansex@gmail.com",
       site: SITE,
       github: { stars: 5280, link: GITHUB, username: GITHUB_USER, repo: "" },
