@@ -31,11 +31,25 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # 质量门禁：构建能过 ≠ 能上线。这三步专门拦
+      # 类型错误、lint 回归、以及中英文文章/图片对不齐。
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Content and asset audit
+        run: pnpm audit:content
+
       # This repo owns the custom domain (https://321.market), so the site is
       # built at the domain root: no NEXT_PUBLIC_BASE_PATH. Every asset path is
       # a plain `/assets/...` and Next.js rewrites `_next/*` itself.
       - name: Build static export
         run: pnpm build
+
+      - name: Audit static export
+        run: pnpm audit:export
 
       - name: Prepare Pages artifact
         run: |

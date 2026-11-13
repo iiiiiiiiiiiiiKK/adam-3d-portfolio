@@ -20,6 +20,9 @@ const FALLBACK_BG = "linear-gradient(135deg, #1e293b, #0f172a)";
  * Card preview: a screenshot floating over a wallpaper. Tall landing pages pan
  * on hover and smoothly return to top on mouse leave; normal (landscape/square)
  * screenshots are shown "cover", centered.
+ *
+ * 截图与壁纸都延迟到卡片接近视口时才下载 —— 项目数量增加后，否则首屏会
+ * 并行拉取整排项目图片。
  */
 const ScrollingPreview = ({
   src,
@@ -34,17 +37,42 @@ const ScrollingPreview = ({
 }) => {
   const { reducedMotion: reduceMotion } = usePerfProfile();
   const viewportRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
   const [scrollPx, setScrollPx] = useState(0);
   const [bgReady, setBgReady] = useState(false);
+  const [inView, setInView] = useState(false);
 
+  // 进入视口（提前 300px）后才开始加载图片资源
   useEffect(() => {
+    const node = rootRef.current;
+    if (!node || inView) return;
+    if (typeof IntersectionObserver === "undefined") {
+      setInView(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setInView(true);
+          io.disconnect();
+        }
+      },
+      { rootMargin: "300px 0px" },
+    );
+    io.observe(node);
+    return () => io.disconnect();
+  }, [inView]);
+
+  // 测量截图高度，决定是「平移」还是「cover」
+  useEffect(() => {
+    if (!inView) return;
     let cancelled = false;
     const img = new window.Image();
     const compute = () => {
       const vp = viewportRef.current;
       if (cancelled || !vp || !img.naturalWidth) return;
       const ratio = img.naturalHeight / img.naturalWidth;
-      const displayedHeight = vp.clientWidth * ratio; // height at bg-size "100% auto"
+      const displayedHeight = vp.clientWidth * ratio;
       const overflow = displayedHeight - vp.clientHeight;
       // Only pages meaningfully taller than the frame pan; the rest go "cover".
       setScrollPx(overflow > vp.clientHeight * MIN_SCROLL_OVERFLOW ? overflow : 0);
@@ -57,12 +85,12 @@ const ScrollingPreview = ({
       cancelled = true;
       window.removeEventListener("resize", compute);
     };
-  }, [src]);
+  }, [src, inView]);
 
   // Preload the wallpaper so a missing/404 file falls back to the gradient
   // instead of rendering a broken background.
   useEffect(() => {
-    if (!bg) {
+    if (!bg || !inView) {
       setBgReady(false);
       return;
     }
@@ -74,7 +102,7 @@ const ScrollingPreview = ({
     return () => {
       cancelled = true;
     };
-  }, [bg]);
+  }, [bg, inView]);
 
   const scrolls = scrollPx > 0;
   const animate = !reduceMotion && scrolls;
@@ -83,6 +111,7 @@ const ScrollingPreview = ({
 
   return (
     <div
+      ref={rootRef}
       className="pointer-events-none absolute inset-0"
       role="img"
       aria-label={alt}
@@ -120,7 +149,7 @@ const ScrollingPreview = ({
           style={{
             position: "absolute",
             inset: 0,
-            backgroundImage: `url("${src}")`,
+            backgroundImage: inView ? `url("${src}")` : "none",
             // Tall pages fill width and pan; normal images cover the frame.
             backgroundSize: scrolls ? "100% auto" : "cover",
             backgroundRepeat: "no-repeat",

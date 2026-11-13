@@ -1,34 +1,34 @@
 import React from "react";
 import type { Metadata } from "next";
-import { getBlogPosts } from "@/lib/mdx";
+import { getBlogPosts, sortPostsByDateDesc } from "@/lib/mdx";
+import { countReadingUnits } from "@/lib/read-time";
 import { getDictionary } from "@/i18n/dictionaries";
 import { getSiteConfig } from "@/data/config";
 import BlogListClient from "./blog-list-client";
 
-const t = getDictionary("zh");
+const locale = "zh" as const;
+const t = getDictionary(locale);
+const site = getSiteConfig(locale);
 
 export const metadata: Metadata = {
-  title: `${t.blog.metaTitle} | ${getSiteConfig("zh").author}`,
+  title: `${t.blog.metaTitle} | ${site.author}`,
   description: t.blog.metaDescription,
   alternates: {
-    canonical: "https://321.market/blogs/",
-    languages: { "zh-CN": "https://321.market/blogs/", en: "https://321.market/en/blogs/" },
+    canonical: `${site.site}/blogs/`,
+    languages: {
+      "zh-CN": `${site.site}/blogs/`,
+      en: `${site.site}/en/blogs/`,
+    },
   },
 };
 
 export default function BlogPage() {
-  const posts = getBlogPosts("zh")
-    .sort((a, b) => {
-      if (new Date(a.metadata.publishedAt) > new Date(b.metadata.publishedAt)) {
-        return -1;
-      }
-      return 1;
-    })
-    .map((post) => ({
-      slug: post.slug,
-      metadata: post.metadata,
-      wordCount: post.content.trim().split(/\s+/).length,
-    }));
+  const posts = sortPostsByDateDesc(getBlogPosts(locale)).map((post) => ({
+    slug: post.slug,
+    metadata: post.metadata,
+    readingUnits: countReadingUnits(post.content),
+    translated: post.translated,
+  }));
 
-  return <BlogListClient posts={posts} />;
+  return <BlogListClient posts={posts} locale={locale} />;
 }

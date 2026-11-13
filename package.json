@@ -7,7 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit --incremental false"
+    "typecheck": "tsc --noEmit --incremental false",
+    "audit:content": "node scripts/audit-content.cjs",
+    "verify": "pnpm typecheck && pnpm lint && pnpm audit:content && pnpm build && pnpm audit:export",
+    "audit:export": "node scripts/audit-export.cjs"
   },
   "dependencies": {
     "@chibi3d/runtime": "0.5.0",
@@ -40,7 +43,6 @@
     "react-dom": "^19.2.4",
     "react-icons": "^5.2.1",
     "remark-gfm": "^4.0.1",
-    "resend": "^4.0.0",
     "sass": "^1.77.8",
     "socket.io-client": "^4.8.3",
     "tailwind-merge": "^2.4.0",

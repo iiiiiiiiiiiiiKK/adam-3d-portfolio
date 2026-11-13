@@ -17,7 +17,10 @@ type Post = {
     author?: string;
     tags?: string[];
   };
-  wordCount: number;
+  /** 中文按字 + 英文按词的合计阅读单位，见 src/lib/read-time.ts */
+  readingUnits: number;
+  /** 该语言是否真有译文；false 表示回退成了中文正文 */
+  translated: boolean;
 };
 
 /** 每页文章数（首页会额外显示一篇置顶，不占页码配额） */
@@ -32,12 +35,21 @@ function formatDate(dateStr: string, locale: "zh" | "en") {
   });
 }
 
-export default function BlogListClient({ posts }: { posts: Post[] }) {
-  const { locale, t, href } = useI18n();
+export default function BlogListClient({
+  posts,
+  locale: localeProp,
+}: {
+  posts: Post[];
+  locale?: "zh" | "en";
+}) {
+  const { locale: ctxLocale, t, href } = useI18n();
+  const locale = localeProp ?? ctxLocale;
   const [page, setPage] = React.useState(0);
   const [activeTag, setActiveTag] = React.useState<string | null>(null);
 
-  const readTime = (wordCount: number) => Math.max(1, Math.ceil(wordCount / 400));
+  // 与详情页同一口径：中文 400 字/分钟、英文 220 词/分钟
+  const readTime = (units: number) =>
+    Math.max(1, Math.ceil(units / (locale === "en" ? 220 : 400)));
 
   // 标签：按出现频率取前 12 个
   const tags = React.useMemo(() => {
@@ -111,6 +123,8 @@ export default function BlogListClient({ posts }: { posts: Post[] }) {
             className="flex flex-wrap gap-2 mb-12"
           >
             <button
+              type="button"
+              aria-pressed={activeTag === null}
               onClick={() => pickTag(null)}
               className={`text-xs rounded-full px-3 py-1 border transition-colors ${
                 activeTag === null
@@ -123,6 +137,8 @@ export default function BlogListClient({ posts }: { posts: Post[] }) {
             {tags.map((tag) => (
               <button
                 key={tag}
+                type="button"
+                aria-pressed={activeTag === tag}
                 onClick={() => pickTag(tag)}
                 className={`text-xs rounded-full px-3 py-1 border transition-colors ${
                   activeTag === tag
@@ -159,7 +175,7 @@ export default function BlogListClient({ posts }: { posts: Post[] }) {
                     </span>
                     <span className="flex items-center gap-1.5 text-muted-foreground">
                       <Clock className="w-3.5 h-3.5" />
-                      {t.blog.minutesRead(readTime(featured.wordCount))}
+                      {t.blog.minutesRead(readTime(featured.readingUnits))}
                     </span>
                   </div>
 
@@ -227,7 +243,7 @@ export default function BlogListClient({ posts }: { posts: Post[] }) {
                     <span className="h-1 w-1 rounded-full bg-muted-foreground/50" />
                     <span className="flex items-center gap-1.5">
                       <Clock className="w-3 h-3" />
-                      {t.blog.minutes(readTime(post.wordCount))}
+                      {t.blog.minutes(readTime(post.readingUnits))}
                     </span>
                   </div>
 
@@ -263,6 +279,7 @@ export default function BlogListClient({ posts }: { posts: Post[] }) {
         {totalPages > 1 && (
           <div className="mt-16 flex items-center justify-center gap-2 flex-wrap">
             <button
+              type="button"
               onClick={() => goPage(safePage - 1)}
               disabled={safePage === 0}
               className="flex items-center gap-1 text-sm px-3 py-2 rounded-lg border border-border/60 text-muted-foreground transition-colors hover:text-foreground hover:border-border disabled:opacity-40 disabled:pointer-events-none"
@@ -280,6 +297,7 @@ export default function BlogListClient({ posts }: { posts: Post[] }) {
                   <React.Fragment key={i}>
                     {gap && <span className="text-muted-foreground/50 px-1">…</span>}
                     <button
+                      type="button"
                       onClick={() => goPage(i)}
                       className={`min-w-9 h-9 text-sm rounded-lg border transition-colors ${
                         i === safePage
@@ -294,6 +312,7 @@ export default function BlogListClient({ posts }: { posts: Post[] }) {
               })}
 
             <button
+              type="button"
               onClick={() => goPage(safePage + 1)}
               disabled={safePage >= totalPages - 1}
               className="flex items-center gap-1 text-sm px-3 py-2 rounded-lg border border-border/60 text-muted-foreground transition-colors hover:text-foreground hover:border-border disabled:opacity-40 disabled:pointer-events-none"

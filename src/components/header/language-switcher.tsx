@@ -8,6 +8,7 @@ import { Languages } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/i18n/context";
 import type { Locale } from "@/i18n/types";
+import { alternateLocalePath } from "@/lib/routes";
 
 /**
  * 中／英切换器。
@@ -20,15 +21,11 @@ export function LanguageSwitcher({ className }: { className?: string }) {
   const { locale, t } = useI18n();
   const pathname = usePathname() || "/";
 
-  // 计算两种语言各自的等价路径
-  const clean = pathname.replace(/\/+$/, "") || "/";
-  const isEn = clean === "/en" || clean.startsWith("/en/");
-  const zhHref = isEn ? (clean.slice(3) || "/") : clean;
-  const enHref = isEn ? clean : clean === "/" ? "/en" : `/en${clean}`;
-
+  // 两种语言的等价路径统一走 lib/routes，避免与 i18n/context 的 altHref
+  // 各写一套逻辑后逐渐漂移。
   const options: { key: Locale; href: string; label: string }[] = [
-    { key: "zh", href: zhHref, label: "中文" },
-    { key: "en", href: enHref, label: "EN" },
+    { key: "zh", href: alternateLocalePath(pathname, "zh"), label: "中文" },
+    { key: "en", href: alternateLocalePath(pathname, "en"), label: "EN" },
   ];
 
   return (

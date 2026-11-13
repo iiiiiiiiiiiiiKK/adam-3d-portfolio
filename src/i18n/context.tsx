@@ -4,6 +4,7 @@ import * as React from "react";
 import { usePathname } from "next/navigation";
 import type { Locale } from "./types";
 import { localeFromPath, localePath, SOCIAL_BY_LOCALE } from "./types";
+import { alternateLocalePath } from "@/lib/routes";
 import { getDictionary, type Dictionary } from "./dictionaries";
 
 type I18nValue = {
@@ -19,18 +20,10 @@ type I18nValue = {
 
 const I18nContext = React.createContext<I18nValue | null>(null);
 
-/**
- * 把当前路径映射到另一种语言的等价路径。
- *   /            ↔ /en
- *   /blogs/      ↔ /en/blogs/
- *   /blogs/foo/  ↔ /en/blogs/foo/
- */
+/** 当前路径对应的另一种语言的路径（走 lib/routes 的统一实现）。 */
 function toAlternateLocalePath(pathname: string): string {
-  const clean = pathname.replace(/\/+$/, "") || "/";
-  if (clean === "/en") return "/";
-  if (clean.startsWith("/en/")) return clean.slice(3);
-  if (clean === "/") return "/en";
-  return "/en" + clean;
+  const target: Locale = localeFromPath(pathname) === "en" ? "zh" : "en";
+  return alternateLocalePath(pathname, target);
 }
 
 export function I18nProvider({

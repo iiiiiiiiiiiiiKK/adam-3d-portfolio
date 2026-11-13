@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useCallback } from "react";
 import { useMousePosition } from "@/utils/mouse";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
+import { isBlogPostPath } from "@/lib/routes";
 
 interface ParticlesProps {
   className?: string;
@@ -37,7 +38,9 @@ export default function Particles({
   maxDpr = 2,
 }: ParticlesProps) {
   const pathname = usePathname();
-  const isBlogPost = pathname.startsWith("/blogs/") && pathname !== "/blogs";
+  // `/blogs/<slug>` 与 `/en/blogs/<slug>` 都不挂粒子 —— 阅读页要安静。
+  // 之前只判断了中文前缀，英文文章页仍然会挂载一块全屏 Canvas。
+  const isBlogPost = isBlogPostPath(pathname || "/");
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
@@ -47,138 +50,84 @@ export default function Particles({
   const mouse = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const canvasSize = useRef<{ w: number; h: number }>({ w: 0, h: 0 });
   const rafId = useRef<number>(0);
-  // Cap the device-pixel-ratio: a 3x screen otherwise triples the fill cost.
-  const dpr =
-    typeof window !== "undefined" ? Math.min(window.devicePixelRatio, maxDpr) : 1;
+  const dprRef = useRef(1);
+  // 循环依赖打断器：step 需要再次调度 animate，animate 又调用 step。
+  // 用一个 ref 承接 animate，避免 useCallback 互相依赖。
+  const animateRef = useRef<() => void>(() => {});
 
-  useEffect(() => {
-    if (isBlogPost) return;
-    if (canvasRef.current) {
-      context.current = canvasRef.current.getContext("2d");
-    }
-    initCanvas();
-    animate();
-    window.addEventListener("resize", initCanvas);
+  const clearContext = useCallback(() => {
+    const ctx = context.current;
+    if (!ctx) return;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvasSize.current.w * dprRef.current, canvasSize.current.h * dprRef.current);
+  }, []);
 
-    // Pause the render loop while the tab is hidden — no point burning frames
-    // (and battery) drawing to a canvas nobody can see.
-    const onVisibility = () => {
-      if (document.hidden) {
-        cancelAnimationFrame(rafId.current);
-      } else {
-        cancelAnimationFrame(rafId.current);
-        animate();
-      }
-    };
-    document.addEventListener("visibilitychange", onVisibility);
-
-    return () => {
-      cancelAnimationFrame(rafId.current);
-      window.removeEventListener("resize", initCanvas);
-      document.removeEventListener("visibilitychange", onVisibility);
-    };
-  }, [isBlogPost]);
-
-  useEffect(() => {
-    onMouseMove();
-  }, [mousePosition.x, mousePosition.y]);
-
-  useEffect(() => {
-    initCanvas();
-  }, [refresh]);
-
-  const initCanvas = () => {
-    resizeCanvas();
-    drawParticles();
-  };
-
-  const onMouseMove = () => {
-    if (canvasRef.current) {
-      const rect = canvasRef.current.getBoundingClientRect();
-      const { w, h } = canvasSize.current;
-      const x = mousePosition.x - rect.left - w / 2;
-      const y = mousePosition.y - rect.top - h / 2;
-      const inside = x < w / 2 && x > -w / 2 && y < h / 2 && y > -h / 2;
-      if (inside) {
-        mouse.current.x = x;
-        mouse.current.y = y;
-      }
-    }
-  };
-
-  const resizeCanvas = () => {
-    if (canvasContainerRef.current && canvasRef.current && context.current) {
-      circles.current.length = 0;
-      canvasSize.current.w = canvasContainerRef.current.offsetWidth;
-      canvasSize.current.h = canvasContainerRef.current.offsetHeight;
-      canvasRef.current.width = canvasSize.current.w * dpr;
-      canvasRef.current.height = canvasSize.current.h * dpr;
-      canvasRef.current.style.width = `${canvasSize.current.w}px`;
-      canvasRef.current.style.height = `${canvasSize.current.h}px`;
-      context.current.scale(dpr, dpr);
-    }
-  };
-
-  const circleParams = (): Circle => {
+  const circleParams = useCallback((): Circle => {
     const x = Math.floor(Math.random() * canvasSize.current.w);
     const y = Math.floor(Math.random() * canvasSize.current.h);
-    const translateX = 0;
-    const translateY = 0;
-    const size = Math.floor(Math.random() * 2) + 0.1;
-    const alpha = 0;
-    const targetAlpha = parseFloat((Math.random() * 0.6 + 0.1).toFixed(1));
-    const dx = (Math.random() - 0.5) * 0.2;
-    const dy = (Math.random() - 0.5) * 0.2;
-    const magnetism = 0.1 + Math.random() * 4;
     return {
       x,
       y,
-      translateX,
-      translateY,
-      size,
-      alpha,
-      targetAlpha,
-      dx,
-      dy,
-      magnetism,
+      translateX: 0,
+      translateY: 0,
+      size: Math.floor(Math.random() * 2) + 0.1,
+      alpha: 0,
+      targetAlpha: parseFloat((Math.random() * 0.6 + 0.1).toFixed(1)),
+      dx: (Math.random() - 0.5) * 0.2,
+      dy: (Math.random() - 0.5) * 0.2,
+      magnetism: 0.1 + Math.random() * 4,
     };
-  };
+  }, []);
 
-  const drawCircle = (circle: Circle, update = false) => {
-    if (context.current) {
-      const { x, y, translateX, translateY, size, alpha } = circle;
-      context.current.translate(translateX, translateY);
-      context.current.beginPath();
-      context.current.arc(x, y, size, 0, 2 * Math.PI);
-      context.current.fillStyle = `rgba(255, 255, 255, ${alpha})`;
-      context.current.fill();
-      context.current.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const drawCircle = useCallback((circle: Circle, update = false) => {
+    const ctx = context.current;
+    if (!ctx) return;
+    const { x, y, translateX, translateY, size, alpha } = circle;
+    const dpr = dprRef.current;
+    // 每次都从 DPR 基准矩阵开始，避免 translate 在多次绘制之间累积
+    ctx.setTransform(dpr, 0, 0, dpr, translateX * dpr, translateY * dpr);
+    ctx.beginPath();
+    ctx.arc(x, y, size, 0, 2 * Math.PI);
+    ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+    ctx.fill();
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      if (!update) {
-        circles.current.push(circle);
-      }
-    }
-  };
+    if (!update) circles.current.push(circle);
+  }, []);
 
-  const clearContext = () => {
-    if (context.current) {
-      context.current.clearRect(
-        0,
-        0,
-        canvasSize.current.w,
-        canvasSize.current.h
-      );
-    }
-  };
-
-  const drawParticles = () => {
+  const drawParticles = useCallback(() => {
     clearContext();
-    const particleCount = quantity;
-    for (let i = 0; i < particleCount; i++) {
-      const circle = circleParams();
-      drawCircle(circle);
-    }
-  };
+    for (let i = 0; i < quantity; i++) drawCircle(circleParams());
+  }, [clearContext, drawCircle, circleParams, quantity]);
+
+  const resizeCanvas = useCallback(() => {
+    const container = canvasContainerRef.current;
+    const canvas = canvasRef.current;
+    const ctx = context.current;
+    if (!container || !canvas || !ctx) return;
+
+    // DPR 在每次 resize 时重新取，否则外接显示器切换后比例会错
+    dprRef.current =
+      typeof window !== "undefined" ? Math.min(window.devicePixelRatio || 1, maxDpr) : 1;
+    const dpr = dprRef.current;
+
+    circles.current.length = 0;
+    canvasSize.current.w = container.offsetWidth;
+    canvasSize.current.h = container.offsetHeight;
+
+    // 设置 width/height 会重置上下文状态，因此随后必须显式 setTransform，
+    // 而不是 scale()（scale 是在现有矩阵上累乘）。
+    canvas.width = canvasSize.current.w * dpr;
+    canvas.height = canvasSize.current.h * dpr;
+    canvas.style.width = `${canvasSize.current.w}px`;
+    canvas.style.height = `${canvasSize.current.h}px`;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }, [maxDpr]);
+
+  const initCanvas = useCallback(() => {
+    resizeCanvas();
+    drawParticles();
+  }, [resizeCanvas, drawParticles]);
 
   const remapValue = (
     value: number,
@@ -192,15 +141,19 @@ export default function Particles({
     return remapped > 0 ? remapped : 0;
   };
 
-  const animate = () => {
+  /** 单帧推进 + 绘制，不含 requestAnimationFrame 调用 */
+  const step = useCallback(() => {
     clearContext();
+    const dpr = dprRef.current;
+    const ctx = context.current;
+    if (!ctx) return;
+
     circles.current.forEach((circle: Circle, i: number) => {
-      // Handle the alpha value
       const edge = [
-        circle.x + circle.translateX - circle.size, // distance from left edge
-        canvasSize.current.w - circle.x - circle.translateX - circle.size, // distance from right edge
-        circle.y + circle.translateY - circle.size, // distance from top edge
-        canvasSize.current.h - circle.y - circle.translateY - circle.size, // distance from bottom edge
+        circle.x + circle.translateX - circle.size,
+        canvasSize.current.w - circle.x - circle.translateX - circle.size,
+        circle.y + circle.translateY - circle.size,
+        canvasSize.current.h - circle.y - circle.translateY - circle.size,
       ];
       const closestEdge = edge.reduce((a, b) => Math.min(a, b));
       const remapClosestEdge = parseFloat(
@@ -208,49 +161,96 @@ export default function Particles({
       );
       if (remapClosestEdge > 1) {
         circle.alpha += 0.02;
-        if (circle.alpha > circle.targetAlpha) {
-          circle.alpha = circle.targetAlpha;
-        }
+        if (circle.alpha > circle.targetAlpha) circle.alpha = circle.targetAlpha;
       } else {
         circle.alpha = circle.targetAlpha * remapClosestEdge;
       }
       circle.x += circle.dx;
       circle.y += circle.dy;
       circle.translateX +=
-        (mouse.current.x / (staticity / circle.magnetism) - circle.translateX) /
-        ease;
+        (mouse.current.x / (staticity / circle.magnetism) - circle.translateX) / ease;
       circle.translateY +=
-        (mouse.current.y / (staticity / circle.magnetism) - circle.translateY) /
-        ease;
-      // circle gets out of the canvas
-      if (
+        (mouse.current.y / (staticity / circle.magnetism) - circle.translateY) / ease;
+
+      const outside =
         circle.x < -circle.size ||
         circle.x > canvasSize.current.w + circle.size ||
         circle.y < -circle.size ||
-        circle.y > canvasSize.current.h + circle.size
-      ) {
-        // remove the circle from the array
+        circle.y > canvasSize.current.h + circle.size;
+
+      if (outside) {
         circles.current.splice(i, 1);
-        // create a new circle
-        const newCircle = circleParams();
-        drawCircle(newCircle);
-        // update the circle position
+        drawCircle(circleParams());
       } else {
-        drawCircle(
-          {
-            ...circle,
-            x: circle.x,
-            y: circle.y,
-            translateX: circle.translateX,
-            translateY: circle.translateY,
-            alpha: circle.alpha,
-          },
-          true
-        );
+        // 直接定位后画，省掉每次都 spread 一个新对象的开销
+        ctx.setTransform(dpr, 0, 0, dpr, circle.translateX * dpr, circle.translateY * dpr);
+        ctx.beginPath();
+        ctx.arc(circle.x, circle.y, circle.size, 0, 2 * Math.PI);
+        ctx.fillStyle = `rgba(255, 255, 255, ${circle.alpha})`;
+        ctx.fill();
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       }
     });
-    rafId.current = window.requestAnimationFrame(animate);
-  };
+
+    rafId.current = window.requestAnimationFrame(animateRef.current);
+  }, [clearContext, drawCircle, circleParams, staticity, ease]);
+
+  // step 与 animate 互相引用，用 animateRef 打断 useCallback 循环依赖
+  const animate = useCallback(() => {
+    step();
+  }, [step]);
+
+  useEffect(() => {
+    animateRef.current = animate;
+  }, [animate]);
+
+  const onMouseMove = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const { w, h } = canvasSize.current;
+    const x = mousePosition.x - rect.left - w / 2;
+    const y = mousePosition.y - rect.top - h / 2;
+    const inside = x < w / 2 && x > -w / 2 && y < h / 2 && y > -h / 2;
+    if (inside) {
+      mouse.current.x = x;
+      mouse.current.y = y;
+    }
+  }, [mousePosition.x, mousePosition.y]);
+
+  useEffect(() => {
+    if (isBlogPost) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    context.current = canvas.getContext("2d");
+    initCanvas();
+    animate();
+
+    window.addEventListener("resize", initCanvas);
+
+    const onVisibility = () => {
+      cancelAnimationFrame(rafId.current);
+      if (!document.hidden) animate();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+
+    return () => {
+      cancelAnimationFrame(rafId.current);
+      window.removeEventListener("resize", initCanvas);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [isBlogPost, initCanvas, animate]);
+
+  useEffect(() => {
+    if (isBlogPost) return;
+    onMouseMove();
+  }, [isBlogPost, onMouseMove]);
+
+  useEffect(() => {
+    if (isBlogPost) return;
+    initCanvas();
+  }, [isBlogPost, initCanvas, refresh]);
 
   if (isBlogPost) return null;
 

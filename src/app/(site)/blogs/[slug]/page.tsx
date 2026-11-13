@@ -1,4 +1,5 @@
 import React from "react";
+import type { Metadata } from "next";
 import { getBlogPost, getBlogPosts } from "@/lib/mdx";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import remarkGfm from "remark-gfm";
@@ -11,32 +12,51 @@ import RevealAnimation from "@/components/reveal-animations";
 import { getDictionary } from "@/i18n/dictionaries";
 import { getSiteConfig } from "@/data/config";
 import { blogComponents } from "@/components/blog/mdx-components";
+import { estimateReadMinutes } from "@/lib/read-time";
 
 export async function generateStaticParams() {
   return getBlogPosts("zh").map((post) => ({ slug: post.slug }));
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
   const { slug } = await params;
   const post = getBlogPost(slug, "zh");
   if (!post) notFound();
   const site = getSiteConfig("zh");
+  const canonical = `${site.site}/blogs/${slug}/`;
+  // 文章自带封面图就用作 OG 图，没有则回退站点默认图
+  const ogImage = post.metadata.image ? `${site.site}${post.metadata.image}` : site.ogImg;
+
   return {
     title: `${post.metadata.title} | ${site.author}`,
     description: post.metadata.summary,
     alternates: {
-      canonical: `${site.site}/blogs/${slug}/`,
+      canonical,
       languages: {
-        "zh-CN": `${site.site}/blogs/${slug}/`,
+        "zh-CN": canonical,
         en: `${site.site}/en/blogs/${slug}/`,
       },
     },
+    openGraph: {
+      type: "article",
+      title: post.metadata.title,
+      description: post.metadata.summary,
+      url: canonical,
+      publishedTime: post.metadata.publishedAt,
+      locale: "zh_CN",
+      images: [{ url: ogImage, width: 1200, height: 630, alt: post.metadata.title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.metadata.title,
+      description: post.metadata.summary,
+      images: [ogImage],
+    },
   };
-}
-
-function estimateReadTime(content: string) {
-  const words = content.trim().split(/\s+/).length;
-  return Math.max(1, Math.ceil(words / 400));
 }
 
 function formatDate(dateStr: string) {
@@ -54,7 +74,7 @@ export default async function BlogPostZh({ params }: { params: Promise<{ slug: s
   const post = getBlogPost(slug, "zh");
   if (!post) notFound();
   const t = getDictionary("zh");
-  const readTime = estimateReadTime(post.content);
+  const readTime = estimateReadMinutes(post.content, "zh");
 
   return (
     <div className="min-h-screen relative font-sans">

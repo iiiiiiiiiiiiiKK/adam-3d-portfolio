@@ -25,7 +25,10 @@ export type BlogPost = {
   metadata: BlogMeta;
   content: string;
   slug: string;
+  /** 正文实际语言。英文站缺译时可能回退成 "zh"。 */
   locale: Locale;
+  /** 请求的语言是否真的有对应译文（false = 回退到了中文正文）。 */
+  translated: boolean;
 };
 
 /** 每种语言的正文目录。英文缺失时由调用方回退到中文。 */
@@ -62,7 +65,11 @@ function firstParagraph(body: string): string {
   return "";
 }
 
-function readMDXFile(filePath: string, locale: Locale): Omit<BlogPost, "slug"> {
+function readMDXFile(
+  filePath: string,
+  locale: Locale,
+  translated: boolean,
+): Omit<BlogPost, "slug"> {
   const rawContent = fs.readFileSync(filePath, "utf-8");
   const { data, content } = matter(rawContent);
 
@@ -76,7 +83,7 @@ function readMDXFile(filePath: string, locale: Locale): Omit<BlogPost, "slug"> {
   if (!result.success) {
     throw new Error(`Invalid blog frontmatter in ${filePath}: ${result.error.message}`);
   }
-  return { metadata: result.data, content, locale };
+  return { metadata: result.data, content, locale, translated };
 }
 
 /** 列出某语言下已存在的文章 slug。 */
@@ -90,11 +97,16 @@ export function listBlogSlugs(locale: Locale = "zh"): string[] {
     .sort();
 }
 
+/** 有对应译文的 slug 集合。用于内容审计与缺译提示。 */
+export function translatedSlugs(): Set<string> {
+  return new Set(listBlogSlugs("en"));
+}
+
 /**
  * 列出文章。
  * - locale = "zh"：只返回中文
  * - locale = "en"：优先用英文正文；还没翻译的条目回退中文正文，
- *   这样列表页不会出现空条目
+ *   并把 `translated` 标成 false，供页面显示「暂无译文」与 noindex。
  */
 export function getBlogPosts(locale: Locale = "zh"): BlogPost[] {
   const zhDir = getBlogsDirectory("zh");
@@ -102,7 +114,7 @@ export function getBlogPosts(locale: Locale = "zh"): BlogPost[] {
 
   if (locale === "zh") {
     return zhFiles.map((file) => ({
-      ...readMDXFile(path.join(zhDir, file), "zh"),
+      ...readMDXFile(path.join(zhDir, file), "zh", true),
       slug: path.basename(file, ".mdx"),
     }));
   }
@@ -120,27 +132,55 @@ export function getBlogPosts(locale: Locale = "zh"): BlogPost[] {
   return zhFiles.map((file) => {
     const slug = path.basename(file, ".mdx");
     const enPath = enFiles.get(slug);
-    if (enPath) return { ...readMDXFile(enPath, "en"), slug };
-    return { ...readMDXFile(path.join(zhDir, file), "zh"), slug };
+    if (enPath) return { ...readMDXFile(enPath, "en", true), slug };
+    return { ...readMDXFile(path.join(zhDir, file), "zh", false), slug };
   });
 }
 
 export function getBlogPost(slug: string, locale: Locale = "zh"): BlogPost | null {
   if (!/^[a-zA-Z0-9][a-zA-Z0-9_-]*$/.test(slug)) return null;
 
-  const candidates: { path: string; locale: Locale }[] = [];
+  const candidates: { path: string; locale: Locale; translated: boolean }[] = [];
   if (locale === "en") {
-    candidates.push({ path: path.join(getBlogsDirectory("en"), `${slug}.mdx`), locale: "en" });
+    candidates.push({
+      path: path.join(getBlogsDirectory("en"), `${slug}.mdx`),
+      locale: "en",
+      translated: true,
+    });
   }
-  candidates.push({ path: path.join(getBlogsDirectory("zh"), `${slug}.mdx`), locale: "zh" });
+  candidates.push({
+    path: path.join(getBlogsDirectory("zh"), `${slug}.mdx`),
+    locale: "zh",
+    translated: locale === "zh",
+  });
 
   for (const candidate of candidates) {
     try {
-      return { ...readMDXFile(candidate.path, candidate.locale), slug };
+      return {
+        ...readMDXFile(candidate.path, candidate.locale, candidate.translated),
+        slug,
+      };
     } catch (error) {
       if (error instanceof Error && "code" in error && error.code === "ENOENT") continue;
       throw error;
     }
   }
   return null;
+}
+
+/**
+ * 文章排序：按 publishedAt 倒序（新的在前）。
+ * 用时间戳相减而不是 `a < b ? 1 : -1`，保证 comparator 反对称、
+ * 同日期时顺序稳定（再按 slug 兜底）。
+ */
+export function sortPostsByDateDesc<T extends { metadata: { publishedAt: string }; slug: string }>(
+  posts: T[],
+): T[] {
+  return [...posts].sort((a, b) => {
+    const delta =
+      new Date(b.metadata.publishedAt).getTime() -
+      new Date(a.metadata.publishedAt).getTime();
+    if (delta !== 0) return delta;
+    return a.slug.localeCompare(b.slug);
+  });
 }

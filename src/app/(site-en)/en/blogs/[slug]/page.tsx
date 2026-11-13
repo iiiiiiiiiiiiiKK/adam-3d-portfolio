@@ -1,5 +1,7 @@
 import React from "react";
+import type { Metadata } from "next";
 import { getBlogPost, getBlogPosts } from "@/lib/mdx";
+import { estimateReadMinutes } from "@/lib/read-time";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import remarkGfm from "remark-gfm";
 import ScrollProgress from "@/components/ui/scroll-progress";
@@ -16,27 +18,58 @@ export async function generateStaticParams() {
   return getBlogPosts("en").map((post) => ({ slug: post.slug }));
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
   const { slug } = await params;
   const post = getBlogPost(slug, "en");
   if (!post) notFound();
   const site = getSiteConfig("en");
+  const canonical = `${site.site}/en/blogs/${slug}/`;
+  const ogImage = post.metadata.image ? `${site.site}${post.metadata.image}` : site.ogImg;
+
+  // 缺译的文章：URL 存在但正文是中文，不该被当作英文页收录，
+  // 也不该声明英文 hreflang（否则等于告诉搜索引擎这是英文版本）。
+  if (!post.translated) {
+    return {
+      title: `${post.metadata.title} | ${site.author}`,
+      description: post.metadata.summary,
+      alternates: {
+        canonical: `${site.site}/blogs/${slug}/`,
+        languages: { "zh-CN": `${site.site}/blogs/${slug}/` },
+      },
+      robots: { index: false, follow: true },
+    };
+  }
+
   return {
     title: `${post.metadata.title} | ${site.author}`,
     description: post.metadata.summary,
     alternates: {
-      canonical: `${site.site}/en/blogs/${slug}/`,
+      canonical,
       languages: {
         "zh-CN": `${site.site}/blogs/${slug}/`,
-        en: `${site.site}/en/blogs/${slug}/`,
+        en: canonical,
       },
     },
+    openGraph: {
+      type: "article",
+      title: post.metadata.title,
+      description: post.metadata.summary,
+      url: canonical,
+      publishedTime: post.metadata.publishedAt,
+      locale: "en_US",
+      images: [{ url: ogImage, width: 1200, height: 630, alt: post.metadata.title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.metadata.title,
+      description: post.metadata.summary,
+      images: [ogImage],
+    },
   };
-}
-
-function estimateReadTime(content: string) {
-  const words = content.trim().split(/\s+/).length;
-  return Math.max(1, Math.ceil(words / 200));
 }
 
 function formatDate(dateStr: string) {
@@ -54,7 +87,7 @@ export default async function BlogPostEn({ params }: { params: Promise<{ slug: s
   const post = getBlogPost(slug, "en");
   if (!post) notFound();
   const t = getDictionary("en");
-  const readTime = estimateReadTime(post.content);
+  const readTime = estimateReadMinutes(post.content, post.locale);
 
   return (
     <div className="min-h-screen relative font-sans">
@@ -77,6 +110,14 @@ export default async function BlogPostEn({ params }: { params: Promise<{ slug: s
 
         <RevealAnimation delay={0.1}>
           <header className="mb-12">
+            {/* 缺译提示：英文 URL 下正文仍是中文，必须让读者知道，
+                而不是以为这是英文版。对应 metadata 也设置了 noindex。 */}
+            {!post.translated && (
+              <div className="mb-8 rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3 text-sm text-amber-200/90">
+                This article hasn&apos;t been translated yet — the original Chinese text is shown
+                below.
+              </div>
+            )}
             <div className="flex gap-2 mb-6 flex-wrap">
               {post.metadata.tags?.map((tag) => (
                 <Badge

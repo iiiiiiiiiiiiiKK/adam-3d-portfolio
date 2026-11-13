@@ -44,7 +44,6 @@ const ContactSection = () => {
             <CardDescription>
               {descriptionPrefix}{" "}
               <a
-                target="_blank"
                 href={`mailto:${config.email}`}
                 className="text-gray-200 cursor-can-hover rounded-lg underline underline-offset-4"
               >

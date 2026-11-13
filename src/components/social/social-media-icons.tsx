@@ -35,7 +35,7 @@ const SocialMediaButtons = ({ locale = "zh" }: { locale?: Locale }) => {
     <div ref={ref} className="z-10">
       {show &&
         buttons.map((button) => (
-          <Link href={button.href} key={button.name} target="_blank">
+          <Link href={button.href} key={button.name} target="_blank" rel="noopener noreferrer">
             <Button variant={"ghost"}>{button.icon}</Button>
           </Link>
         ))}

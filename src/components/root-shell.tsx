@@ -65,7 +65,7 @@ export function RootShell({
 }) {
   return (
     <html lang={HTML_LANG[locale]} className={fontClassNames} suppressHydrationWarning>
-      <head>
+      <body>
         {process.env.UMAMI_SITE_ID && (
           <Script
             defer
@@ -73,8 +73,6 @@ export function RootShell({
             data-website-id={process.env.UMAMI_SITE_ID}
           />
         )}
-      </head>
-      <body>
         <I18nProvider locale={locale}>
           <Providers>
             <SiteFrame locale={locale} githubStars={<GitHubStars className="mr-4" />}>

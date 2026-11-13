@@ -84,7 +84,7 @@ const HeroSection = () => {
                 </BlurIn>
               </div>
               <div className="mt-8 flex flex-col gap-3 w-fit">
-                <Link href={config.social.github} target="_blank" className="flex-1">
+                <Link href={config.social.github} target="_blank" rel="noopener noreferrer" className="flex-1">
                   <BoxReveal delay={2} width="100%">
                     <Button className="flex items-center gap-2 w-full">
                       <Github size={24} />
@@ -106,14 +106,14 @@ const HeroSection = () => {
                     </TooltipContent>
                   </Tooltip>
                   <div className="flex items-center h-full gap-2">
-                    <Link href={config.social.twitter} target="_blank">
+                    <Link href={config.social.twitter} target="_blank" rel="noopener noreferrer">
                       <Button variant={"outline"}>
                         <SiX size={24} />
                       </Button>
                     </Link>
                     <Link
                       href={config.social.github}
-                      target="_blank"
+                      target="_blank" rel="noopener noreferrer"
                       className="cursor-can-hover"
                     >
                       <Button variant={"outline"}>
@@ -122,7 +122,7 @@ const HeroSection = () => {
                     </Link>
                     <Link
                       href={config.social.linkedin}
-                      target="_blank"
+                      target="_blank" rel="noopener noreferrer"
                       className="cursor-can-hover"
                     >
                       <Button variant={"outline"}>

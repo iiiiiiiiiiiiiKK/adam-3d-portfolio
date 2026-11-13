@@ -5,6 +5,7 @@ import Header from "@/components/header/header";
 import { FooterInner } from "@/components/footer/footer";
 import AppOverlays from "@/components/app-overlays";
 import type { Locale } from "@/i18n/types";
+import { isBarePath } from "@/lib/routes";
 
 /**
  * Wraps the app shell for one locale.
@@ -23,7 +24,7 @@ export default function SiteFrame({
   locale?: Locale;
 }) {
   const pathname = usePathname();
-  const bare = pathname?.startsWith("/components") ?? false;
+  const bare = isBarePath(pathname || "/");
 
   if (bare) return <>{children}</>;
 

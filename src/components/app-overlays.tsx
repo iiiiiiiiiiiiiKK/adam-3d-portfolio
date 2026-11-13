@@ -9,10 +9,13 @@ import RadialMenu from "@/components/radial-menu/index";
 import MotionNudge from "@/components/motion-nudge";
 import DomainNotice from "@/components/domain-notice";
 import { usePerfProfile } from "@/hooks/use-perf-profile";
+import { isHomePath } from "@/lib/routes";
 
 export default function AppOverlays() {
-  const pathname = usePathname();
-  const isHome = pathname === "/";
+  const pathname = usePathname() || "/";
+  // `/` 和 `/en` 都是首页 —— 之前只判断 `/`，英文首页缺少
+  // RemoteCursors / RadialMenu / MotionNudge，两站行为不对称。
+  const isHome = isHomePath(pathname);
 
   const { particleCount, maxDpr, disableDecorative } = usePerfProfile();
 
